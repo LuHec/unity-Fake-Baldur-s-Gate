@@ -69,12 +69,12 @@ public class GridXZ<TGridObject>
         _debugTextArray[arg.x, arg.z].text = _gridArray.GetValue(arg.x, arg.z)?.ToString();
     }
     
-    Vector3 GetWorldPosition(int x, int z)
+    public Vector3 GetWorldPosition(int x, int z)
     {
         return new Vector3(x, 0, z) * _cellsize + _originPos;
     }
 
-    void GetXY(Vector3 worldPos, out int x, out int z)
+    public void GetXZ(Vector3 worldPos, out int x, out int z)
     {
         x = Mathf.FloorToInt((worldPos - _originPos).x / _cellsize);
         z = Mathf.FloorToInt((worldPos - _originPos).z / _cellsize);
@@ -96,7 +96,7 @@ public class GridXZ<TGridObject>
     public void SetGridObject(Vector3 worldPos, TGridObject val)
     {
         int x, z;
-        GetXY(worldPos, out x, out z);
+        GetXZ(worldPos, out x, out z);
         SetGridObject(x, z, val);
         
         OnGridObjectChanged(x, z);
@@ -112,7 +112,7 @@ public class GridXZ<TGridObject>
     public TGridObject GetGridObject(Vector3 worldPos)
     {
         int x, z;
-        GetXY(worldPos, out x, out z);
+        GetXZ(worldPos, out x, out z);
         return GetGridObject(x, z);
     }
 
