@@ -9,19 +9,19 @@ using UnityEngine.Serialization;
 public class Grid3DSystem : MonoBehaviour
 {
     private GridXZ<GridObject> _grid;
-    [SerializeField] private List<PlacedObjectTypeSO> placedObjectTypeSos; 
+    [SerializeField] private List<PlacedObjectTypeSO> placedObjectTypeSos;
     [SerializeField] private int gridwidth = 10;
     [SerializeField] private int gridheight = 10;
     [SerializeField] private float cellsize = 10f;
     [SerializeField] private PlacedObjectTypeSO.Dir _dir = PlacedObjectTypeSO.Dir.Up;
-    
-    private PlacedObjectTypeSO placedObjectTypeSo;
+
+    private PlacedObjectTypeSO _placedObjectTypeSo;
     private int _ptr = 0;
 
     void ChangeBuilding()
     {
         _ptr = (_ptr + 1) % placedObjectTypeSos.Count;
-        placedObjectTypeSo = placedObjectTypeSos[_ptr];
+        _placedObjectTypeSo = placedObjectTypeSos[_ptr];
     }
 
     private void Awake()
@@ -29,14 +29,14 @@ public class Grid3DSystem : MonoBehaviour
         _grid = new GridXZ<GridObject>(gridwidth, gridheight, cellsize, Vector3.zero,
             (GridXZ<GridObject> g, int x, int y) => new GridObject(g, x, y));
 
-        placedObjectTypeSo = placedObjectTypeSos[0];
+        _placedObjectTypeSo = placedObjectTypeSos[0];
     }
 
     private void Update()
     {
         if (Input.GetKeyDown(KeyCode.R))
         {
-            _dir = placedObjectTypeSo.GetNextDir(_dir);
+            _dir = _placedObjectTypeSo.GetNextDir(_dir);
             UtilsClass.CreateWorldTextPopup(_dir.ToString(), Utilties.GetMouse3DPosition("Default"));
         }
 
@@ -44,55 +44,88 @@ public class Grid3DSystem : MonoBehaviour
         {
             ChangeBuilding();
         }
-        
+
         if (Input.GetMouseButtonDown(0))
         {
-            Vector3 pos = Utilties.GetMouse3DPosition("Default");
-            GridObject gridObj = _grid.GetGridObject(pos);
-            _grid.GetXZ(pos, out int x, out int z);
-            List<Vector2Int> gridList =
-                placedObjectTypeSo.GetGridPositionList(new Vector2Int(x, z), _dir);
+            SetBuilding();
+        }
 
-            // 遍历所有占领的格子，只有全部可以建造才能建造
-            bool canBuild = true;
-            foreach (var gridPos in gridList)
-            {
-                if (!_grid.GetGridObject(gridPos.x, gridPos.y).CanBuild())
-                {
-                    canBuild = false;
-                    break;
-                }
-            }
-
-
-            if (canBuild)
-            {
-                Transform buildTransform = Instantiate(placedObjectTypeSo.prefab, pos,
-                    Quaternion.Euler(
-                        new Vector3(0, placedObjectTypeSo.GetRotationAngle(_dir), 0))
-                );
-                
-                Vector2Int objOffset = placedObjectTypeSo.GetRotationOffset(_dir);
-                buildTransform.transform.position = _grid.GetWorldPosition(x, z) + new Vector3(objOffset.x, 0, objOffset.y)  * cellsize;
-
-                foreach (var gridPos in gridList)
-                {
-                    _grid.GetGridObject(gridPos.x, gridPos.y).SetTransform(buildTransform);
-                }
-            }
-            else
-            {
-                UtilsClass.CreateWorldTextPopup("Can't create here", pos);
-            }
+        if (Input.GetMouseButtonDown(1))
+        {
+            DestoryBuilding();
         }
     }
 
+    /// <summary>
+    /// 销毁格子上的建筑
+    /// </summary>
+    private void DestoryBuilding()
+    {
+        GridObject gridObject = _grid.GetGridObject(Utilties.GetMouse3DPosition("Default"));
+        PlacedObject placedObject = gridObject.GetPlaceObject();
+        if (placedObject != null)
+        {
+            List<Vector2Int> gridList =
+                placedObject.GetGridPositionList();
+
+            foreach (var gridPos in gridList)
+            {
+                _grid.GetGridObject(gridPos.x, gridPos.y).ClearPlacedObject();
+            }
+            
+            placedObject.DestroySelf();
+        }
+    }
+
+    /// <summary>
+    /// 在鼠标处格子建造建筑
+    /// </summary>
+    void SetBuilding()
+    {
+        Vector3 mousePos = Utilties.GetMouse3DPosition("Default");
+        _grid.GetXZ(mousePos, out int x, out int z);
+        List<Vector2Int> gridList =
+            _placedObjectTypeSo.GetGridPositionList(new Vector2Int(x, z), _dir);
+
+        // 遍历所有占领的格子，只有全部可以建造才能建造
+        bool canBuild = true;
+        foreach (var gridPos in gridList)
+        {
+            if (!_grid.GetGridObject(gridPos.x, gridPos.y).CanBuild())
+            {
+                canBuild = false;
+                break;
+            }
+        }
+
+        if (canBuild)
+        {
+            Vector2Int objRotationOffset = _placedObjectTypeSo.GetRotationOffset(_dir);
+            Vector3 worldPos = _grid.GetWorldPosition(x, z) +
+                               new Vector3(objRotationOffset.x, 0, objRotationOffset.y) * cellsize;
+            PlacedObject placedObject =
+                PlacedObject.Create(worldPos, new Vector2Int(x, z), _dir, _placedObjectTypeSo);
+
+            foreach (var gridPos in gridList)
+            {
+                _grid.GetGridObject(gridPos.x, gridPos.y).SetPlacedObect(placedObject);
+            }
+        }
+        else
+        {
+            UtilsClass.CreateWorldTextPopup("Can't create here", mousePos);
+        }
+    }
+
+    /// <summary>
+    /// 格子本身存放的物体
+    /// </summary>
     public class GridObject
     {
         private GridXZ<GridObject> _grid;
         private int _x;
         private int _y;
-        private Transform objTransform;
+        private PlacedObject _placedObject;
 
         public GridObject(GridXZ<GridObject> g, int x, int y)
         {
@@ -103,29 +136,31 @@ public class Grid3DSystem : MonoBehaviour
 
         public bool CanBuild()
         {
-            return objTransform == null;
+            return _placedObject == null;
         }
 
-        public void SetTransform(Transform trans)
+        public void SetPlacedObect(PlacedObject placedObject)
         {
             if (CanBuild())
             {
-                objTransform = trans;
+                _placedObject = placedObject;
             }
 
             _grid.OnGridObjectChanged(_x, _y);
         }
 
-        public void ClearTransform()
+        public void ClearPlacedObject()
         {
-            objTransform = null;
+            _placedObject = null;
         }
 
         public override string ToString()
         {
-            if (objTransform)
+            if (_placedObject)
                 return "object";
             return _x + "," + _y;
         }
+
+        public PlacedObject GetPlaceObject() => _placedObject;
     }
 }
