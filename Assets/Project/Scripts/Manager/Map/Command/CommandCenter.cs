@@ -2,7 +2,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class CommandCenter : Singleton<CommandCenter>
+public class CommandCenter
 {
-
+    public CommandCenter()
+    {}
 }
