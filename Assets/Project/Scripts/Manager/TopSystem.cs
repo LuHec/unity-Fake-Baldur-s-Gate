@@ -17,13 +17,28 @@ public class TopSystem : MonoBehaviour
     private void Awake()
     {
         _commandCenter = new CommandCenter();
-        _playerInput = GetComponent<PlayerInput>();
+        _playerInput = PlayerInput.Instance;
 
         _playerInput.EnableGamePlayInputs();
+
+        _button0 = new CommandMove();
     }
+
+    // Test
+    private CommandInstance _button0;
+    [SerializeField] private GameActor _actor;
 
     private void Update()
     {
-           
+        CommandInstance cmdInst = InputHandler();
+        if (cmdInst != null) cmdInst.Excute(_actor);
+    }
+
+    CommandInstance InputHandler()
+    {
+        if (_playerInput.IsLClick)
+            return _button0;
+
+        return null;
     }
 }

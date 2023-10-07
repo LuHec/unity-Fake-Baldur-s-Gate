@@ -116,9 +116,4 @@ public class Grid3DSystem : MonoBehaviour
             UtilsClass.CreateWorldTextPopup("Can't create here", mousePos);
         }
     }
-
-    /// <summary>
-    /// 格子本身存放的物体
-    /// </summary>
-    
 }

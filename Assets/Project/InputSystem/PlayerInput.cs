@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-public class PlayerInput : MonoBehaviour
+public class PlayerInput : Singleton<PlayerInput>
 {
     private PlayerInputSystem _playerInputSystem;
 
@@ -20,8 +20,9 @@ public class PlayerInput : MonoBehaviour
     public Vector2 MousePos => _playerInputSystem.Player.MousePos.ReadValue<Vector2>();
     public Vector2 MouseDelta => _playerInputSystem.Player.MouseDelta.ReadValue<Vector2>();
 
-    private void Awake()
+    protected override void Awake()
     {
+        base.Awake();
         _playerInputSystem = new PlayerInputSystem();
     }
 
@@ -29,5 +30,24 @@ public class PlayerInput : MonoBehaviour
     {
         _playerInputSystem.Player.Enable();
         Cursor.lockState = CursorLockMode.Confined;
+    }
+
+    public Vector3 GetMouse3DPositionNew(string mouseLayerMask)
+    {
+        Ray ray = Camera.main.ScreenPointToRay(MousePos);
+        if (Physics.Raycast(ray, out RaycastHit raycastHit, 999f, LayerMask.GetMask(mouseLayerMask)))
+        {
+#if UNITY_EDITOR
+            Debug.Log(raycastHit.point);
+#endif
+            return raycastHit.point;
+        }
+        else
+        {
+#if UNITY_EDITOR
+            Debug.Log("null");
+#endif
+            return Vector3.zero;
+        }
     }
 }
