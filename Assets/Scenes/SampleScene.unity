@@ -926,7 +926,7 @@ Mesh:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: pb_Mesh28042
+  m_Name: pb_Mesh28050
   serializedVersion: 10
   m_SubMeshes:
   - serializedVersion: 2
@@ -1113,6 +1113,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 03529b016105c594f8800208baa0c929, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _gridwidth: 10
+  _gridheight: 10
+  _cellsize: 3
+  _originPos: {x: 0, y: 0, z: 0}
   _actor: {fileID: 1432969113}
 --- !u!4 &1999261651
 Transform:
