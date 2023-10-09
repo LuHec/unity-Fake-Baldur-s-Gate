@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using LuHec.Utils;
 using UnityEngine;
 
 /// <summary>
@@ -17,7 +18,9 @@ public class TopSystem : MonoBehaviour
     private ActorsManagerCenter _actorsManagerCenter;
     private MessageCenter _messageCenter;
     private MapSystem _mapSystem;
+
     private PlayerInput _playerInput;
+
     // Test
     private CommandInstance _button0;
     [SerializeField] private GameActor _actor;
@@ -32,11 +35,8 @@ public class TopSystem : MonoBehaviour
         InitCenter();
         InitInput();
         InitMap();
-
-        _button0 = new CommandMove();
     }
 
-   
 
     private void Update()
     {
@@ -49,7 +49,14 @@ public class TopSystem : MonoBehaviour
     CommandInstance InputHandler()
     {
         if (_playerInput.IsLClick)
+        {
+            if (_button0 == null) _button0 = new MoveActorCommand(0, 0);
+            Vector3 mousePos = _playerInput.GetMouse3DPosition(LayerMask.GetMask("Default"));
+            ((MoveActorCommand)_button0).SetPoint(mousePos.x, mousePos.z);
+            
             return _button0;
+        }
+
 
         return null;
     }
@@ -59,7 +66,7 @@ public class TopSystem : MonoBehaviour
     void InitCenter()
     {
         _commandCenter = new CommandCenter();
-        _actorsManagerCenter = new ActorsManagerCenter();
+        _actorsManagerCenter = ActorsManagerCenter.Instance;
         _messageCenter = new MessageCenter();
     }
 

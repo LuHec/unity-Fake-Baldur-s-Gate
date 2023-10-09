@@ -2,7 +2,10 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class ActorsManagerCenter : ICenter
+/// <summary>
+/// 管理中心负责管理所有的游戏内物品：物品、角色等。
+/// </summary>
+public class ActorsManagerCenter : Singleton<ActorsManagerCenter>, ICenter
 {
     private List<GameActor> _listActors;
     private List<GameActor> _controlledActors;
@@ -10,12 +13,16 @@ public class ActorsManagerCenter : ICenter
 
     public ActorsManagerCenter()
     {
-        
-    }
+        _listActors = new List<GameActor>();
+    }   
 
-    public ActorsManagerCenter(List<GameActor> listActors)
+    // public ActorsManagerCenter(List<GameActor> listActors)
+    // {
+    //     _listActors = listActors;
+    // }
+
+    public void LoadActors(List<GameActor> listActors)
     {
-        _listActors = listActors;
     }
 
     /// <summary>

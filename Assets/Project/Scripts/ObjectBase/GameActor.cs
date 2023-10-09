@@ -2,8 +2,10 @@
 
 public class GameActor : MonoBehaviour
 {
-    public void Move(Vector3 worldPos)
+    private MapSystem _mapSystem;
+
+    public void MoveUnit(float x, float z)
     {
-        transform.position = worldPos;
+        transform.position = new Vector3(x, transform.position.y, z);
     }
 }

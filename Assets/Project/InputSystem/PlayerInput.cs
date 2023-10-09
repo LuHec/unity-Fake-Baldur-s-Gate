@@ -32,10 +32,10 @@ public class PlayerInput : Singleton<PlayerInput>
         Cursor.lockState = CursorLockMode.Confined;
     }
 
-    public Vector3 GetMouse3DPositionNew(string mouseLayerMask)
+    public Vector3 GetMouse3DPosition(int mouseLayerMask)
     {
         Ray ray = Camera.main.ScreenPointToRay(MousePos);
-        if (Physics.Raycast(ray, out RaycastHit raycastHit, 999f, LayerMask.GetMask(mouseLayerMask)))
+        if (Physics.Raycast(ray, out RaycastHit raycastHit, 999f, mouseLayerMask))
         {
 #if UNITY_EDITOR
             Debug.Log(raycastHit.point);
