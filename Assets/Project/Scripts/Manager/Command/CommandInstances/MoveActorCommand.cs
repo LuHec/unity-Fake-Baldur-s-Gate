@@ -2,23 +2,25 @@
 using UnityEngine;
 
 /// <summary>
-/// 移动单位指令 
+/// 移动单位指令，在初始化的时候指定移动位置。Excute可以在update中执行
 /// </summary>
 public class MoveActorCommand : CommandInstance
 {
+    private MapSystem _mapSystem;
     private float _x;
-    private float _y;
+    private float _z;
     
-    public MoveActorCommand(float x, float y)
+    public MoveActorCommand(MapSystem mapSystem, float x, float z)
     {
+        _mapSystem = mapSystem;
         _x = x;
-        _y = y;
+        _z = z;
     }
 
-    public void SetPoint(float x, float y)
+    public void SetTargetPoint(float x, float z)
     {
         _x = x;
-        _y = y;
+        _z = z;
     }
 
     public override void Excute(GameActor actor)
@@ -28,11 +30,17 @@ public class MoveActorCommand : CommandInstance
 
     public override void Undo(GameActor actor)
     {
-        
+        UnDoMove(actor);
     }
 
     void Move(GameActor actor)
     {
-        actor.MoveUnit(_x, _y);
+        _mapSystem.MoveGameActor(_x, _z, actor);
+        actor.MoveTo(_x, _z);
+    }
+    
+    private void UnDoMove(GameActor actor)
+    {
+        
     }
 }

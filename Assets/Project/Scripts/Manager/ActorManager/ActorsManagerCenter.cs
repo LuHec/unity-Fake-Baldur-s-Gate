@@ -5,14 +5,16 @@ using UnityEngine;
 /// <summary>
 /// 管理中心负责管理所有的游戏内物品：物品、角色等。
 /// </summary>
-public class ActorsManagerCenter : Singleton<ActorsManagerCenter>, ICenter
+public class ActorsManagerCenter : ICenter
 {
     private List<GameActor> _listActors;
     private List<GameActor> _controlledActors;
     private HashSet<GameActor> _actorsSet;
+    private MapSystem _mapSystem;
 
-    public ActorsManagerCenter()
+    public ActorsManagerCenter(MapSystem mapSystem)
     {
+        _mapSystem = mapSystem;
         _listActors = new List<GameActor>();
     }   
 

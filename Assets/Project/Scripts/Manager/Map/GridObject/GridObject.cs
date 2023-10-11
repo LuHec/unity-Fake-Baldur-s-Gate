@@ -1,48 +1,46 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-
-
-public class GridObject
+﻿public class GridObject
 {
     private GridXZ<GridObject> _grid;
     private int _x;
     private int _y;
-    private PlacedObject _placedObject;
+    private GameActor _actor;
 
-    public GridObject(GridXZ<GridObject> g, int x, int y)
+    public GridObject(GridXZ<GridObject> grid, int x, int y)
     {
-        _grid = g;
+        _grid = grid;
         _x = x;
         _y = y;
     }
 
-    public bool CanBuild()
+    public bool Empty()
     {
-        return _placedObject == null;
+        return _actor == null;
     }
 
-    public void SetPlacedObect(PlacedObject placedObject)
+    public bool SetActor(GameActor actor)
     {
-        if (CanBuild())
+        if (Empty())
         {
-            _placedObject = placedObject;
+            _actor = actor;
+            _grid.OnGridObjectChanged(_x, _y);
+            return true;
         }
 
-        _grid.OnGridObjectChanged(_x, _y);
+        return false;
     }
 
-    public void ClearPlacedObject()
+    public void ClearActor()
     {
-        _placedObject = null;
+        _actor = null;
+        _grid.OnGridObjectChanged(_x, _y);
     }
 
     public override string ToString()
     {
-        if (_placedObject)
-            return "object";
+        if (_actor)
+            return _actor.name;
         return _x + "," + _y;
     }
 
-    public PlacedObject GetPlaceObject() => _placedObject;
+    public GameActor getGameActor() => _actor;
 }

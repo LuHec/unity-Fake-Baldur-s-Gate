@@ -19,10 +19,7 @@ public class TopSystem : MonoBehaviour
     private MessageCenter _messageCenter;
     private MapSystem _mapSystem;
 
-    private PlayerInput _playerInput;
-
     // Test
-    private CommandInstance _button0;
     [SerializeField] private GameActor _actor;
 
     #region #System Functions
@@ -32,48 +29,28 @@ public class TopSystem : MonoBehaviour
     /// </summary>
     private void Awake()
     {
-        InitCenter();
-        InitInput();
         InitMap();
+        InitSystem();
     }
 
 
     private void Update()
     {
-        CommandInstance cmdInst = InputHandler();
-        if (cmdInst != null) cmdInst.Excute(_actor);
+        _commandCenter.Excute(_commandCenter.GetInputCommand(), _actor);
     }
 
     #endregion
-
-    CommandInstance InputHandler()
-    {
-        if (_playerInput.IsLClick)
-        {
-            if (_button0 == null) _button0 = new MoveActorCommand(0, 0);
-            Vector3 mousePos = _playerInput.GetMouse3DPosition(LayerMask.GetMask("Default"));
-            ((MoveActorCommand)_button0).SetPoint(mousePos.x, mousePos.z);
-            
-            return _button0;
-        }
-
-
-        return null;
-    }
+    
 
     #region #Init Functions
 
-    void InitCenter()
+    void InitSystem()
     {
-        _commandCenter = new CommandCenter();
-        _actorsManagerCenter = ActorsManagerCenter.Instance;
-        _messageCenter = new MessageCenter();
-    }
+        _commandCenter = new CommandCenter(_mapSystem);
+        _actorsManagerCenter = new ActorsManagerCenter(_mapSystem);
+        _messageCenter = new MessageCenter(_mapSystem);
 
-    void InitInput()
-    {
-        _playerInput = PlayerInput.Instance;
-        _playerInput.EnableGamePlayInputs();
+        _mapSystem.SetGridActor(0, 0, _actor);
     }
 
     void InitMap()

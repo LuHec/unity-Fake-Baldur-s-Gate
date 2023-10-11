@@ -8,7 +8,7 @@ using UnityEngine.Serialization;
 
 public class Grid3DSystem : MonoBehaviour
 {
-    private GridXZ<GridObject> _grid;
+    private GridXZ<GridObjectOrigin> _grid;
     [SerializeField] private List<PlacedObjectTypeSO> placedObjectTypeSos;
     [SerializeField] private int gridwidth = 10;
     [SerializeField] private int gridheight = 10;
@@ -26,8 +26,8 @@ public class Grid3DSystem : MonoBehaviour
 
     private void Awake()
     {
-        _grid = new GridXZ<GridObject>(gridwidth, gridheight, cellsize, Vector3.zero,
-            (GridXZ<GridObject> g, int x, int y) => new GridObject(g, x, y));
+        _grid = new GridXZ<GridObjectOrigin>(gridwidth, gridheight, cellsize, Vector3.zero,
+            (GridXZ<GridObjectOrigin> g, int x, int y) => new GridObjectOrigin(g, x, y));
 
         _placedObjectTypeSo = placedObjectTypeSos[0];
     }
@@ -61,8 +61,8 @@ public class Grid3DSystem : MonoBehaviour
     /// </summary>
     private void DestoryBuilding()
     {
-        GridObject gridObject = _grid.GetGridObject(Utilties.GetMouse3DPosition("Default"));
-        PlacedObject placedObject = gridObject.GetPlaceObject();
+        GridObjectOrigin gridObjectOrigin = _grid.GetGridObject(Utilties.GetMouse3DPosition("Default"));
+        PlacedObject placedObject = gridObjectOrigin.GetPlaceObject();
         if (placedObject != null)
         {
             List<Vector2Int> gridList =

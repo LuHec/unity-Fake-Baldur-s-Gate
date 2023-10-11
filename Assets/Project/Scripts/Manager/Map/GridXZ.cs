@@ -85,7 +85,6 @@ public class GridXZ<TGridObject>
         if (x < 0 || x >= _width || z < 0 || z >= _height) return;
 
         _gridArray[x, z] = val;
-        _debugTextArray[x, z].text = _gridArray[x, z].ToString();
     }
 
     /// <summary>
@@ -95,8 +94,7 @@ public class GridXZ<TGridObject>
     /// <param name="val"></param>
     public void SetGridObject(Vector3 worldPos, TGridObject val)
     {
-        int x, z;
-        GetXZ(worldPos, out x, out z);
+        GetXZ(worldPos, out var x, out var z);
         SetGridObject(x, z, val);
         
         OnGridObjectChanged(x, z);
@@ -111,8 +109,7 @@ public class GridXZ<TGridObject>
 
     public TGridObject GetGridObject(Vector3 worldPos)
     {
-        int x, z;
-        GetXZ(worldPos, out x, out z);
+        GetXZ(worldPos, out var x, out var z);
         return GetGridObject(x, z);
     }
 

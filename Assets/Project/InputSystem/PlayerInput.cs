@@ -24,6 +24,7 @@ public class PlayerInput : Singleton<PlayerInput>
     {
         base.Awake();
         _playerInputSystem = new PlayerInputSystem();
+        EnableGamePlayInputs();
     }
 
     public void EnableGamePlayInputs()
