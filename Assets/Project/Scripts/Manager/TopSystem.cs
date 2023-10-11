@@ -18,10 +18,7 @@ public class TopSystem : MonoBehaviour
     private ActorsManagerCenter _actorsManagerCenter;
     private MessageCenter _messageCenter;
     private MapSystem _mapSystem;
-
-    // Test
-    [SerializeField] private GameActor _actor;
-
+    
     #region #System Functions
 
     /// <summary>
@@ -36,7 +33,8 @@ public class TopSystem : MonoBehaviour
 
     private void Update()
     {
-        _commandCenter.Excute(_commandCenter.GetInputCommand(), _actor);
+        AddCommand();
+        Excute();
     }
 
     #endregion
@@ -49,14 +47,36 @@ public class TopSystem : MonoBehaviour
         _commandCenter = new CommandCenter(_mapSystem);
         _actorsManagerCenter = new ActorsManagerCenter(_mapSystem);
         _messageCenter = new MessageCenter(_mapSystem);
-
-        _mapSystem.SetGridActor(0, 0, _actor);
     }
 
     void InitMap()
     {
         _mapSystem = new MapSystem(_gridwidth, _gridheight, _cellsize, _originPos);
     }
+
+    #endregion
+
+    #region #Custom Functions
+
+    void AddCommand()
+    {
+        List<GameActor> actors = _actorsManagerCenter.GetPlayerControlledActorsList();
+        foreach (var actor in actors)
+        {
+            _commandCenter.AddCommand(_commandCenter.GetInputCommand(), actor);
+        }
+    }
+    
+    void Excute()
+    {
+        List<GameActor> actors = _actorsManagerCenter.GetPlayerControlledActorsList();
+        foreach (var actor in actors)
+        {
+            _commandCenter.Excute(actor.GetCommand(), actor);
+        }
+        
+    }
+    
 
     #endregion
 }

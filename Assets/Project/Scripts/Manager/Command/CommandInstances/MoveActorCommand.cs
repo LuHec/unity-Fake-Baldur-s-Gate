@@ -7,20 +7,20 @@ using UnityEngine;
 public class MoveActorCommand : CommandInstance
 {
     private MapSystem _mapSystem;
-    private float _x;
-    private float _z;
+    private float _targetX;
+    private float _targetZ;
     
-    public MoveActorCommand(MapSystem mapSystem, float x, float z)
+    public MoveActorCommand(MapSystem mapSystem, float targetX, float targetZ)
     {
         _mapSystem = mapSystem;
-        _x = x;
-        _z = z;
+        _targetX = targetX;
+        _targetZ = targetZ;
     }
 
     public void SetTargetPoint(float x, float z)
     {
-        _x = x;
-        _z = z;
+        _targetX = x;
+        _targetZ = z;
     }
 
     public override void Excute(GameActor actor)
@@ -35,8 +35,8 @@ public class MoveActorCommand : CommandInstance
 
     void Move(GameActor actor)
     {
-        _mapSystem.MoveGameActor(_x, _z, actor);
-        actor.MoveTo(_x, _z);
+        _mapSystem.MoveGameActor(_targetX, _targetZ, actor);
+        actor.MoveTo(_targetX, _targetZ);
     }
     
     private void UnDoMove(GameActor actor)

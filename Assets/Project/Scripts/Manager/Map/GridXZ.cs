@@ -80,6 +80,12 @@ public class GridXZ<TGridObject>
         z = Mathf.FloorToInt((worldPos - _originPos).z / _cellsize);
     }
 
+    public void GetXZ(Vector2 xzPos, out int x, out int y)
+    {
+        x = Mathf.FloorToInt((xzPos.x - _originPos.x) / _cellsize);
+        y = Mathf.FloorToInt((xzPos.y - _originPos.z) / _cellsize);
+    }
+
     public void SetGridObject(int x, int z, TGridObject val)
     {
         if (x < 0 || x >= _width || z < 0 || z >= _height) return;

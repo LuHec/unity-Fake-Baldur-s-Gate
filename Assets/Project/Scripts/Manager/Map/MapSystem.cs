@@ -78,11 +78,17 @@ public class MapSystem : ICenter
     /// <returns>移动是否成功</returns>
     public bool MoveGameActor(float targetX, float targetZ, GameActor actor)
     {
+        // 移动只在格子范围内不进行修改
+        _grid.GetXZ(new Vector2(actor.X, actor.Z), out int x1, out int z1);
+        _grid.GetXZ(new Vector2(targetX, targetZ), out int x2, out int z2);
+        if (x1 == x2 && z1 == z2) return true;
+        
         if (PathFind())
         {
+            // 原始位置
             List<Vector2Int> gridList =
-                actor.PlacedObject.GetGridPositionList(new Vector2Int((int)actor.X, (int)actor.Z),
-                    PlacedObjectTypeSO.Dir.Down);
+                actor.PlacedObject.GetGridPositionList(new Vector2Int(x1, z1),
+                    PlacedObjectTypeSO.Dir.Up);
 
             foreach (var gridPos in gridList)
             {
@@ -90,14 +96,19 @@ public class MapSystem : ICenter
                 gridObject.ClearActor();
             }
 
+            // 目标位置
+            
             List<Vector2Int> gridTargetList =
-                actor.PlacedObject.GetGridPositionList(new Vector2Int((int)targetX, (int)targetZ),
-                    PlacedObjectTypeSO.Dir.Down);
+                actor.PlacedObject.GetGridPositionList(new Vector2Int(x2, z2),
+                    PlacedObjectTypeSO.Dir.Up);
             
             foreach (var gridTargetPos in gridTargetList)
             {
                 GridObject gridObject = GetGridObject(gridTargetPos.x, gridTargetPos.y);
-                gridObject.ClearActor();
+                if (!gridObject.SetActor(actor))
+                {
+                    return false;
+                }
             }
             
             return true;

@@ -37,8 +37,7 @@
 
     public override string ToString()
     {
-        if (_actor)
-            return _actor.name;
+        if (_actor) return _actor.name;
         return _x + "," + _y;
     }
 

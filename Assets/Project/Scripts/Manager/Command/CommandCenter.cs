@@ -34,7 +34,9 @@ public class CommandCenter : ICenter
     {
         cmd?.Excute(actor);
     }
-        
+
+    public void AddCommand(CommandInstance cmd, GameActor actor) => actor.AddCommand(cmd);
+
     public void CenterUpdate()
     {
         
