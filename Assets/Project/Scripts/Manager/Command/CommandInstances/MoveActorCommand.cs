@@ -35,8 +35,11 @@ public class MoveActorCommand : CommandInstance
 
     void Move(GameActor actor)
     {
-        _mapSystem.MoveGameActor(_targetX, _targetZ, actor);
-        actor.MoveTo(_targetX, _targetZ);
+        if (_mapSystem.MoveGameActor(_targetX, _targetZ, actor))
+        {
+            actor.MoveTo(_targetX, _targetZ);    
+        }
+        
     }
     
     private void UnDoMove(GameActor actor)

@@ -9,10 +9,16 @@ using UnityEngine;
 /// </summary>
 public class ActorsManagerCenter : ICenter
 {
+    public int CurrentPlayerControlledPtr => _currentPlayerControlledPtr;
+    public int CurrentSystemControlledPtr => _currentSystemControlledPtr;
+
     private List<GameActor> _systemControlledActors;
     private List<GameActor> _playerControlledActors;
     private Dictionary<Transform, GameActor> _actorsDict;
     private MapSystem _mapSystem;
+    private int _currentPlayerControlledPtr;
+    private int _currentSystemControlledPtr;
+
 
     public ActorsManagerCenter(MapSystem mapSystem)
     {
@@ -31,21 +37,50 @@ public class ActorsManagerCenter : ICenter
 
     public void Init()
     {
-        LoadActorsResource();
+        // LoadActorsResource();
+        LoadAllActorsResource();
     }
 
-    public List<GameActor> LoadActorsResource()
+    public bool PushSystemControlledPtr()
+    {
+        bool finished = CurrentSystemControlledPtr + 1 > _systemControlledActors.Count;
+        _currentSystemControlledPtr = (_currentSystemControlledPtr + 1) % _systemControlledActors.Count;
+        
+        return finished;
+    }
+
+    public bool PushPlayerControlledPtr()
+    {
+        bool finished = CurrentPlayerControlledPtr + 1 > _playerControlledActors.Count;
+        _currentPlayerControlledPtr = (_currentPlayerControlledPtr + 1) % _playerControlledActors.Count;
+        return finished;
+    }
+
+    public List<GameActor> LoadAllActorsResource()
     {
         var objects = Resources.LoadAll("Actors/Character");
         foreach (var obj in objects)
         {
-            _playerControlledActors.Add(obj.GetComponent<GameActor>());
+            var iniobj = Object.Instantiate(obj, Vector3.zero, Quaternion.identity);
+            var actor = iniobj.GetComponent<GameActor>();
+            actor.Init();
+            _playerControlledActors.Add(actor);
             _mapSystem.SetGridActor(0, 0, _playerControlledActors[^1]);
         }
 
         return _playerControlledActors;
     }
-    
+
+    public GameActor LoadActorsResource()
+    {
+        var obj = Resources.Load("Actors/Character/character");
+        var iniobj = GameObject.Instantiate(obj, Vector3.zero, Quaternion.identity);
+        var actor = iniobj.GetComponent<GameActor>();
+        actor.Init();
+        _playerControlledActors.Add(actor);
+        return actor;
+    }
+
     /// <summary>
     /// 添加角色到操作列表中
     /// </summary>

@@ -15,7 +15,7 @@ public class GameActor : MonoBehaviour
     private float _x;
     private float _z;
 
-    private void Awake()
+    public void Init()
     {
         _cmdQue = new CommandQueue();
     }
@@ -28,6 +28,7 @@ public class GameActor : MonoBehaviour
     public bool AddCommand(CommandInstance cmdInstance)
     {
         if (cmdInstance == null) return false;
+        Debug.Log(_cmdQue == null);
         _cmdQue.Add(cmdInstance);
         return true;
     }
@@ -36,7 +37,7 @@ public class GameActor : MonoBehaviour
     /// 获取命令队列的队尾
     /// </summary>
     /// <returns></returns>
-    public CommandInstance GetCommand() => _cmdQue.Back();
+    public CommandInstance GetCommand() => _cmdQue?.Back();
 
     public void MoveTo(float x, float z)
     {
@@ -44,5 +45,6 @@ public class GameActor : MonoBehaviour
         _z = z;
         transform.position = Vector3.MoveTowards(
             transform.position, new Vector3(x, transform.position.y, z), _moveSpeed);
+        Debug.Log(transform.position);
     }
 }
