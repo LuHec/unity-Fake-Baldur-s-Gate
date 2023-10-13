@@ -1,4 +1,5 @@
-﻿using LuHec.Utils;
+﻿using System;
+using LuHec.Utils;
 using UnityEngine;
 
 /// <summary>
@@ -9,7 +10,7 @@ public class MoveActorCommand : CommandInstance
     private MapSystem _mapSystem;
     private float _targetX;
     private float _targetZ;
-    
+
     public MoveActorCommand(MapSystem mapSystem, float targetX, float targetZ)
     {
         _mapSystem = mapSystem;
@@ -23,9 +24,9 @@ public class MoveActorCommand : CommandInstance
         _targetZ = z;
     }
 
-    public override void Excute(GameActor actor)
+    public override void Excute(GameActor actor, Action onExcuteFinished)
     {
-        Move(actor);
+        Move(actor, onExcuteFinished);
     }
 
     public override void Undo(GameActor actor)
@@ -33,17 +34,17 @@ public class MoveActorCommand : CommandInstance
         UnDoMove(actor);
     }
 
-    void Move(GameActor actor)
+    void Move(GameActor actor, Action onMoveFinished)
     {
-        if (_mapSystem.MoveGameActor(_targetX, _targetZ, actor))
+        _mapSystem.MoveGameActor(_targetX, _targetZ, actor);
+        var currPos = actor.MoveTo(_targetX, _targetZ);
+        if (Vector3.Distance(currPos, new Vector3(_targetX, currPos.y, _targetZ)) < 0.1)
         {
-            actor.MoveTo(_targetX, _targetZ);    
+            onMoveFinished();
         }
-        
     }
-    
+
     private void UnDoMove(GameActor actor)
     {
-        
     }
 }

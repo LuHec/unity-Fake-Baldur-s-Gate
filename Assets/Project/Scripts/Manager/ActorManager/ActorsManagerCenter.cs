@@ -19,22 +19,16 @@ public class ActorsManagerCenter : ICenter
     private int _currentPlayerControlledPtr;
     private int _currentSystemControlledPtr;
 
-
-    public ActorsManagerCenter(MapSystem mapSystem)
+    public ActorsManagerCenter()
     {
-        _mapSystem = mapSystem;
         _systemControlledActors = new List<GameActor>();
         _playerControlledActors = new List<GameActor>();
+        _mapSystem = MapSystem.Instance;
         _actorsDict = new Dictionary<Transform, GameActor>();
-
+        
         Init();
     }
-
-    // public ActorsManagerCenter(List<GameActor> listActors)
-    // {
-    //     _listActors = listActors;
-    // }
-
+    
     public void Init()
     {
         // LoadActorsResource();
@@ -45,7 +39,7 @@ public class ActorsManagerCenter : ICenter
     {
         bool finished = CurrentSystemControlledPtr + 1 > _systemControlledActors.Count;
         _currentSystemControlledPtr = (_currentSystemControlledPtr + 1) % _systemControlledActors.Count;
-        
+
         return finished;
     }
 

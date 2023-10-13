@@ -9,74 +9,54 @@ using UnityEngine;
 /// </summary>
 public class TopSystem : MonoBehaviour
 {
-    [SerializeField] private int _gridwidth = 10;
-    [SerializeField] private int _gridheight = 10;
-    [SerializeField] private float _cellsize = 10f;
-    [SerializeField] private Vector3 _originPos = Vector3.zero;
-
     private CommandCenter _commandCenter;
     private ActorsManagerCenter _actorsManagerCenter;
     private MessageCenter _messageCenter;
+    private TurnManager _turnManager;
     private MapSystem _mapSystem;
-    
+
     #region #System Functions
 
     /// <summary>
     /// 初始化系统
     /// </summary>
-    private void Awake()
+    private void Start()
     {
         InitMap();
         InitSystem();
+
+        _turnManager = new TurnManager(_commandCenter);
+        Debug.Log(_actorsManagerCenter == null);
+        _turnManager.AddTurn(_actorsManagerCenter.GetPlayerControlledActorsList(),
+            _actorsManagerCenter.GetSystemControlledActorList());
     }
 
 
     private void Update()
     {
-        AddCommand();
-        Excute();
+        _turnManager.RunTurn();
     }
 
     #endregion
-    
+
 
     #region #Init Functions
 
     void InitSystem()
     {
-        _commandCenter = new CommandCenter(_mapSystem);
-        _actorsManagerCenter = new ActorsManagerCenter(_mapSystem);
-        _messageCenter = new MessageCenter(_mapSystem);
+        _commandCenter = new CommandCenter();
+        _actorsManagerCenter = new ActorsManagerCenter();
+        _messageCenter = MessageCenter.Instance;
     }
 
     void InitMap()
     {
-        _mapSystem = new MapSystem(_gridwidth, _gridheight, _cellsize, _originPos);
+        _mapSystem = MapSystem.Instance;
     }
 
     #endregion
 
     #region #Custom Functions
-
-    void AddCommand()
-    {
-        List<GameActor> actors = _actorsManagerCenter.GetPlayerControlledActorsList();
-        foreach (var actor in actors)
-        {
-            _commandCenter.AddCommand(_commandCenter.GetInputCommand(), actor);
-        }
-    }
-    
-    void Excute()
-    {
-        List<GameActor> actors = _actorsManagerCenter.GetPlayerControlledActorsList();
-        foreach (var actor in actors)
-        {
-            _commandCenter.Excute(actor.GetCommand(), actor);
-        }
-        
-    }
-    
 
     #endregion
 }

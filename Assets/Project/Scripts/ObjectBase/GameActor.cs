@@ -10,10 +10,6 @@ public class GameActor : MonoBehaviour
     public PlacedObjectTypeSO PlacedObject => _placedObjectTypeSo;
     public string _name;
     private MapSystem _mapSystem;
-    public float X => _x;
-    public float Z => _z;
-    private float _x;
-    private float _z;
 
     public void Init()
     {
@@ -27,8 +23,7 @@ public class GameActor : MonoBehaviour
     /// <returns></returns>
     public bool AddCommand(CommandInstance cmdInstance)
     {
-        if (cmdInstance == null) return false;
-        Debug.Log(_cmdQue == null);
+        if (cmdInstance == null) return false; 
         _cmdQue.Add(cmdInstance);
         return true;
     }
@@ -39,12 +34,11 @@ public class GameActor : MonoBehaviour
     /// <returns></returns>
     public CommandInstance GetCommand() => _cmdQue?.Back();
 
-    public void MoveTo(float x, float z)
+    public Vector3 MoveTo(float x, float z)
     {
-        _x = x;
-        _z = z;
         transform.position = Vector3.MoveTowards(
             transform.position, new Vector3(x, transform.position.y, z), _moveSpeed);
-        Debug.Log(transform.position);
+        
+        return transform.position;
     }
 }

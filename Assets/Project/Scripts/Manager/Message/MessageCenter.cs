@@ -3,16 +3,16 @@ using System.Collections.Generic;
 using UnityEngine;
 
 
-public class MessageCenter : ICenter
+public class MessageCenter : Singleton<MessageCenter>, ICenter
 {
     private MapSystem _mapSystem;
-    public MessageCenter(MapSystem mapSystem)
+    public MessageCenter()
     {
-        _mapSystem = mapSystem;
+        _mapSystem = MapSystem.Instance;
     }
 
     public void CenterUpdate()
     {
-        throw new System.NotImplementedException();
+        
     }
 }
