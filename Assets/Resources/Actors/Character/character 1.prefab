@@ -145,5 +145,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _placedObjectTypeSo: {fileID: 11400000, guid: 6ccf363d429047640af195f7e08623b4,
     type: 2}
-  _moveSpeed: 2
+  _moveSpeed: 15
   _name: Character

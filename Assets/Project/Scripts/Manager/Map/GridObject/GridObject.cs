@@ -3,7 +3,26 @@
     private GridXZ<GridObject> _grid;
     private int _x;
     private int _y;
+    public int X => _x;
+    public int Y => _y;
     private GameActor _actor;
+
+    public bool Reachable => _actor == null;
+    public GridObject cameFromNode;
+    // 起始点数
+    public int gCost;
+
+    // 到目标点的期望消耗点数
+    public int hCost;
+
+    // 总计点数
+    public int fCost;
+    
+
+    public void CalculateFCost()
+    {
+        fCost = gCost + hCost;
+    }
 
     public GridObject(GridXZ<GridObject> grid, int x, int y)
     {

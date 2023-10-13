@@ -12,7 +12,7 @@ public abstract class CommandInstance
     /// 选择对象执行命令 
     /// </summary>
     /// <param name="actor">要控制的对象</param>
-    public abstract void Excute(GameActor actor, Action onExcuteFinsihed);
+    public abstract bool Excute(GameActor actor, Action onExcuteFinsihed);
 
     /// <summary>
     /// 选择对象撤销操作

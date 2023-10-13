@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using LuHec.Utils;
 using UnityEngine;
 
@@ -8,12 +9,17 @@ using UnityEngine;
 public class MoveActorCommand : CommandInstance
 {
     private MapSystem _mapSystem;
+    private PathFinding _pathFinding;
+    private List<GridObject> _path;
+    private int _pathPtr;
+    private bool _hasFound = false;
     private float _targetX;
     private float _targetZ;
 
-    public MoveActorCommand(MapSystem mapSystem, float targetX, float targetZ)
+    public MoveActorCommand(float targetX, float targetZ)
     {
-        _mapSystem = mapSystem;
+        _mapSystem = MapSystem.Instance;
+        _pathFinding = PathFinding.Instance;
         _targetX = targetX;
         _targetZ = targetZ;
     }
@@ -24,9 +30,23 @@ public class MoveActorCommand : CommandInstance
         _targetZ = z;
     }
 
-    public override void Excute(GameActor actor, Action onExcuteFinished)
+    public override bool Excute(GameActor actor, Action onExcuteFinished)
     {
-        Move(actor, onExcuteFinished);
+        // 计算是否能够到达目标点，不能的话就返回false，对应到commandcenter就是返回等待指令状态
+        if (!_hasFound)
+        {
+            _hasFound = true;
+            _mapSystem.GetGrid().GetXZ(actor.transform.position.x, actor.transform.position.z, out int xStart,
+                out int zStart);
+            _mapSystem.GetGrid().GetXZ(_targetX, _targetZ, out int xEnd, out int zEnd);
+            _path = _pathFinding.FindPath(xStart, zStart, xEnd, zEnd);
+
+            _pathPtr = 1;
+            if (_path == null) return false;
+        }
+
+
+        return Move(actor, onExcuteFinished);
     }
 
     public override void Undo(GameActor actor)
@@ -34,14 +54,52 @@ public class MoveActorCommand : CommandInstance
         UnDoMove(actor);
     }
 
-    void Move(GameActor actor, Action onMoveFinished)
+    /// <summary>
+    /// 先计算出移动点位，然后再移动实际格子，再移动物体
+    /// </summary>
+    /// <param name="actor"></param>
+    /// <param name="onMoveFinished"></param>
+    /// <returns></returns>
+    bool Move(GameActor actor, Action onMoveFinished)
     {
-        _mapSystem.MoveGameActor(_targetX, _targetZ, actor);
-        var currPos = actor.MoveTo(_targetX, _targetZ);
-        if (Vector3.Distance(currPos, new Vector3(_targetX, currPos.y, _targetZ)) < 0.1)
+        // _mapSystem.MoveGameActor(_targetX, _targetZ, actor);
+        // var currPos = actor.MoveTo(_targetX, _targetZ);
+        // if (Vector3.Distance(currPos, new Vector3(_targetX, currPos.y, _targetZ)) < 0.1)
+        // {
+        //     onMoveFinished();
+        // }
+
+        // 获取下一个点位对应的世界坐标
+        Vector3 nextWorldPos; 
+
+        // 计算实际移动到的世界坐标
+        Vector3 actualPos;
+        if (_pathPtr == _path.Count)
         {
+            actualPos = actor.CalculateMoveTo(_targetX, _targetZ);
+        }
+        else
+        {
+            nextWorldPos =_mapSystem.GetGrid().GetWorldPosition(_path[_pathPtr].X, _path[_pathPtr].Y);
+            actualPos = actor.CalculateMoveTo(nextWorldPos.x, nextWorldPos.z);
+        }
+
+
+        if (_pathPtr < _path.Count && _mapSystem.MoveGameActor(actualPos.x, actualPos.z, actor))
+        {
+            _pathPtr++;
+        }
+
+        actor.DirectMoveTo(actualPos);
+
+        if (Vector3.Distance(actualPos, new Vector3(_targetX, actualPos.y, _targetZ)) < 0.1)
+        {
+            _pathFinding.Clear();
             onMoveFinished();
         }
+
+
+        return true;
     }
 
     private void UnDoMove(GameActor actor)

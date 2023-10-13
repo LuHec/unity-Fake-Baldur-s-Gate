@@ -23,7 +23,7 @@ public class GameActor : MonoBehaviour
     /// <returns></returns>
     public bool AddCommand(CommandInstance cmdInstance)
     {
-        if (cmdInstance == null) return false; 
+        if (cmdInstance == null) return false;
         _cmdQue.Add(cmdInstance);
         return true;
     }
@@ -34,11 +34,29 @@ public class GameActor : MonoBehaviour
     /// <returns></returns>
     public CommandInstance GetCommand() => _cmdQue?.Back();
 
+    /// <summary>
+    /// 输入XZ，返回世界坐标
+    /// </summary>
+    /// <param name="x"></param>
+    /// <param name="z"></param>
+    /// <returns></returns>
+    public Vector3 CalculateMoveTo(float x, float z)
+    {
+        return Vector3.MoveTowards(
+            transform.position, new Vector3(x, transform.position.y, z), _moveSpeed * Time.deltaTime);
+    }
+
+    public void DirectMoveTo(Vector3 position)
+    {
+        Debug.Log("nowPOs " + position);
+        transform.position = position;
+    }
+
     public Vector3 MoveTo(float x, float z)
     {
         transform.position = Vector3.MoveTowards(
             transform.position, new Vector3(x, transform.position.y, z), _moveSpeed);
-        
+
         return transform.position;
     }
 }

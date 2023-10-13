@@ -11,6 +11,7 @@ public class TopSystem : MonoBehaviour
 {
     private CommandCenter _commandCenter;
     private ActorsManagerCenter _actorsManagerCenter;
+    private PathFinding _pathFinding;
     private MessageCenter _messageCenter;
     private TurnManager _turnManager;
     private MapSystem _mapSystem;
@@ -26,7 +27,6 @@ public class TopSystem : MonoBehaviour
         InitSystem();
 
         _turnManager = new TurnManager(_commandCenter);
-        Debug.Log(_actorsManagerCenter == null);
         _turnManager.AddTurn(_actorsManagerCenter.GetPlayerControlledActorsList(),
             _actorsManagerCenter.GetSystemControlledActorList());
     }
@@ -52,6 +52,9 @@ public class TopSystem : MonoBehaviour
     void InitMap()
     {
         _mapSystem = MapSystem.Instance;
+        _pathFinding = PathFinding.Instance;
+        
+        _pathFinding.Init(_mapSystem.GetGrid());
     }
 
     #endregion

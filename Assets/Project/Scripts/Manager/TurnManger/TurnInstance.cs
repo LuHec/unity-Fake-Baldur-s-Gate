@@ -24,7 +24,7 @@ public class TurnInstance
         _playerControlledPtr = (_playerControlledPtr + 1) % _playerControlledActors.Count;
     }
 
-    public void RunTurn(Action onExcuteFinished)
+    public void RunTurn(Action onExcuteFinished, Action onExcuteError)
     {
         if (NowTurn == GameTurn.Turn.PlayerTurn)
         {
@@ -32,7 +32,12 @@ public class TurnInstance
             {
                 GameActor actor = _playerControlledActors[_playerControlledPtr];
                 _commandCenter.AddCommand(_commandCenter.GetCommandCache(), actor);
-                _commandCenter.Excute(actor.GetCommand(), actor, onExcuteFinished);
+                
+                // 如果操作非法，将会中断执行并且返回等待命令
+                if (_commandCenter.Excute(actor.GetCommand(), actor, onExcuteFinished) == false)
+                {
+                    onExcuteError();
+                }
             }
         }
     }

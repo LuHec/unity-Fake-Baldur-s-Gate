@@ -42,9 +42,9 @@ public class CommandCenter : ICenter
     /// </summary>
     /// <param name="cmd">命令</param>
     /// <param name="actor">对象</param>
-    public void Excute(CommandInstance cmd, GameActor actor, Action onExcuteFinished)
+    public bool Excute(CommandInstance cmd, GameActor actor, Action onExcuteFinished)
     {
-        cmd?.Excute(actor, onExcuteFinished);
+        return cmd.Excute(actor, onExcuteFinished);
     }
 
     public void AddCommand(CommandInstance cmd, GameActor actor)

@@ -37,22 +37,28 @@ public class TurnManager
                 if (_commandCenter.GenInputCommandCache())
                 {
                     _state = State.RunCommand;
-                    _turnInstances[0].RunTurn(() =>
-                    {
-                        _state = State.WaitCommand;
-                        _turnInstances[0].NextTurn();
-                    });
+                    _turnInstances[0].RunTurn(
+                        () =>
+                        {
+                            _state = State.WaitCommand;
+                            _turnInstances[0].NextTurn();
+                        },
+                        () => { _state = State.WaitCommand; }
+                    );
                 }
 
                 break;
             }
             case State.RunCommand:
             {
-                _turnInstances[0].RunTurn(() =>
-                {
-                    _state = State.WaitCommand;
-                    _turnInstances[0].NextTurn();
-                });
+                _turnInstances[0].RunTurn(
+                    () =>
+                    {
+                        _state = State.WaitCommand;
+                        _turnInstances[0].NextTurn();
+                    },
+                    () => { _state = State.WaitCommand; }
+                );
                 break;
             }
         }

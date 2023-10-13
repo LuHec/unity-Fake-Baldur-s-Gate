@@ -24,6 +24,8 @@ public class MapSystem : Singleton<MapSystem>, ICenter
             (GridXZ<GridObject> grid, int x, int y) => new GridObject(grid, x, y));
     }
 
+    public GridXZ<GridObject> GetGrid() => _grid;
+
     /// <summary>
     /// 返回坐标对应格子上的GameActor
     /// </summary>
@@ -83,12 +85,12 @@ public class MapSystem : Singleton<MapSystem>, ICenter
     /// <param name="targetZ">目标y</param>
     /// <param name="actor">指定目标</param>
     /// <returns>移动是否成功</returns>
-    public void MoveGameActor(float targetX, float targetZ, GameActor actor)
+    public bool MoveGameActor(float targetX, float targetZ, GameActor actor)
     {
         // 移动只在格子范围内不进行修改
         _grid.GetXZ(new Vector2(actor.transform.position.x, actor.transform.position.z), out int x1, out int z1);
         _grid.GetXZ(new Vector2(targetX, targetZ), out int x2, out int z2);
-        if (x1 == x2 && z1 == z2) return;
+        if (x1 == x2 && z1 == z2) return false;
 
 
         // 原始位置
@@ -113,6 +115,8 @@ public class MapSystem : Singleton<MapSystem>, ICenter
             GridObject gridObject = GetGridObject(gridTargetPos.x, gridTargetPos.y);
             gridObject.SetActor(actor);
         }
+
+        return true;
     }
 
     public bool PathFind()

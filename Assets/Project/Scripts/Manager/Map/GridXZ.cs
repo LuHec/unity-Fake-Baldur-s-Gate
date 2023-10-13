@@ -7,7 +7,9 @@ using Unity.VisualScripting;
 
 public class GridXZ<TGridObject>
 {
-
+    public int Width => _width;
+    public int Height => _height;
+    
     public event EventHandler<OnGridChangedEventArgs> OnGridChanged;
 
     public class OnGridChangedEventArgs : EventArgs
