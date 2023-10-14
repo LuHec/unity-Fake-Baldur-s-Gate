@@ -7,11 +7,12 @@ using UnityEngine;
 /// <summary>
 /// 管理中心负责管理所有的游戏内物品：物品、角色等。
 /// </summary>
-public class ActorsManagerCenter : ICenter
+public class ActorsManagerCenter
 {
     public int CurrentPlayerControlledPtr => _currentPlayerControlledPtr;
     public int CurrentSystemControlledPtr => _currentSystemControlledPtr;
 
+    private ScriptObjectDataManager _scriptObjectDataManager;
     private List<GameActor> _systemControlledActors;
     private List<GameActor> _playerControlledActors;
     private Dictionary<Transform, GameActor> _actorsDict;
@@ -25,15 +26,17 @@ public class ActorsManagerCenter : ICenter
         _playerControlledActors = new List<GameActor>();
         _mapSystem = MapSystem.Instance;
         _actorsDict = new Dictionary<Transform, GameActor>();
-        
+
         Init();
     }
-    
+
     public void Init()
     {
-        // LoadActorsResource();
-        LoadAllActorsResource();
+        _scriptObjectDataManager = new ScriptObjectDataManager();
+        LoadAllControlledActorsResource();
     }
+
+    #region #NoUse
 
     public bool PushSystemControlledPtr()
     {
@@ -50,14 +53,18 @@ public class ActorsManagerCenter : ICenter
         return finished;
     }
 
-    public List<GameActor> LoadAllActorsResource()
+    #endregion
+
+    #region LoadResource
+
+    public List<GameActor> LoadAllControlledActorsResource()
     {
-        var objects = Resources.LoadAll("Actors/Character");
+        var objects = ResourcesLoader.LoadAllControlledActorsResource();
         foreach (var obj in objects)
         {
             var iniobj = Object.Instantiate(obj, Vector3.zero, Quaternion.identity);
             var actor = iniobj.GetComponent<GameActor>();
-            actor.Init();
+            actor.Init(_scriptObjectDataManager.CharacterAttrSOData.DataDictionary[actor.id]);
             _playerControlledActors.Add(actor);
             _mapSystem.SetGridActor(actor.startPos.x, actor.startPos.z, _playerControlledActors[^1]);
         }
@@ -65,15 +72,9 @@ public class ActorsManagerCenter : ICenter
         return _playerControlledActors;
     }
 
-    public GameActor LoadActorsResource()
-    {
-        var obj = Resources.Load("Actors/Character/character");
-        var iniobj = GameObject.Instantiate(obj, Vector3.zero, Quaternion.identity);
-        var actor = iniobj.GetComponent<GameActor>();
-        actor.Init();
-        _playerControlledActors.Add(actor);
-        return actor;
-    }
+    #endregion
+
+    #region #ActorManager
 
     /// <summary>
     /// 添加角色到操作列表中
@@ -113,6 +114,10 @@ public class ActorsManagerCenter : ICenter
         return true;
     }
 
+    #endregion
+
+    #region #Getter
+
     /// <summary>
     /// 获取玩家控制列表
     /// </summary>
@@ -130,7 +135,5 @@ public class ActorsManagerCenter : ICenter
         return null;
     }
 
-    public void CenterUpdate()
-    {
-    }
+    #endregion
 }

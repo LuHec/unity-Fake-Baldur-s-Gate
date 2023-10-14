@@ -6,14 +6,24 @@ public class GameActor : MonoBehaviour
 {
     [SerializeField] private PlacedObjectTypeSO _placedObjectTypeSo;
     [SerializeField] private float _moveSpeed = 2.0f;
+    public uint id;
+    public CharacterAttribute characterAttribute;
+    public PlacedObjectTypeSO PlacedObject => _placedObjectTypeSo;
+
     public Vector3 startPos;
     private CommandQueue _cmdQue;
-    public PlacedObjectTypeSO PlacedObject => _placedObjectTypeSo;
-    public string _name;
+
     private MapSystem _mapSystem;
 
-    public void Init()
+    /// <summary>
+    /// 初始化Actor
+    /// </summary>
+    /// <param name="newCharacterAttribute"></param>
+    public void Init(CharacterAttributeSerializable newCharacterAttribute)
     {
+        characterAttribute = new CharacterAttribute(newCharacterAttribute.id, newCharacterAttribute.name,
+            newCharacterAttribute.maxHp, newCharacterAttribute.maxActPoints, newCharacterAttribute.weaponId);
+
         _cmdQue = new CommandQueue();
 
         startPos.x *= MapSystem.Instance.GetGrid().Cellsize;

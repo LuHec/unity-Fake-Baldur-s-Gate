@@ -21,6 +21,9 @@ public class PlayerInput : Singleton<PlayerInput>
     public Vector2 MousePos => _playerInputSystem.Player.MousePos.ReadValue<Vector2>();
     public Vector2 MouseDelta => _playerInputSystem.Player.MouseDelta.ReadValue<Vector2>();
 
+    public bool Epress => _playerInputSystem.Player.E.IsPressed();
+    public bool Qpress => _playerInputSystem.Player.Q.IsPressed();
+
     protected override void Awake()
     {
         base.Awake();
