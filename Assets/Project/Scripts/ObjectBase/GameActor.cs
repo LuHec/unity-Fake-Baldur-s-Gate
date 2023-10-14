@@ -6,6 +6,7 @@ public class GameActor : MonoBehaviour
 {
     [SerializeField] private PlacedObjectTypeSO _placedObjectTypeSo;
     [SerializeField] private float _moveSpeed = 2.0f;
+    public Vector3 startPos;
     private CommandQueue _cmdQue;
     public PlacedObjectTypeSO PlacedObject => _placedObjectTypeSo;
     public string _name;
@@ -14,6 +15,10 @@ public class GameActor : MonoBehaviour
     public void Init()
     {
         _cmdQue = new CommandQueue();
+
+        startPos.x *= MapSystem.Instance.GetGrid().Cellsize;
+        startPos.z *= MapSystem.Instance.GetGrid().Cellsize;
+        transform.position = startPos;
     }
 
     /// <summary>
@@ -32,7 +37,7 @@ public class GameActor : MonoBehaviour
     /// 获取命令队列的队尾
     /// </summary>
     /// <returns></returns>
-    public CommandInstance GetCommand() => _cmdQue?.Back();
+    public CommandInstance GetCommand() => _cmdQue.Back();
 
     /// <summary>
     /// 输入XZ，返回世界坐标
@@ -48,7 +53,6 @@ public class GameActor : MonoBehaviour
 
     public void DirectMoveTo(Vector3 position)
     {
-        Debug.Log("nowPOs " + position);
         transform.position = position;
     }
 

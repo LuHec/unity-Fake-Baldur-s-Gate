@@ -2,6 +2,7 @@ using System.Collections;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 
 public class PlayerInput : Singleton<PlayerInput>
@@ -39,7 +40,7 @@ public class PlayerInput : Singleton<PlayerInput>
         if (Physics.Raycast(ray, out RaycastHit raycastHit, 999f, mouseLayerMask))
         {
 #if UNITY_EDITOR
-            Debug.Log(raycastHit.point);
+            // Debug.Log(raycastHit.point);
 #endif
             return raycastHit.point;
         }

@@ -1,18 +1,17 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 
-public class MessageCenter : Singleton<MessageCenter>, ICenter
+public class MessageCenter : Singleton<MessageCenter>
 {
     private MapSystem _mapSystem;
-    public MessageCenter()
+    public GlobalState globalState;
+
+    private void Start()
     {
         _mapSystem = MapSystem.Instance;
-    }
-
-    public void CenterUpdate()
-    {
-        
+        globalState = new GlobalState();
     }
 }

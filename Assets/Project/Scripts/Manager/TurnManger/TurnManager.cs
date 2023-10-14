@@ -10,6 +10,7 @@ public class TurnManager
     private List<TurnInstance> _turnInstances;
     private State _state = State.WaitCommand;
     private CommandCenter _commandCenter;
+    private MessageCenter _messageCenter;
 
     enum State
     {
@@ -20,6 +21,7 @@ public class TurnManager
     public TurnManager(CommandCenter commandCenter)
     {
         _commandCenter = commandCenter;
+        _messageCenter = MessageCenter.Instance;
         _turnInstances = new List<TurnInstance>();
     }
 
@@ -29,6 +31,18 @@ public class TurnManager
     }
 
     public void RunTurn()
+    {
+        if (_messageCenter.globalState.TurnMode)
+        {
+            RunTurnMode();
+        }
+        else
+        {
+            Run3RdMode();
+        }
+    }
+
+    public void RunTurnMode()
     {
         switch (_state)
         {
@@ -62,6 +76,27 @@ public class TurnManager
                 break;
             }
         }
+    }
+
+    public void Run3RdMode()
+    {
+        _commandCenter.GenInputCommandCache();
+
+        _turnInstances[0].RunTurn(
+            () => { },
+            () => { }
+        );
+    }
+
+    void OnExcuteFinished()
+    {
+        _state = State.WaitCommand;
+        _turnInstances[0].NextTurn();
+    }
+
+    void OnExcuteError()
+    {
+        _state = State.WaitCommand;
     }
 }
 

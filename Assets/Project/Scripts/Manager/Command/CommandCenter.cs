@@ -38,12 +38,13 @@ public class CommandCenter : ICenter
     }
 
     /// <summary>
-    /// 执行命令，如果是空指令不会执行
+    /// 执行命令，如果是空指令不会执行，直接返回错误
     /// </summary>
     /// <param name="cmd">命令</param>
     /// <param name="actor">对象</param>
     public bool Excute(CommandInstance cmd, GameActor actor, Action onExcuteFinished)
     {
+        if (cmd == null) return false;
         return cmd.Excute(actor, onExcuteFinished);
     }
 

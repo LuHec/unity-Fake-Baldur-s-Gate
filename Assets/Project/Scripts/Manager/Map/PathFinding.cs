@@ -46,6 +46,8 @@ public class PathFinding : Singleton<PathFinding>
 
     public List<GridObject> FindPath(int startX, int startY, int endX, int endY)
     {
+        if (startX == endX && startY == endY) return null;
+        
         GridObject startNode = _grid.GetGridObject(startX, startY);
         GridObject endNode = _grid.GetGridObject(endX, endY);
 

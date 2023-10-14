@@ -60,5 +60,5 @@
         return _x + "," + _y;
     }
 
-    public GameActor getGameActor() => _actor;
+    public GameActor GetActor() => _actor;
 }

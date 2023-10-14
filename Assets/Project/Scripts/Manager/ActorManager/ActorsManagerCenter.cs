@@ -59,7 +59,7 @@ public class ActorsManagerCenter : ICenter
             var actor = iniobj.GetComponent<GameActor>();
             actor.Init();
             _playerControlledActors.Add(actor);
-            _mapSystem.SetGridActor(0, 0, _playerControlledActors[^1]);
+            _mapSystem.SetGridActor(actor.startPos.x, actor.startPos.z, _playerControlledActors[^1]);
         }
 
         return _playerControlledActors;

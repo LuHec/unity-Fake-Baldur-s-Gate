@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using Unity.VisualScripting;
+using UnityEngine;
 
 public class CommandQueue
 {
@@ -9,19 +10,23 @@ public class CommandQueue
 
     public CommandQueue()
     {
+        _maxSize = 5;
         _cmdQueue = new Queue<CommandInstance>();
     }
     
     public CommandQueue(int maxSize)
     {
-        _maxSize = maxSize;
+        _maxSize = maxSize; 
         _cmdQueue = new Queue<CommandInstance>();
     }
 
     public bool Add(CommandInstance cmdInstance)
     {
         _cmdQueue.Enqueue(cmdInstance);
-        if (Size() > MaxSize) _cmdQueue.Dequeue();
+        if (Size() > MaxSize)
+        {
+            PopFront();
+        }
         return true;
     }
 
@@ -39,7 +44,10 @@ public class CommandQueue
 
     public CommandInstance PopFront()
     {
-        if (Empty()) return _cmdQueue.Dequeue();
+        if (!Empty())
+        {
+            return _cmdQueue.Dequeue();
+        }
         else return null;
     }
 

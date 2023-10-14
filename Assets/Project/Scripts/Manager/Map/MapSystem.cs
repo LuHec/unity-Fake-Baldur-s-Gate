@@ -4,7 +4,7 @@ using UnityEngine;
 /// <summary>
 /// 全局地图管理器
 /// </summary>
-public class MapSystem : Singleton<MapSystem>, ICenter
+public class MapSystem : Singleton<MapSystem>
 {
     private GridXZ<GridObject> _grid;
     [SerializeField] private int _gridwidth = 10;
@@ -34,7 +34,7 @@ public class MapSystem : Singleton<MapSystem>, ICenter
     /// <returns>GameActor</returns>
     public GameActor GetGridActor(float x, float z)
     {
-        return GetGridObject((int)x, (int)z)?.getGameActor();
+        return GetGridObject((int)x, (int)z)?.GetActor();
     }
 
     public GameActor GetGridActor(Vector3 worldPosition)
@@ -47,7 +47,7 @@ public class MapSystem : Singleton<MapSystem>, ICenter
         _grid.GetXZ(x, z, out int x1, out int z1);
         return new Vector2Int(x1, z1);
     }
-    
+
     /// <summary>
     /// 返回坐标对应格子，参数需要计算后坐标
     /// </summary>
@@ -70,9 +70,10 @@ public class MapSystem : Singleton<MapSystem>, ICenter
     /// <returns></returns>
     public bool SetGridActor(float x, float z, GameActor actor)
     {
-        if (GetGridActor(x, z) == null)
+        var gridPos = GetXZ(x, z);
+        if (GetGridActor(gridPos.x, gridPos.y) == null)
         {
-            _grid.GetGridObject((int)x, (int)z).SetActor(actor);
+            _grid.GetGridObject(gridPos.x, gridPos.y).SetActor(actor);
         }
 
         return false;
@@ -85,46 +86,51 @@ public class MapSystem : Singleton<MapSystem>, ICenter
     /// <param name="targetZ">目标y</param>
     /// <param name="actor">指定目标</param>
     /// <returns>移动是否成功</returns>
-    public bool MoveGameActor(float targetX, float targetZ, GameActor actor)
+    public bool MoveGameActor(float targetX, float targetZ, GameActor actor, bool force = false)
     {
         // 移动只在格子范围内不进行修改
         _grid.GetXZ(new Vector2(actor.transform.position.x, actor.transform.position.z), out int x1, out int z1);
         _grid.GetXZ(new Vector2(targetX, targetZ), out int x2, out int z2);
+
+        if (force)
+        {
+            _grid.GetGridObject(x1, z1).ClearActor();
+            _grid.GetGridObject(x2, z2).SetActor(actor);
+            return false;
+        }
+        
         if (x1 == x2 && z1 == z2) return false;
 
 
-        // 原始位置
-        List<Vector2Int> gridList =
-            actor.PlacedObject.GetGridPositionList(new Vector2Int(x1, z1),
-                PlacedObjectTypeSO.Dir.Up);
-
-        foreach (var gridPos in gridList)
+        if (_grid.GetGridObject(x1, z1).GetActor() == null || _grid.GetGridObject(x1, z1).GetActor() == actor)
         {
-            GridObject gridObject = GetGridObject(gridPos.x, gridPos.y);
-            gridObject.ClearActor();
+            _grid.GetGridObject(x1, z1).ClearActor();
+            _grid.GetGridObject(x2, z2).SetActor(actor);
         }
 
-        // 目标位置
-
-        List<Vector2Int> gridTargetList =
-            actor.PlacedObject.GetGridPositionList(new Vector2Int(x2, z2),
-                PlacedObjectTypeSO.Dir.Up);
-
-        foreach (var gridTargetPos in gridTargetList)
-        {
-            GridObject gridObject = GetGridObject(gridTargetPos.x, gridTargetPos.y);
-            gridObject.SetActor(actor);
-        }
+        // // 原始位置
+        // List<Vector2Int> gridList =
+        //     actor.PlacedObject.GetGridPositionList(new Vector2Int(x1, z1),
+        //         PlacedObjectTypeSO.Dir.Up);
+        //
+        // foreach (var gridPos in gridList)
+        // {
+        //     GridObject gridObject = GetGridObject(gridPos.x, gridPos.y);
+        //     gridObject.ClearActor();
+        // }
+        //
+        // // 目标位置
+        //
+        // List<Vector2Int> gridTargetList =
+        //     actor.PlacedObject.GetGridPositionList(new Vector2Int(x2, z2),
+        //         PlacedObjectTypeSO.Dir.Up);
+        //
+        // foreach (var gridTargetPos in gridTargetList)
+        // {
+        //     GridObject gridObject = GetGridObject(gridTargetPos.x, gridTargetPos.y);
+        //     gridObject.SetActor(actor);
+        // }
 
         return true;
-    }
-
-    public bool PathFind()
-    {
-        return true;
-    }
-
-    public void CenterUpdate()
-    {
     }
 }

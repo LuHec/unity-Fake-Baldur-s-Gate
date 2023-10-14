@@ -9,6 +9,7 @@ public class GridXZ<TGridObject>
 {
     public int Width => _width;
     public int Height => _height;
+    public float Cellsize => _cellsize;
     
     public event EventHandler<OnGridChangedEventArgs> OnGridChanged;
 
@@ -71,10 +72,17 @@ public class GridXZ<TGridObject>
         _debugTextArray[arg.x, arg.z].text = _gridArray.GetValue(arg.x, arg.z)?.ToString();
     }
     
+    // 返回格子对应的世界坐标
     public Vector3 GetWorldPosition(int x, int z)
     {
         return new Vector3(x, 0, z) * _cellsize + _originPos;
     }
+    
+    public Vector3 GetOffsetWorldPosition(int x, int z)
+    {
+        return new Vector3(x, 0, z) * _cellsize + _originPos + new Vector3(_cellsize / 2, 0, _cellsize / 2) ;
+    }
+
 
     public void GetXZ(Vector3 worldPos, out int x, out int z)
     {
