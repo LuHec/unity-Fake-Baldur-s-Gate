@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using OfficeOpenXml.FormulaParsing.Excel.Functions.Math;
+using UnityEngine;
 
 /// <summary>
 /// 动态id分配池
@@ -21,8 +22,8 @@ public class DynamicIDPool
 
     public uint GetAssignableCharacterID() => _assignableCharacterID;
 
-    public bool CharacterSignable() => _assignableCharacterID > MaxCharacterId;
-    public bool ItemSignable() => _assignableItemID > MaxItemId;
+    public bool CharacterSignable() => _assignableCharacterID < MaxCharacterId;
+    public bool ItemSignable() => _assignableItemID < MaxItemId;
     private bool ActorExist(uint id) => _dynamicIDdict.ContainsKey(id);
 
     #endregion
@@ -45,7 +46,7 @@ public class DynamicIDPool
         if (actor.GetActorType() == ActorEnumType.ActorType.Character) return SignCharacter(actor);
         if (actor.GetActorType() == ActorEnumType.ActorType.Pickableitem) return SignItem(actor);
 
-        return false;
+        return true;
     }
 
     /// <summary>

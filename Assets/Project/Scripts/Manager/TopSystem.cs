@@ -26,9 +26,9 @@ public class TopSystem : MonoBehaviour
         InitMap();
         InitSystem();
 
-        _turnManager = new TurnManager(_commandCenter);
-        _turnManager.AddTurn(_actorsManagerCenter.GetPlayerControlledActorsList(),
-            _actorsManagerCenter.GetSystemControlledActorList());
+        _turnManager = new TurnManager(_commandCenter, _actorsManagerCenter);
+        
+        _turnManager.AddTurn(_actorsManagerCenter.GetAllConActorsDynamicId());
     }
 
 
@@ -44,8 +44,8 @@ public class TopSystem : MonoBehaviour
 
     void InitSystem()
     {
-        _commandCenter = new CommandCenter();
         _actorsManagerCenter = new ActorsManagerCenter();
+        _commandCenter = new CommandCenter(_actorsManagerCenter);
         _messageCenter = MessageCenter.Instance;
     }
 

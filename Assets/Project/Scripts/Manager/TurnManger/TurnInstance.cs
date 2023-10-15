@@ -10,28 +10,20 @@ public class TurnInstance
     public GameTurn.Turn NowTurn => _turn;
     private bool _playerControlledTurn;
     private GameTurn.Turn _turn = GameTurn.Turn.PlayerTurn;
-    private List<GameActor> _playerControlledActors;
-    private List<GameActor> _systemControlledActors;
-    private int _playerControlledPtr = 0;
     private CommandCenter _commandCenter;
 
     private List<uint> _conActorDynamicIDs;
     private int _turnActorPtr = 0;
     private ActorsManagerCenter _actorsManagerCenter;
 
-    public TurnInstance(CommandCenter commandCenter, List<GameActor> playerControlledActors,
-        List<GameActor> systemControlledActors)
+    public TurnInstance(ActorsManagerCenter actorsManagerCenter, CommandCenter commandCenter, List<uint> conActorDynamicIDs)
     {
+        _actorsManagerCenter = actorsManagerCenter;
         _commandCenter = commandCenter;
-        _playerControlledActors = playerControlledActors;
-        _systemControlledActors = systemControlledActors;
+        _conActorDynamicIDs = conActorDynamicIDs;
+        // SortByActorSpeed();
     }
-
-    public TurnInstance(List<uint> actorsDynamicIDs)
-    {
-        _conActorDynamicIDs = actorsDynamicIDs;
-        SortByActorSpeed();
-    }
+    
 
     /// <summary>
     /// 依据人物速度对回合进行排序
@@ -58,8 +50,7 @@ public class TurnInstance
 
     public void NextTurn()
     {
-        _playerControlledPtr = (_playerControlledPtr + 1) % _playerControlledActors.Count;
-        // PushPtr();
+        PushPtr();
     }
 
     public void BackTurn()
@@ -67,16 +58,34 @@ public class TurnInstance
         BackPtr();
     }
 
+    // public void RunTurn(Action onExcuteFinished, Action onExcuteError)
+    // {
+    //     if (NowTurn == GameTurn.Turn.PlayerTurn)
+    //     {
+    //         if (_conActorDynamicIDs != null)
+    //         {
+    //             GameActor actor = _playerControlledActors[_playerControlledPtr];
+    //             _commandCenter.AddCommand(_commandCenter.GetCommandCache(), actor);
+    //
+    //             // 如果操作非法，将会中断执行并且返回等待命令
+    //             if (_commandCenter.Excute(actor.GetCommand(), actor, onExcuteFinished) == false)
+    //             {
+    //                 onExcuteError();
+    //             }
+    //         }
+    //     }
+    // }
+    
     public void RunTurn(Action onExcuteFinished, Action onExcuteError)
     {
         if (NowTurn == GameTurn.Turn.PlayerTurn)
         {
-            if (_playerControlledActors != null)
+            if (_conActorDynamicIDs != null)
             {
-                GameActor actor = _playerControlledActors[_playerControlledPtr];
+                uint actorDynamicId = _conActorDynamicIDs[_turnActorPtr];
+                GameActor actor = _actorsManagerCenter.GetActorByDynamicId(actorDynamicId);
                 _commandCenter.AddCommand(_commandCenter.GetCommandCache(), actor);
-
-                // 如果操作非法，将会中断执行并且返回等待命令
+                // 如果操作非法，或者没有操作，将会中断执行并且返回等待命令
                 if (_commandCenter.Excute(actor.GetCommand(), actor, onExcuteFinished) == false)
                 {
                     onExcuteError();
@@ -89,9 +98,9 @@ public class TurnInstance
     ///  寻找指定id删除actor
     /// </summary>
     /// <param name="id"></param>
-    /// <param name="removeFromIDpool">是否执行全局删除actor</param>
+    /// <param name="removeFromIDPool">是否执行全局删除actor</param>
     /// <returns></returns>
-    public bool RemoveActorByDynamicId(uint id, bool removeFromIDpool = false)
+    public bool RemoveActorByDynamicId(uint id, bool removeFromIDPool = false)
     {
         var pos = _conActorDynamicIDs.FindIndex((uint f_id) => { return id == f_id; });
         if (pos == -1) return false;
@@ -100,7 +109,7 @@ public class TurnInstance
         if (pos < _turnActorPtr) BackPtr();
 
         // 是否执行全局删除
-        if (removeFromIDpool) return _actorsManagerCenter.RemoveConActorByDynamicId(id);
+        if (removeFromIDPool) return _actorsManagerCenter.RemoveConActorByDynamicId(id);
 
         return true;
     }

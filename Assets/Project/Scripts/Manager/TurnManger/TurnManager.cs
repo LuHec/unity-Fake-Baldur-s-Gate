@@ -7,10 +7,16 @@ using UnityEngine.Rendering.UI;
 /// </summary>
 public class TurnManager
 {
+    // 回合制内actor
     private List<TurnInstance> _turnInstances;
+    
+    //不在回合制内的actor
+    private TurnInstance _freeTurnInstance;
+
     private State _state = State.WaitCommand;
     private CommandCenter _commandCenter;
     private MessageCenter _messageCenter;
+    private ActorsManagerCenter _actorsManagerCenter;
 
     enum State
     {
@@ -18,16 +24,18 @@ public class TurnManager
         RunCommand,
     }
 
-    public TurnManager(CommandCenter commandCenter)
+    public TurnManager(CommandCenter commandCenter, ActorsManagerCenter actorsManagerCenter)
     {
+        _actorsManagerCenter = actorsManagerCenter;
         _commandCenter = commandCenter;
         _messageCenter = MessageCenter.Instance;
         _turnInstances = new List<TurnInstance>();
     }
+    
 
-    public void AddTurn(List<GameActor> playerCon, List<GameActor> systemCon)
+    public void AddTurn(List<uint> conActorDynamic_id)
     {
-        _turnInstances.Add(new TurnInstance(_commandCenter, playerCon, systemCon));
+        _turnInstances.Add(new TurnInstance(_actorsManagerCenter, _commandCenter, conActorDynamic_id));
     }
 
     public void RunTurn()
