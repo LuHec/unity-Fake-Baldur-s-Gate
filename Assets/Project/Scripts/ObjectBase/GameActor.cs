@@ -4,9 +4,21 @@ using System.Collections.Generic;
 
 public class GameActor : MonoBehaviour
 {
+    #region #Info
+
+    protected ActorEnumType.ActorType _actorEnumType;
+
+    public ActorEnumType.ActorType GetActorType() => _actorEnumType;
+    
+    public uint id;
+    public uint dynamic_id;
+
+    #endregion
+    
+
     [SerializeField] private PlacedObjectTypeSO _placedObjectTypeSo;
     [SerializeField] private float _moveSpeed = 2.0f;
-    public uint id;
+    
     public CharacterAttribute characterAttribute;
     public PlacedObjectTypeSO PlacedObject => _placedObjectTypeSo;
 
@@ -19,7 +31,7 @@ public class GameActor : MonoBehaviour
     /// 初始化Actor
     /// </summary>
     /// <param name="newCharacterAttribute"></param>
-    public void Init(CharacterAttributeSerializable newCharacterAttribute)
+    public void InitBase(CharacterAttributeSerializable newCharacterAttribute)
     {
         characterAttribute = new CharacterAttribute(newCharacterAttribute.id, newCharacterAttribute.name,
             newCharacterAttribute.maxHp, newCharacterAttribute.maxActPoints, newCharacterAttribute.weaponId);
@@ -29,6 +41,15 @@ public class GameActor : MonoBehaviour
         startPos.x *= MapSystem.Instance.GetGrid().Cellsize;
         startPos.z *= MapSystem.Instance.GetGrid().Cellsize;
         transform.position = startPos;
+
+        InitExtend();
+    }
+
+    /// <summary>
+    /// 初始化Actor类型
+    /// </summary>
+    protected virtual void InitExtend()
+    {
     }
 
     /// <summary>
@@ -72,5 +93,15 @@ public class GameActor : MonoBehaviour
             transform.position, new Vector3(x, transform.position.y, z), _moveSpeed);
 
         return transform.position;
+    }
+
+    public virtual void Attack(GameActor actor)
+    {
+        actor.Hurt();
+    }
+
+    public virtual void Hurt()
+    {
+        
     }
 }

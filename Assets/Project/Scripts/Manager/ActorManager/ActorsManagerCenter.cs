@@ -9,21 +9,20 @@ using UnityEngine;
 /// </summary>
 public class ActorsManagerCenter
 {
-    public int CurrentPlayerControlledPtr => _currentPlayerControlledPtr;
-    public int CurrentSystemControlledPtr => _currentSystemControlledPtr;
-
     private ScriptObjectDataManager _scriptObjectDataManager;
+    private DynamicIDPool _dynamicIDPool;
     private List<GameActor> _systemControlledActors;
     private List<GameActor> _playerControlledActors;
     private Dictionary<Transform, GameActor> _actorsDict;
     private MapSystem _mapSystem;
-    private int _currentPlayerControlledPtr;
-    private int _currentSystemControlledPtr;
+
+    private Dictionary<uint, GameActor> _playerConActors;
 
     public ActorsManagerCenter()
     {
         _systemControlledActors = new List<GameActor>();
         _playerControlledActors = new List<GameActor>();
+        _dynamicIDPool = new DynamicIDPool();
         _mapSystem = MapSystem.Instance;
         _actorsDict = new Dictionary<Transform, GameActor>();
 
@@ -38,21 +37,6 @@ public class ActorsManagerCenter
 
     #region #NoUse
 
-    public bool PushSystemControlledPtr()
-    {
-        bool finished = CurrentSystemControlledPtr + 1 > _systemControlledActors.Count;
-        _currentSystemControlledPtr = (_currentSystemControlledPtr + 1) % _systemControlledActors.Count;
-
-        return finished;
-    }
-
-    public bool PushPlayerControlledPtr()
-    {
-        bool finished = CurrentPlayerControlledPtr + 1 > _playerControlledActors.Count;
-        _currentPlayerControlledPtr = (_currentPlayerControlledPtr + 1) % _playerControlledActors.Count;
-        return finished;
-    }
-
     #endregion
 
     #region LoadResource
@@ -64,7 +48,7 @@ public class ActorsManagerCenter
         {
             var iniobj = Object.Instantiate(obj, Vector3.zero, Quaternion.identity);
             var actor = iniobj.GetComponent<GameActor>();
-            actor.Init(_scriptObjectDataManager.CharacterAttrSOData.DataDictionary[actor.id]);
+            actor.InitBase(_scriptObjectDataManager.CharacterAttrSOData.DataDictionary[actor.id]);
             _playerControlledActors.Add(actor);
             _mapSystem.SetGridActor(actor.startPos.x, actor.startPos.z, _playerControlledActors[^1]);
         }
@@ -90,7 +74,7 @@ public class ActorsManagerCenter
     }
 
     /// <summary>
-    /// 移除操作列表的角色
+    /// 移除操作列表的角色，转移版本，非删除
     /// </summary>
     /// <param name="actor">角色</param>
     /// <returns>是否成功</returns>
@@ -113,6 +97,18 @@ public class ActorsManagerCenter
 
         return true;
     }
+
+    /// <summary>
+    /// 用动态id移除actor，先从控制列表移除，然后从pool中移除
+    /// </summary>
+    /// <param name="id"></param>
+    /// <returns></returns>
+    public bool RemoveActorByDynamicId(uint id)
+    {
+        
+        return _dynamicIDPool.RemoveActorById(id);
+    }
+    
 
     #endregion
 
