@@ -8,7 +8,7 @@ public class Character : GameActor
     private Weapon _weapon;
     
     #region #TypeInfo
-
+    
     protected ActorEnumType.CharacterType _characterType;
     public ActorEnumType.CharacterType GetCharacterType() => _characterType;
 
@@ -39,4 +39,6 @@ public class Character : GameActor
 
         return false;
     }
+    
+    
 }

@@ -16,7 +16,8 @@ public class ActorsManagerCenter
     private Dictionary<Transform, GameActor> _actorsDict;
     private MapSystem _mapSystem;
 
-    private Dictionary<uint, GameActor> _playerConActors;
+    // 当前持有的所有可控制Actor
+    private Dictionary<uint, GameActor> _controlledActors;
 
     public ActorsManagerCenter()
     {
@@ -29,10 +30,23 @@ public class ActorsManagerCenter
         Init();
     }
 
+    /// <summary>
+    /// 加载所有Actors资源，并且添加到Id池中
+    /// </summary>
+    /// <param name="i"></param>
+    public ActorsManagerCenter(int i)
+    {
+    }
+
     public void Init()
     {
         _scriptObjectDataManager = new ScriptObjectDataManager();
         LoadAllControlledActorsResource();
+    }
+
+    public void Init(int i)
+    {
+        _scriptObjectDataManager = new ScriptObjectDataManager();
     }
 
     #region #NoUse
@@ -50,10 +64,38 @@ public class ActorsManagerCenter
             var actor = iniobj.GetComponent<GameActor>();
             actor.InitBase(_scriptObjectDataManager.CharacterAttrSOData.DataDictionary[actor.id]);
             _playerControlledActors.Add(actor);
+            SignActor(actor);
             _mapSystem.SetGridActor(actor.startPos.x, actor.startPos.z, _playerControlledActors[^1]);
         }
 
         return _playerControlledActors;
+    }
+
+    /// <summary>
+    /// 加载actor资源，并注册到id池
+    /// </summary>
+    /// <param name="i"></param>
+    public void LoadAllControlledActorsResource(int i)
+    {
+        var objects = ResourcesLoader.LoadAllControlledActorsResource();
+        foreach (var obj in objects)
+        {
+            var iniobj = Object.Instantiate(obj, Vector3.zero, Quaternion.identity);
+            var actor = iniobj.GetComponent<GameActor>();
+            actor.InitBase(_scriptObjectDataManager.CharacterAttrSOData.DataDictionary[actor.id]);
+
+            // 添加到id池
+            SignActor(actor);
+            
+            // 随机生成到地图上可用位置
+            Vector2Int randomPos = GetRandomGridPos();
+            _mapSystem.SetGridActor(actor.startPos.x, actor.startPos.z, _playerControlledActors[^1]);
+        }
+    }
+
+    public Vector2Int GetRandomGridPos()
+    {
+        return Vector2Int.zero;
     }
 
     #endregion
@@ -103,12 +145,11 @@ public class ActorsManagerCenter
     /// </summary>
     /// <param name="id"></param>
     /// <returns></returns>
-    public bool RemoveActorByDynamicId(uint id)
+    public bool RemoveConActorByDynamicId(uint id)
     {
-        
+        if (_controlledActors.Remove(id) == false) return false;
         return _dynamicIDPool.RemoveActorById(id);
     }
-    
 
     #endregion
 
@@ -126,9 +167,17 @@ public class ActorsManagerCenter
     /// <returns></returns>
     public List<GameActor> GetSystemControlledActorList() => _systemControlledActors;
 
-    public GameActor GetActor(Transform transform)
+    public GameActor GetActorByDynamicId(uint dynamicId)
     {
-        return null;
+        return _dynamicIDPool.GetActorById(dynamicId);
+    }
+
+    public bool SignActor(GameActor actor)
+    {
+        if (_dynamicIDPool.SignActor(actor) == false)
+            return false;
+        _controlledActors[actor.Dynamic_Id] = actor;
+        return true;
     }
 
     #endregion

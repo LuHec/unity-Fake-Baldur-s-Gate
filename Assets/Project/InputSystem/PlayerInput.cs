@@ -50,7 +50,7 @@ public class PlayerInput : Singleton<PlayerInput>
         else
         {
 #if UNITY_EDITOR
-            Debug.Log("null");
+            Debug.Log("null, mouse pos return vector3.zero");
 #endif
             return Vector3.zero;
         }

@@ -36,14 +36,12 @@ public class DynamicIDPool
     }
 
     /// <summary>
-    /// 注册actor，如果已经存在则注册失败
+    /// 注册actor，舍弃原来的id
     /// </summary>
     /// <param name="actor"></param>
     /// <returns></returns>
     public bool SignActor(GameActor actor)
     {
-        if (ActorExist(actor.dynamic_id)) return false;
-
         if (actor.GetActorType() == ActorEnumType.ActorType.Character) return SignCharacter(actor);
         if (actor.GetActorType() == ActorEnumType.ActorType.Pickableitem) return SignItem(actor);
 
@@ -74,11 +72,17 @@ public class DynamicIDPool
     }
 
 
+    /// <summary>
+    /// 注册并初始化actor的动态id
+    /// </summary>
+    /// <param name="actor"></param>
+    /// <returns></returns>
     private bool SignCharacter(GameActor actor)
     {
         if (!CharacterSignable()) return false;
 
-        _dynamicIDdict[_assignableCharacterID++] = actor;
+        _dynamicIDdict[_assignableCharacterID] = actor;
+        actor.InitDynamicId(_assignableCharacterID ++);
         return true;
     }
 
@@ -87,6 +91,7 @@ public class DynamicIDPool
         if (!ItemSignable()) return false;
 
         _dynamicIDdict[_assignableItemID++] = actor;
+        actor.InitDynamicId(_assignableItemID ++);
         return true;
     }
 }

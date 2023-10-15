@@ -7,11 +7,23 @@ public class GameActor : MonoBehaviour
     #region #Info
 
     protected ActorEnumType.ActorType _actorEnumType;
+    private ActorEnumType.ActorStateTag _actorStateTag;
 
     public ActorEnumType.ActorType GetActorType() => _actorEnumType;
-    
+    public ActorEnumType.ActorStateTag GetActorStateTag() => _actorStateTag;
+  
+    /// <summary>
+    /// 资源加载id
+    /// </summary>
     public uint id;
-    public uint dynamic_id;
+    
+    /// <summary>
+    /// 运行时id
+    /// </summary>
+    private uint dynamic_id;
+
+    public uint Dynamic_Id => dynamic_id;
+    public float speed;
 
     #endregion
     
@@ -46,12 +58,34 @@ public class GameActor : MonoBehaviour
     }
 
     /// <summary>
-    /// 初始化Actor类型
+    /// 初始化Actor子类的类型
     /// </summary>
     protected virtual void InitExtend()
     {
     }
 
+    public void InitDynamicId(uint id)
+    {
+        dynamic_id = id;
+    }
+    
+    /// <summary>
+    /// 设置当前为AI控制还是角色控制
+    /// </summary>
+    /// <param name="newStateTag"></param>
+    public void SetCharacterStateTo(ActorEnumType.ActorStateTag newStateTag)
+    {
+        _actorStateTag = newStateTag;
+    }
+
+    /// <summary>
+    /// 生成AI
+    /// </summary>
+    public virtual void SelfAICalculate()
+    {
+        Debug.Log(dynamic_id + " " + "Ai Running....");
+    }
+    
     /// <summary>
     /// 添加命令
     /// </summary>

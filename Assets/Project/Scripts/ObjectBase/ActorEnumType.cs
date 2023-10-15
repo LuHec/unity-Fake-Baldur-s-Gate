@@ -17,4 +17,10 @@
         Weapon,
         Good
     }
+    
+    public enum ActorStateTag
+    {
+        AI,
+        Player
+    }
 }
