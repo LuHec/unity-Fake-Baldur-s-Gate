@@ -4,12 +4,18 @@ using UnityEngine;
 
 public class Projectile : MonoBehaviour
 {
+    TrailRenderer trail;
+    
     [SerializeField] float moveSpeed = 10f;
 
     //移动方向
     [SerializeField] Vector2 moveDirection;
 
-    //对象每次被激活都会调用
+    void Awake()
+    {
+        trail = GetComponentInChildren<TrailRenderer>();
+    }
+  
     void OnEnable()
     {
         StartCoroutine(nameof(MoveDirectly));

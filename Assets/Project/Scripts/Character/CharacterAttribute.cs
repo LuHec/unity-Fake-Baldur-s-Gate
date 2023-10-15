@@ -24,6 +24,8 @@ public class CharacterAttribute
         _maxHp = maxHp;
         _maxActPoints = maxActPoints;
         _weaponId = weaponId;
+
+        _hp = _maxHp;
     }
 
     public uint ID => _id;
@@ -37,9 +39,15 @@ public class CharacterAttribute
     /// </summary>
     /// <param name="val"></param>
     /// <returns></returns>
-    public float SetHP(int val)
+    public float SetHP(float val)
     {
-        _hp = Mathf.Clamp(_hp, 0, _maxHp);
+        _hp = Mathf.Clamp(val, 0, _maxHp);
+        return _hp;
+    }
+
+    public float DecreaseHP(float val)
+    {
+        _hp = Mathf.Clamp(_hp - val, 0, _maxHp);
         return _hp;
     }
 

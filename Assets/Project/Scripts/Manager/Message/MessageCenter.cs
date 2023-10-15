@@ -14,4 +14,5 @@ public class MessageCenter : Singleton<MessageCenter>
         _mapSystem = MapSystem.Instance;
         globalState = new GlobalState();
     }
+    
 }

@@ -8,18 +8,13 @@ using UnityEngine;
 
 public static class ResourcesLoader
 {
-    public static Object[] LoadAllResources(string path)
-    {
-        return Resources.LoadAll(path);
-    }
-
     #region #ExcelLoader
     /// <summary>
     /// 加载所有角色的attributes
     /// </summary>
     /// <param name="filePath"></param>
     /// <returns></returns>
-    public static CharacterAttributeSerializable[] LoadAttributesExcel(string filePath)
+    public static CharacterAttributeSerializable[] LoadCharacterAttributesExcel(string filePath)
     {
         List<CharacterAttributeSerializable> attributesList = new List<CharacterAttributeSerializable>();
         int columnNum = 0, rowNum = 0; //excel 行数 列数
@@ -39,6 +34,30 @@ public static class ResourcesLoader
 
             CharacterAttributeSerializable attribute = new CharacterAttributeSerializable(id, name, maxHp, maxActPoints, weaponId);
             attributesList.Add(attribute);
+        }
+
+        return attributesList.ToArray();
+    }
+
+    public static WeaponAttributesSerializable[] LoadWeaponAttributesExcel(string filePath)
+    {
+        List<WeaponAttributesSerializable> attributesList = new List<WeaponAttributesSerializable>();
+        int columnNum = 0, rowNum = 0; //excel 行数 列数
+        DataRowCollection collect = ReadExcel(filePath, ref columnNum, ref rowNum);
+        //这里i从1开始遍历， 因为第一行是标签名
+        for (int i = 1; i < rowNum; i++)
+        {
+            //如果改行是空行 不保存
+            if (IsEmptyRow(collect[i], columnNum)) continue;
+
+
+            uint.TryParse(collect[i][0].ToString(), out uint id);
+            string name = collect[i][1].ToString();
+            float.TryParse(collect[i][2].ToString(), out float damage);
+            int.TryParse(collect[i][3].ToString(), out int aoe);
+            float.TryParse(collect[i][4].ToString(), out float maxDist);
+            
+            attributesList.Add(new WeaponAttributesSerializable(id, name, damage, aoe, maxDist));
         }
 
         return attributesList.ToArray();
@@ -81,9 +100,25 @@ public static class ResourcesLoader
     
     public static Object[] LoadAllControlledActorsResource()
     {
-        var actors = Resources.LoadAll("Actors/Character");
+        var actors = Resources.LoadAll("Actors/Character/");
 
         return actors;
+    }
+
+    public static Object LoadWeaponById(uint id)
+    {
+        switch (id)
+        {
+            case 50001 : return Resources.Load("Item/Weapon/Rifle");
+            case 50002 : return Resources.Load("Item/Weapon/Bomb");
+        }
+
+        return null;
+    }
+    
+    public static Object LoadBomb()
+    {
+        return Resources.Load("Item/Weapon/Bomb");
     }
 
     #endregion
@@ -93,6 +128,11 @@ public static class ResourcesLoader
     public static CharacterAttributesScriptobjectData LoadCharacterAttributesData()
     {
         return AssetDatabase.LoadAssetAtPath<CharacterAttributesScriptobjectData>(@"Assets/Project/ScriptObject/ExcelDataObject/CharacterAttributesDataManager.asset");
+    }
+
+    public static WeaponAttributesScriptobjectData LoadWeaponAttributesData()
+    {
+        return AssetDatabase.LoadAssetAtPath<WeaponAttributesScriptobjectData>(@"Assets/Project/ScriptObject/ExcelDataObject/WeaponAttributeDataManager.asset");
     }
 
     #endregion

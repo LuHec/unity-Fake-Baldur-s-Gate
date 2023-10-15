@@ -6,9 +6,9 @@ public class Character : GameActor
 {
     [SerializeField] private Transform weaponTransform;
     private Weapon _weapon;
-    
+
     #region #TypeInfo
-    
+
     protected ActorEnumType.CharacterType _characterType;
     public ActorEnumType.CharacterType GetCharacterType() => _characterType;
 
@@ -32,13 +32,17 @@ public class Character : GameActor
             if (pickableItem.GetPickableItemType() == ActorEnumType.PickableItemType.Weapon)
             {
                 _weapon = pickableItem as Weapon;
-                _weapon.SetPosition(weaponTransform.position);
+
+                _weapon.SetEquipPosition(weaponTransform);
                 return true;
             }
         }
 
         return false;
     }
-    
-    
+
+    public override float GetDamage()
+    {
+        return _weapon.WeaponAttributes.damage;
+    }
 }

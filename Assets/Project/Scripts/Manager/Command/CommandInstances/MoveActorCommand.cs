@@ -67,41 +67,6 @@ public class MoveActorCommand : CommandInstance
     /// <returns></returns>
     bool Move(GameActor actor, Action onMoveFinished)
     {
-        // _mapSystem.MoveGameActor(_targetX, _targetZ, actor);
-        // var currPos = actor.MoveTo(_targetX, _targetZ);
-        // if (Vector3.Distance(currPos, new Vector3(_targetX, currPos.y, _targetZ)) < 0.1)
-        // {
-        //     onMoveFinished();
-        // }
-
-        // 获取下一个点位对应的世界坐标
-        // Vector3 nextWorldPos; 
-        //
-        // // 计算实际移动到的世界坐标
-        // Vector3 actualPos;
-        // if (_pathPtr == _path.Count)
-        // {
-        //     actualPos = actor.CalculateMoveTo(_targetX, _targetZ);
-        // }
-        // else
-        // {
-        //     nextWorldPos =_mapSystem.GetGrid().GetWorldPosition(_path[_pathPtr].X, _path[_pathPtr].Y);
-        //     actualPos = actor.CalculateMoveTo(nextWorldPos.x, nextWorldPos.z);
-        // }
-        //
-        //
-        // if (_pathPtr < _path.Count - 1 && _mapSystem.MoveGameActor(actualPos.x, actualPos.z, actor))
-        // {
-        //     _pathPtr++;
-        // }
-        //
-        // actor.DirectMoveTo(actualPos);
-        //
-        // if (Vector3.Distance(actualPos, new Vector3(_targetX, actualPos.y, _targetZ)) < 0.1)
-        // {
-        //     _pathFinding.Clear();
-        //     onMoveFinished();
-        // }
         Vector3 nextWorldPos = _mapSystem.GetGrid().GetOffsetWorldPosition(_path[_pathPtr].X, _path[_pathPtr].Y);
         Vector3 actualPos = actor.CalculateMoveTo(nextWorldPos.x, nextWorldPos.z);
 

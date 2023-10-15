@@ -2,11 +2,13 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using Cinemachine;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Serialization;
 
 public class CameraSystem : MonoBehaviour
 {
+    [SerializeField] private bool useMouse = false;
     [SerializeField] private CinemachineVirtualCamera _cinemachineVirtualCamera;
     [SerializeField] private float moveSpeed = 50;
     [SerializeField] private float rotateSpeed = 150;
@@ -32,18 +34,23 @@ public class CameraSystem : MonoBehaviour
         HandleCameraMove();
         HandleCameraRotation();
         // HandleCameraZoom_FOV();
+
         HandleCameraZoomForward();
     }
 
     void HandleCameraMove()
     {
         Vector3 inputDir = new Vector3(_input.PlayerMovement.x, 0, _input.PlayerMovement.y);
-        var mousePos2D = _input.MousePos;
-        // screen space 原点在左下角
-        if (mousePos2D.x < _edgeScrollSize) inputDir.x = -1f;
-        if (mousePos2D.y < _edgeScrollSize) inputDir.z = -1f;
-        if (mousePos2D.x > Screen.width - _edgeScrollSize) inputDir.x = 1f;
-        if (mousePos2D.y > Screen.height - _edgeScrollSize) inputDir.z = 1f;
+       
+        if(useMouse)
+        {
+            var mousePos2D = _input.MousePos;
+            // screen space 原点在左下角
+            if (mousePos2D.x < _edgeScrollSize) inputDir.x = -1f;
+            if (mousePos2D.y < _edgeScrollSize) inputDir.z = -1f;
+            if (mousePos2D.x > Screen.width - _edgeScrollSize) inputDir.x = 1f;
+            if (mousePos2D.y > Screen.height - _edgeScrollSize) inputDir.z = 1f;
+        }
 
         Vector3 moveDir = transform.forward * inputDir.z + transform.right * inputDir.x;
         transform.position += moveDir * moveSpeed * Time.deltaTime;
@@ -98,7 +105,7 @@ public class CameraSystem : MonoBehaviour
         {
             _followOffset = zoomDir * minFollowOffset;
         }
-        
+
         if (_followOffset.magnitude > maxFollowOffset)
         {
             _followOffset = zoomDir * maxFollowOffset;

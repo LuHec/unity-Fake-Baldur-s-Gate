@@ -9,8 +9,17 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c788fa2bf13a4552ab333252cb5c1a6a, type: 3}
-  m_Name: New Weapon
+  m_Script: {fileID: 11500000, guid: a5aac2a4e7044da09c79d31b5655aa0d, type: 3}
+  m_Name: WeaponAttributeDataManager
   m_EditorClassIdentifier: 
-  transform: {fileID: 1580751565415340619, guid: 1ba4db42e3df8ec41957c4775542dac2,
-    type: 3}
+  weaponAttarray:
+  - id: 50001
+    name: Rifle
+    damage: 5
+    aoe: 0
+    maxDist: 10
+  - id: 50002
+    name: Bomb
+    damage: 20
+    aoe: 2
+    maxDist: 6

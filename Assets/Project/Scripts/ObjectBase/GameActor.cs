@@ -1,6 +1,7 @@
 ﻿using System;
 using UnityEngine;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 
 public class GameActor : MonoBehaviour
 {
@@ -11,12 +12,12 @@ public class GameActor : MonoBehaviour
 
     public ActorEnumType.ActorType GetActorType() => _actorEnumType;
     public ActorEnumType.ActorStateTag GetActorStateTag() => _actorStateTag;
-  
+
     /// <summary>
     /// 资源加载id
     /// </summary>
     public uint id;
-    
+
     /// <summary>
     /// 运行时id
     /// </summary>
@@ -26,13 +27,13 @@ public class GameActor : MonoBehaviour
     public float speed;
 
     #endregion
-    
 
-    [SerializeField] private PlacedObjectTypeSO _placedObjectTypeSo;
+
+    // [SerializeField] private PlacedObjectTypeSO _placedObjectTypeSo;
     [SerializeField] private float _moveSpeed = 2.0f;
-    
+
     public CharacterAttribute characterAttribute;
-    public PlacedObjectTypeSO PlacedObject => _placedObjectTypeSo;
+    // public PlacedObjectTypeSO PlacedObject => _placedObjectTypeSo;
 
     public Vector3 startPos;
     private CommandQueue _cmdQue;
@@ -57,6 +58,11 @@ public class GameActor : MonoBehaviour
         InitExtend();
     }
 
+    public void InitBase()
+    {
+        InitExtend();
+    }
+
     /// <summary>
     /// 初始化Actor子类的类型
     /// </summary>
@@ -68,7 +74,7 @@ public class GameActor : MonoBehaviour
     {
         dynamic_id = id;
     }
-    
+
     /// <summary>
     /// 设置当前为AI控制还是角色控制
     /// </summary>
@@ -85,7 +91,7 @@ public class GameActor : MonoBehaviour
     {
         Debug.Log(dynamic_id + " " + "Ai Running....");
     }
-    
+
     /// <summary>
     /// 添加命令
     /// </summary>
@@ -129,13 +135,19 @@ public class GameActor : MonoBehaviour
         return transform.position;
     }
 
-    public virtual void Attack(GameActor actor)
+    public virtual float GetDamage()
     {
-        actor.Hurt();
+        return 0;
     }
 
-    public virtual void Hurt()
+    public virtual void Attack(GameActor actor)
     {
-        
+        actor.Hurt(GetDamage());
+    }
+
+    public virtual void Hurt(float damage)
+    {
+        characterAttribute.DecreaseHP(damage);
+        Debug.Log(characterAttribute.Name + "now " + characterAttribute.HP + " hurt to ");
     }
 }

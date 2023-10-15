@@ -14,12 +14,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _attributes:
   - id: 10001
-    name: "\u6B65\u67AA\u5175"
+    name: Gunner
     maxHp: 100
     maxActPoints: 10
     weaponId: 50001
   - id: 10002
-    name: "\u6295\u63B7\u5175"
+    name: Bommer
     maxHp: 100
     maxActPoints: 10
     weaponId: 50002

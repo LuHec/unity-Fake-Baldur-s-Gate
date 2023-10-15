@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using OfficeOpenXml.FormulaParsing.Excel.Functions.Math;
 using Unity.VisualScripting;
 using UnityEngine;
 
@@ -70,16 +71,26 @@ public class ActorsManagerCenter
         foreach (var obj in objects)
         {
             // 初始化数据
-            var iniobj = Object.Instantiate(obj, Vector3.zero, Quaternion.identity);
-            var actor = iniobj.GetComponent<GameActor>();
-            actor.InitBase(_scriptObjectDataManager.CharacterAttrSOData.DataDictionary[actor.id]);
-
+            var objCharacter = Object.Instantiate(obj, Vector3.zero, Quaternion.identity);
+            var charActor = objCharacter.GetComponent<GameActor>();
+            charActor.InitBase(_scriptObjectDataManager.CharacterAttrSOData.DataDictionary[charActor.id]);
             // 添加到id池
-            SignActor(actor);
-
+            SignActor(charActor);
+            
+            // 获取初始武器并注册到idpool
+            var weaponObj =
+                Object.Instantiate(ResourcesLoader.LoadWeaponById(charActor.characterAttribute.WeaponId),
+                    Vector3.zero, Quaternion.identity);
+            var weaponActor = weaponObj.GetComponent<Weapon>();
+            weaponActor.InitBase();
+            weaponActor.InitWeaponAttribute(_scriptObjectDataManager.WeaponAttrSOData.weaponAttDict[weaponActor.id]);
+            SignActor(weaponActor);
+            
+            (charActor as Character).EquipWeapon(weaponActor);
+            
             // 随机生成到地图上可用位置
             Vector2Int randomPos = GetRandomGridPos();
-            _mapSystem.SetGridActor(actor.startPos.x, actor.startPos.z, actor);
+            _mapSystem.SetGridActor(charActor.startPos.x, charActor.startPos.z, charActor);
         }
     }
 
@@ -166,7 +177,7 @@ public class ActorsManagerCenter
     {
         if (_dynamicIDPool.SignActor(actor) == false)
             return false;
-        _controlledActors[actor.Dynamic_Id] = actor;
+        if(actor.GetActorType() == ActorEnumType.ActorType.Character) _controlledActors[actor.Dynamic_Id] = actor;
         return true;
     }
 
