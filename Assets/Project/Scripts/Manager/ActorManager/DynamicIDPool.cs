@@ -3,7 +3,7 @@ using OfficeOpenXml.FormulaParsing.Excel.Functions.Math;
 using UnityEngine;
 
 /// <summary>
-/// 动态id分配池
+/// 动态id分配池，只处理id存储，不处理物体的消亡
 /// </summary>
 public class DynamicIDPool
 {
@@ -16,11 +16,39 @@ public class DynamicIDPool
     private uint _assignableCharacterID;
     private uint _assignableItemID;
 
+    /// <summary>
+    /// 队列存储回收的id
+    /// </summary>
+    private Queue<uint> _assignableCharacterIDQueue;
+    private Queue<uint> _assignableItemIDQueue;
+
     #region #CheckFunction
 
-    public uint GetAssignableItemID() => _assignableItemID;
+    /// <summary>
+    /// 获取可用的id，并更新可用id
+    /// </summary>
+    /// <returns>可用的id</returns>
+    private uint GetAssignableItemID()
+    {
+        // 如果队列空了才会推进指针，否则从队列里拿，需要注意队列永远不会存当前指针的值
+        if (_assignableItemIDQueue.Count == 0)
+        {
+            return _assignableItemID++;
+        }
+        
+        return _assignableItemIDQueue.Dequeue();
+    }
+    
+    private uint GetAssignableCharacterID()
+    {
+        if (_assignableCharacterIDQueue.Count == 0)
+        {
+            return _assignableCharacterID++;
+        }
 
-    public uint GetAssignableCharacterID() => _assignableCharacterID;
+        return _assignableCharacterIDQueue.Dequeue();
+    }
+    
 
     public bool CharacterSignable() => _assignableCharacterID < MaxCharacterId;
     public bool ItemSignable() => _assignableItemID < MaxItemId;
@@ -31,6 +59,8 @@ public class DynamicIDPool
     public DynamicIDPool()
     {
         _dynamicIDdict = new Dictionary<uint, GameActor>();
+        _assignableCharacterIDQueue = new Queue<uint>();
+        _assignableItemIDQueue = new Queue<uint>();
 
         _assignableCharacterID = MinCharacterId;
         _assignableItemID = MinItemId;
@@ -61,7 +91,7 @@ public class DynamicIDPool
     }
 
     /// <summary>
-    /// 通过id删除actor，不存在返回false
+    /// 通过id删除actor，不存在返回false，id会被回收
     /// </summary>
     /// <param name="id"></param>
     /// <returns></returns>
@@ -69,7 +99,13 @@ public class DynamicIDPool
     {
         if (!ActorExist(id)) return false;
 
-        return _dynamicIDdict.Remove(id);
+        // 回收id
+        if(GetActorById(id).GetActorType() == ActorEnumType.ActorType.Character) _assignableCharacterIDQueue.Enqueue(id);
+        else _assignableItemIDQueue.Enqueue(id);
+        
+        _dynamicIDdict.Remove(id);
+        
+        return true;
     }
 
 

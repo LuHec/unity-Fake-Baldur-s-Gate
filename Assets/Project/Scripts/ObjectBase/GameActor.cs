@@ -3,6 +3,7 @@ using UnityEngine;
 using System.Collections.Generic;
 using Unity.VisualScripting;
 
+[RequireComponent(typeof(ActorAudio))]
 public class GameActor : MonoBehaviour
 {
     #region #Info
@@ -13,21 +14,15 @@ public class GameActor : MonoBehaviour
     public ActorEnumType.ActorType GetActorType() => _actorEnumType;
     public ActorEnumType.ActorStateTag GetActorStateTag() => _actorStateTag;
 
-    /// <summary>
-    /// 资源加载id
-    /// </summary>
+    // 资源加载id
     public uint id;
 
-    /// <summary>
-    /// 运行时id
-    /// </summary>
+    // 运行时id
     private uint dynamic_id;
 
     public uint Dynamic_Id => dynamic_id;
+
     public float speed;
-
-    #endregion
-
 
     // [SerializeField] private PlacedObjectTypeSO _placedObjectTypeSo;
     [SerializeField] private float _moveSpeed = 2.0f;
@@ -40,8 +35,29 @@ public class GameActor : MonoBehaviour
 
     private MapSystem _mapSystem;
 
+    #endregion
+
+    #region #Component
+
+    public ActorAudio actorAudio => _actorAudio;
+    private ActorAudio _actorAudio;
+
+    
+    
+    #endregion
+
+    #region #Init
+
+    private void OnEnable()
+    {
+        if (actorAudio == null) _actorAudio = GetComponent<ActorAudio>();
+
+        if (_cmdQue == null) _cmdQue = new CommandQueue();
+        else _cmdQue.Clear();
+    }
+
     /// <summary>
-    /// 初始化Actor
+    /// 初始化Actor的属性
     /// </summary>
     /// <param name="newCharacterAttribute"></param>
     public void InitBase(CharacterAttributeSerializable newCharacterAttribute)
@@ -49,7 +65,6 @@ public class GameActor : MonoBehaviour
         characterAttribute = new CharacterAttribute(newCharacterAttribute.id, newCharacterAttribute.name,
             newCharacterAttribute.maxHp, newCharacterAttribute.maxActPoints, newCharacterAttribute.weaponId);
 
-        _cmdQue = new CommandQueue();
 
         startPos.x *= MapSystem.Instance.GetGrid().Cellsize;
         startPos.z *= MapSystem.Instance.GetGrid().Cellsize;
@@ -75,6 +90,11 @@ public class GameActor : MonoBehaviour
         dynamic_id = id;
     }
 
+    #endregion
+    
+
+    #region #AI
+
     /// <summary>
     /// 设置当前为AI控制还是角色控制
     /// </summary>
@@ -91,6 +111,8 @@ public class GameActor : MonoBehaviour
     {
         Debug.Log(dynamic_id + " " + "Ai Running....");
     }
+
+    #endregion
 
     /// <summary>
     /// 添加命令
@@ -135,19 +157,23 @@ public class GameActor : MonoBehaviour
         return transform.position;
     }
 
+    /// <summary>
+    /// 获取攻击力
+    /// </summary>
+    /// <returns></returns>
     public virtual float GetDamage()
     {
         return 0;
     }
 
-    public virtual void Attack(GameActor actor)
+    public virtual void Attack(GameActor actorAttacked, Action onAttackeEnd = null)
     {
-        actor.Hurt(GetDamage());
+        actorAttacked.Hurt(GetDamage());
     }
 
     public virtual void Hurt(float damage)
     {
         characterAttribute.DecreaseHP(damage);
-        Debug.Log(characterAttribute.Name + "now " + characterAttribute.HP + " hurt to ");
+        actorAudio.PlayHitSFX();
     }
 }

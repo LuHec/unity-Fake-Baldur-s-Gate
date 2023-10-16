@@ -20,6 +20,11 @@ public class CommandQueue
         _cmdQueue = new Queue<CommandInstance>();
     }
 
+    public void Clear()
+    {
+        _cmdQueue.Clear();
+    }
+
     public bool Add(CommandInstance cmdInstance)
     {
         _cmdQueue.Enqueue(cmdInstance);

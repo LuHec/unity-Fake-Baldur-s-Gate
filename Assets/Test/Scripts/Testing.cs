@@ -8,6 +8,7 @@ using Object = UnityEngine.Object;
 
 public class Testing : MonoBehaviour
 {
+    public Projectile projectile;
     private PlayerInput _playerInput;
     private Pathfiding _pathfiding;
     public CharacterAttributesScriptobjectData _characterAttributesScriptobject;
@@ -18,11 +19,8 @@ public class Testing : MonoBehaviour
 
     private void Start()
     {
-        var objects = ResourcesLoader.LoadAllControlledActorsResource();
-        
-        character = objects[0].GetComponent<GameActor>();
-        var ca = character as Character;
-        Debug.Log(ca);
+        var proj = Instantiate(projectile);
+        proj.StartMove(new Vector3(200, 1, 200));
     }
     
     

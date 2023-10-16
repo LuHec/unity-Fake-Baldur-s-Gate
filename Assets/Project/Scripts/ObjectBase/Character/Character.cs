@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -44,5 +45,13 @@ public class Character : GameActor
     public override float GetDamage()
     {
         return _weapon.WeaponAttributes.damage;
+    }
+
+    public override void Attack(GameActor actorAttacked, Action onAttackEnd)
+    {
+        if (!ReferenceEquals(_weapon, null))
+        {
+            _weapon.Attack(actorAttacked, onAttackEnd);
+        }
     }
 }

@@ -17,6 +17,11 @@ public class CameraSystem : MonoBehaviour
     [SerializeField] private float minFieldOfView = 30;
     [SerializeField] private float minFollowOffset = 5f;
     [SerializeField] private float maxFollowOffset = 50f;
+    [SerializeField] private float shakeIntensity = 1f;
+    [SerializeField] private float shakeTime = 0.2f;
+
+    private CinemachineBasicMultiChannelPerlin _cbmp;
+
     private PlayerInput _input;
     private CinemachineTransposer _cinemachineTransposer;
     float targetFieldOfView = 50;
@@ -41,8 +46,8 @@ public class CameraSystem : MonoBehaviour
     void HandleCameraMove()
     {
         Vector3 inputDir = new Vector3(_input.PlayerMovement.x, 0, _input.PlayerMovement.y);
-       
-        if(useMouse)
+
+        if (useMouse)
         {
             var mousePos2D = _input.MousePos;
             // screen space 原点在左下角
@@ -111,9 +116,33 @@ public class CameraSystem : MonoBehaviour
             _followOffset = zoomDir * maxFollowOffset;
         }
 
-        Debug.Log("scroll " + zoomDir);
         float zoomSpeed = 10f;
         _cinemachineTransposer.m_FollowOffset = Vector3.Lerp(_cinemachineTransposer.m_FollowOffset, _followOffset,
             Time.deltaTime * zoomSpeed);
+    }
+
+    public void SetUseMouse(bool use)
+    {
+        useMouse = use;
+    }
+
+    public void StartShakeCamera()
+    {
+        StartCoroutine(ShakeCameraCoroutine());
+    }
+
+    IEnumerator ShakeCameraCoroutine()
+    {
+        float timer = 0f;
+        _cbmp = _cinemachineVirtualCamera.GetCinemachineComponent<CinemachineBasicMultiChannelPerlin>();
+        _cbmp.m_AmplitudeGain = shakeIntensity;
+
+        while (timer < shakeTime)
+        {
+            timer += Time.fixedDeltaTime;
+            yield return null;
+        }
+
+        _cbmp.m_AmplitudeGain = 0;
     }
 }
