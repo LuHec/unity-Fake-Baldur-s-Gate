@@ -7,23 +7,36 @@ using UnityEngine;
 /// </summary>
 public class TurnInstance
 {
-    public GameTurn.Turn NowTurn => _turn;
-    private bool _playerControlledTurn;
-    private GameTurn.Turn _turn = GameTurn.Turn.PlayerTurn;
     private CommandCenter _commandCenter;
 
+    private HashSet<uint> _conActorIDSet;
     private List<uint> _conActorDynamicIDs;
+
     private int _turnActorPtr = 0;
     private ActorsManagerCenter _actorsManagerCenter;
 
-    public TurnInstance(ActorsManagerCenter actorsManagerCenter, CommandCenter commandCenter, List<uint> conActorDynamicIDs)
+    private bool _battleMode = false;
+
+    public int turnActorPtr => _turnActorPtr;
+    public HashSet<uint> conActorIDSet => _conActorIDSet;
+
+    enum State
+    {
+        WaitCommand,
+        RunCommand,
+    }
+
+    private State _state = State.WaitCommand;
+
+    public TurnInstance(ActorsManagerCenter actorsManagerCenter, CommandCenter commandCenter,
+        List<uint> conActorDynamicIDs)
     {
         _actorsManagerCenter = actorsManagerCenter;
         _commandCenter = commandCenter;
         _conActorDynamicIDs = conActorDynamicIDs;
         // SortByActorSpeed();
     }
-    
+
 
     /// <summary>
     /// 依据人物速度对回合进行排序
@@ -58,39 +71,69 @@ public class TurnInstance
         BackPtr();
     }
 
-    // public void RunTurn(Action onExcuteFinished, Action onExcuteError)
-    // {
-    //     if (NowTurn == GameTurn.Turn.PlayerTurn)
-    //     {
-    //         if (_conActorDynamicIDs != null)
-    //         {
-    //             GameActor actor = _playerControlledActors[_playerControlledPtr];
-    //             _commandCenter.AddCommand(_commandCenter.GetCommandCache(), actor);
-    //
-    //             // 如果操作非法，将会中断执行并且返回等待命令
-    //             if (_commandCenter.Excute(actor.GetCommand(), actor, onExcuteFinished) == false)
-    //             {
-    //                 onExcuteError();
-    //             }
-    //         }
-    //     }
-    // }
-    
-    public void RunTurn(Action onExcuteFinished, Action onExcuteError)
+    void OnExcuteFinished()
     {
-        if (NowTurn == GameTurn.Turn.PlayerTurn)
+        _state = State.WaitCommand;
+        NextTurn();
+    }
+
+    void OnExcuteError()
+    {
+        _state = State.WaitCommand;
+    }
+
+    public void RunTurn()
+    {
+        Character character = _actorsManagerCenter.GetActorByDynamicId(_conActorDynamicIDs[turnActorPtr]) as Character;
+        if (character.GetActorStateTag() == ActorEnumType.ActorStateTag.Player)
         {
-            if (_conActorDynamicIDs != null)
+            switch (_state)
             {
-                uint actorDynamicId = _conActorDynamicIDs[_turnActorPtr];
-                GameActor actor = _actorsManagerCenter.GetActorByDynamicId(actorDynamicId);
-                _commandCenter.AddCommand(_commandCenter.GetCommandCache(), actor);
-                // 如果操作非法，或者没有操作，将会中断执行并且返回等待命令
-                if (_commandCenter.Excute(actor.GetCommand(), actor, onExcuteFinished) == false)
+                case State.WaitCommand:
                 {
-                    onExcuteError();
+                    if (_commandCenter.GenInputCommandCache())
+                    {
+                        _state = State.RunCommand;
+                        RunActorCommand(character);
+                    }
+
+                    break;
+                }
+                case State.RunCommand:
+                {
+                    RunActorCommand(character);
+                    break;
                 }
             }
+        }
+        else if (character.GetActorStateTag() == ActorEnumType.ActorStateTag.AI)
+        {
+            switch (_state)
+            {
+                case State.WaitCommand:
+                {
+                    _commandCenter.AddCommand(character.GenAICommand(), character);
+                    _state = State.RunCommand;
+                    RunActorCommand(character);
+
+                    break;
+                }
+                case State.RunCommand:
+                {
+                    RunActorCommand(character);
+                    break;
+                }
+            }
+        }
+    }
+
+    public void RunActorCommand(GameActor actor)
+    {
+        _commandCenter.AddCommand(_commandCenter.GetCommandCache(), actor);
+        // 如果操作非法，或者没有操作，将会中断执行并且返回等待命令
+        if (_commandCenter.Excute(actor.GetCommand(), actor, OnExcuteFinished) == false)
+        {
+            OnExcuteError();
         }
     }
 
@@ -105,6 +148,8 @@ public class TurnInstance
         var pos = _conActorDynamicIDs.FindIndex((uint f_id) => { return id == f_id; });
         if (pos == -1) return false;
 
+        _conActorDynamicIDs.RemoveAt(pos);
+        _conActorIDSet.Remove(id);
         // 如果删除位置小于指针，需要重定位
         if (pos < _turnActorPtr) BackPtr();
 

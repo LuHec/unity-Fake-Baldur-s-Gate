@@ -25,8 +25,9 @@ public class TopSystem : MonoBehaviour
     {
         InitMap();
         InitSystem();
-
-        _turnManager = new TurnManager(_commandCenter, _actorsManagerCenter);
+        _turnManager = TurnManager.Instance;
+        _turnManager.Init(_commandCenter, _actorsManagerCenter);
+        _messageCenter.Init(_actorsManagerCenter);
         
         _turnManager.AddTurn(_actorsManagerCenter.GetAllConActorsDynamicId());
     }

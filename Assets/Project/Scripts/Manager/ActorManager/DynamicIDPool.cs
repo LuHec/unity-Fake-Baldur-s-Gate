@@ -30,7 +30,7 @@ public class DynamicIDPool
     /// <returns>可用的id</returns>
     private uint GetAssignableItemID()
     {
-        // 如果队列空了才会推进指针，否则从队列里拿，需要注意队列永远不会存当前指针的值
+        // 如果队列空了才会推进指针，否则从队列里拿。队列内永远不会存当前指针的值
         if (_assignableItemIDQueue.Count == 0)
         {
             return _assignableItemID++;

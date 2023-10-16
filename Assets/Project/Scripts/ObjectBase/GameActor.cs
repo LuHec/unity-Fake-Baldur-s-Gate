@@ -9,10 +9,11 @@ public class GameActor : MonoBehaviour
     #region #Info
 
     protected ActorEnumType.ActorType _actorEnumType;
-    private ActorEnumType.ActorStateTag _actorStateTag;
+    [SerializeField] private ActorEnumType.ActorStateTag _actorStateTag;
 
     public ActorEnumType.ActorType GetActorType() => _actorEnumType;
     public ActorEnumType.ActorStateTag GetActorStateTag() => _actorStateTag;
+
 
     // 资源加载id
     public uint id;
@@ -42,8 +43,6 @@ public class GameActor : MonoBehaviour
     public ActorAudio actorAudio => _actorAudio;
     private ActorAudio _actorAudio;
 
-    
-    
     #endregion
 
     #region #Init
@@ -71,6 +70,7 @@ public class GameActor : MonoBehaviour
         transform.position = startPos;
 
         InitExtend();
+        AddListener();
     }
 
     public void InitBase()
@@ -91,7 +91,17 @@ public class GameActor : MonoBehaviour
     }
 
     #endregion
-    
+
+    #region #delegate
+
+    public event EventHandler<EventArgsType.ActorDieMessage> ActorDiedEventHandler;
+
+    public virtual void AddListener()
+    {
+        MessageCenter.Instance.SubmitOnActorDied(ref ActorDiedEventHandler);
+    }
+
+    #endregion
 
     #region #AI
 
@@ -175,5 +185,15 @@ public class GameActor : MonoBehaviour
     {
         characterAttribute.DecreaseHP(damage);
         actorAudio.PlayHitSFX();
+
+        if (characterAttribute.HP <= 0)
+        {
+            Die();
+        }
+    }
+
+    public virtual void Die()
+    {
+        ActorDiedEventHandler(this, new EventArgsType.ActorDieMessage(dynamic_id));
     }
 }

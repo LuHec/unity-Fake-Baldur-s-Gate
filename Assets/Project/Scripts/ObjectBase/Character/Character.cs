@@ -10,14 +10,39 @@ public class Character : GameActor
 
     #region #TypeInfo
 
-    protected ActorEnumType.CharacterType _characterType;
+    [SerializeField] protected ActorEnumType.CharacterType _characterType;
+    [SerializeField] protected ActorEnumType.ActorBattleState _characterBattleState;
+    [SerializeField] protected ActorEnumType.ActorHateState _actorHateState;
+
     public ActorEnumType.CharacterType GetCharacterType() => _characterType;
+    public ActorEnumType.ActorBattleState GetCharacterBattleState() => _characterBattleState;
+    public ActorEnumType.ActorHateState GetCharacterHateState => _actorHateState;
+
+    #endregion
+
+    #region #Component
+
+    private AIComponent _aiComponent;
+
+    #endregion
+
+    #region #delegate
+
+    public event EventHandler<EventArgsType.ActorAttackingMessage> CharacterAttackingHandler;
+
+    public override void AddListener()
+    {
+        base.AddListener();
+        MessageCenter.Instance.SubmitOnActorAttacking(ref CharacterAttackingHandler);
+    }
 
     #endregion
 
     protected override void InitExtend()
     {
         _actorEnumType = ActorEnumType.ActorType.Character;
+
+        _aiComponent = new AIComponent(this);
     }
 
     /// <summary>
@@ -53,5 +78,22 @@ public class Character : GameActor
         {
             _weapon.Attack(actorAttacked, onAttackEnd);
         }
+        else
+        {
+            base.Attack(actorAttacked, onAttackEnd);
+        }
+
+        CharacterAttackingHandler.Invoke(this,
+            new EventArgsType.ActorAttackingMessage(Dynamic_Id, actorAttacked.Dynamic_Id));
+    }
+
+    public void SetBattleState(ActorEnumType.ActorBattleState state)
+    {
+        _characterBattleState = state;
+    }
+
+    public CommandInstance GenAICommand()
+    {
+        return _aiComponent.GenAIInstance();
     }
 }

@@ -26,8 +26,8 @@ public class InputCommandsGenerator
 
             // 检测目标格子是否有人
             Vector3 mousePos = _playerInput.GetMouse3DPosition(LayerMask.GetMask("Default"));
-            _mapSystem.GetGrid().GetXZ(mousePos.x, mousePos.z, out int xMouse, out int zMouse);
-            GameActor targetGridActor = _mapSystem.GetGridObject(xMouse, zMouse).GetActor();
+            // _mapSystem.GetGrid().GetXZ(mousePos.x, mousePos.z, out int xMouse, out int zMouse);
+            GameActor targetGridActor = _mapSystem.GetGridObject(mousePos.x, mousePos.z).GetActor();
             
             if (targetGridActor == null)
             {

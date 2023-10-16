@@ -54,11 +54,17 @@ public class MapSystem : Singleton<MapSystem>
     /// <param name="x">计算后坐标</param>
     /// <param name="z">计算后坐标</param>
     /// <returns>GridObject</returns>
-    public GridObject GetGridObject(float x, float z)
+    public GridObject GetGridObject(int x, int z)
     {
-        return _grid.GetGridObject((int)x, (int)z);
+        return _grid.GetGridObject(x, z);
     }
 
+    public GridObject GetGridObject(float x, float y)
+    {
+        var vec2 = GetXZ(x, y);
+        return GetGridObject(vec2.x, vec2.y);
+    }
+    
     public GridObject GetGridObject(Vector3 worldPosition)
     {
         return GetGridObject(worldPosition.x, worldPosition.z);

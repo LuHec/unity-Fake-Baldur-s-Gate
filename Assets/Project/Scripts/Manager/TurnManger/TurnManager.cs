@@ -1,118 +1,77 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.Rendering.UI;
 
 /// <summary>
 /// 回合管理器
 /// </summary>
-public class TurnManager
+public class TurnManager : Singleton<TurnManager>
 {
-    // 回合制内actor
-    private List<TurnInstance> _turnInstances;
-    
-    //不在回合制内的actor
-    private TurnInstance _freeTurnInstance;
+    private HashSet<uint> globalPlayerControlledSet;
+    private HashSet<uint> globalSystemControlledSet;
 
-    private State _state = State.WaitCommand;
+    private List<TurnInstance> _turnInstances;
     private CommandCenter _commandCenter;
     private MessageCenter _messageCenter;
     private ActorsManagerCenter _actorsManagerCenter;
+    private Character currConChara;
+    public Character CurrConChara => currConChara;
+    public EventHandler onConCharaChanged;
+    public List<TurnInstance> turnInstances => _turnInstances; 
 
-    enum State
-    {
-        WaitCommand,
-        RunCommand,
-    }
-
-    public TurnManager(CommandCenter commandCenter, ActorsManagerCenter actorsManagerCenter)
+    public void Init(CommandCenter commandCenter, ActorsManagerCenter actorsManagerCenter)
     {
         _actorsManagerCenter = actorsManagerCenter;
         _commandCenter = commandCenter;
         _messageCenter = MessageCenter.Instance;
         _turnInstances = new List<TurnInstance>();
+        globalPlayerControlledSet = new HashSet<uint>();
     }
-    
 
+
+    /// <summary>
+    /// 加入新的回合。可能会有被重组的id，因此会进行去重
+    /// </summary>
+    /// <param name="conActorDynamic_id"></param>
     public void AddTurn(List<uint> conActorDynamic_id)
     {
+        foreach (uint id in conActorDynamic_id)
+        {
+            if (_actorsManagerCenter.GetActorByDynamicId(id).GetActorType() == ActorEnumType.ActorType.Character)
+            {
+                if(!globalPlayerControlledSet.Contains(id))
+                    globalPlayerControlledSet.Add(id);
+            }
+            else
+            {
+                if(!globalSystemControlledSet.Contains(id))
+                    globalSystemControlledSet.Add(id);
+            }
+        }
+
         _turnInstances.Add(new TurnInstance(_actorsManagerCenter, _commandCenter, conActorDynamic_id));
+    }
+
+    public void RemoveTurn(int idx)
+    {
+        _turnInstances.RemoveAt(idx);
     }
 
     public void RunTurn()
     {
-        if (_messageCenter.globalState.TurnMode)
+        foreach (TurnInstance turnInstance in _turnInstances)
         {
-            RunTurnMode();
-        }
-        else
-        {
-            Run3RdMode();
+            turnInstance.RunTurn();
         }
     }
 
-    public void RunTurnMode()
+    public void Run3rdMode()
     {
-        switch (_state)
+        foreach (var id in globalPlayerControlledSet)
         {
-            case State.WaitCommand:
-            {
-                if (_commandCenter.GenInputCommandCache())
-                {
-                    _state = State.RunCommand;
-                    _turnInstances[0].RunTurn(
-                        () =>
-                        {
-                            _state = State.WaitCommand;
-                            _turnInstances[0].NextTurn();
-                        },
-                        () => { _state = State.WaitCommand; }
-                    );
-                }
-
-                break;
-            }
-            case State.RunCommand:
-            {
-                _turnInstances[0].RunTurn(
-                    () =>
-                    {
-                        _state = State.WaitCommand;
-                        _turnInstances[0].NextTurn();
-                    },
-                    () => { _state = State.WaitCommand; }
-                );
-                break;
-            }
+            // if()
         }
-    }
-
-    public void Run3RdMode()
-    {
-        _commandCenter.GenInputCommandCache();
-
-        _turnInstances[0].RunTurn(
-            () => { },
-            () => { }
-        );
-    }
-
-    void OnExcuteFinished()
-    {
-        _state = State.WaitCommand;
-        _turnInstances[0].NextTurn();
-    }
-
-    void OnExcuteError()
-    {
-        _state = State.WaitCommand;
-    }
-}
-
-public class GameTurn
-{
-    public enum Turn
-    {
-        PlayerTurn,
-        SystemTurn
     }
 }

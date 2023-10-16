@@ -4882,6 +4882,7 @@ GameObject:
   - component: {fileID: 9024557544256784201}
   - component: {fileID: 8915760992618203175}
   - component: {fileID: 1678885391219748489}
+  - component: {fileID: 5362848195176448681}
   m_Layer: 0
   m_Name: VFX_BombProjectileHit
   m_TagString: Untagged
@@ -9743,6 +9744,20 @@ ParticleSystemRenderer:
   m_MeshWeighting2: 1
   m_MeshWeighting3: 1
   m_MaskInteraction: 0
+--- !u!114 &5362848195176448681
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8567008411333215980}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 41847a6928a9c934089a0fb57c201c1a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  destroyGameObject: 1
+  lifetime: 3
 --- !u!1 &8833818823661555072
 GameObject:
   m_ObjectHideFlags: 0
