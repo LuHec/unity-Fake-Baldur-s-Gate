@@ -11,25 +11,15 @@ using UnityEngine;
 public class ActorsManagerCenter
 {
     private ScriptObjectDataManager _scriptObjectDataManager;
-
     private DynamicIDPool _dynamicIDPool;
-
-    // private List<GameActor> _systemControlledActors;
-    // private List<GameActor> _playerControlledActors;
-    // private Dictionary<Transform, GameActor> _actorsDict;
     private MapSystem _mapSystem;
-
-    // 当前持有的所有可控制Actor
-    private Dictionary<uint, GameActor> _controlledActors;
+    private HashSet<uint> _controlledActorsSet;
 
     public ActorsManagerCenter()
     {
-        // _systemControlledActors = new List<GameActor>();
-        // _playerControlledActors = new List<GameActor>();
         _dynamicIDPool = new DynamicIDPool();
         _mapSystem = MapSystem.Instance;
-        _controlledActors = new Dictionary<uint, GameActor>();
-        // _actorsDict = new Dictionary<Transform, GameActor>();
+        _controlledActorsSet = new HashSet<uint>();
 
         Init();
     }
@@ -38,13 +28,20 @@ public class ActorsManagerCenter
     {
         _scriptObjectDataManager = new ScriptObjectDataManager();
         LoadAllControlledActorsResource();
+        
+        MessageCenter.Instance.SubmitActorDie(OnActorDie);
     }
 
-    #region #NoUse
+    #region #Listener
+
+    public void OnActorDie(System.Object sender, EventArgsType.ActorDieMessage message)
+    {
+        RemoveConActorByDynamicId(message.dead_dynamic_id);
+    }
 
     #endregion
 
-    #region LoadResource
+    #region #LoadResource
 
     /// <summary>
     /// 加载actor资源，并注册到id池
@@ -57,7 +54,8 @@ public class ActorsManagerCenter
             // 初始化数据
             var objCharacter = Object.Instantiate(obj, Vector3.zero, Quaternion.identity);
             var charActor = objCharacter.GetComponent<GameActor>();
-            charActor.InitBase(_scriptObjectDataManager.CharacterAttrSOData.DataDictionary[charActor.id]);
+            charActor.InitBase(_scriptObjectDataManager.CharacterAttrSOData.DataDictionary[charActor.id],
+                ActorEnumType.ActorStateTag.AI);
             // 添加到id池
             SignActor(charActor);
 
@@ -75,6 +73,7 @@ public class ActorsManagerCenter
             // 随机生成到地图上可用位置
             Vector2Int randomPos = GetRandomGridPos();
             _mapSystem.SetGridActor(charActor.startPos.x, charActor.startPos.z, charActor);
+            charActor.transform.position = charActor.startPos;
         }
     }
 
@@ -94,7 +93,8 @@ public class ActorsManagerCenter
     /// <returns></returns>
     public bool RemoveConActorByDynamicId(uint id)
     {
-        if (_controlledActors.Remove(id) == false) return false;
+        if (_controlledActorsSet.Remove(id) == false) return false;
+        _mapSystem.GetGridObject(GetActorByDynamicId(id).transform.position).ClearActor();
         return _dynamicIDPool.RemoveActorById(id);
     }
 
@@ -107,28 +107,50 @@ public class ActorsManagerCenter
         return _dynamicIDPool.GetActorById(dynamicId);
     }
 
-    /// <summary>
-    /// Warning!! -- Sign之前需要删除 -- Warning!! 
-    /// </summary>
-    /// <param name="actor"></param>
-    /// <returns></returns>
-    public bool SignActor(GameActor actor)
-    {
-        if (_dynamicIDPool.SignActor(actor) == false)
-            return false;
-        if (actor.GetActorType() == ActorEnumType.ActorType.Character) _controlledActors[actor.Dynamic_Id] = actor;
-        return true;
-    }
 
     public List<uint> GetAllConActorsDynamicId()
     {
         List<uint> actorsDynamicId = new List<uint>();
-        foreach (var pair in _controlledActors)
+        foreach (var id in _controlledActorsSet)
         {
-            actorsDynamicId.Add(pair.Key);
+            actorsDynamicId.Add(id);
         }
 
         return actorsDynamicId;
+    }
+
+    #endregion
+
+    #region #Setter
+
+    /// <summary>
+    /// Warning!! -- 只注册未注册过的，你也不想一个实例占用两个id吧？ -- Warning!! 
+    /// </summary>
+    /// <param name="actor"></param>
+    /// <returns></returns>
+    private bool SignActor(GameActor actor)
+    {
+        if (_dynamicIDPool.SignActor(actor) == false)
+            return false;
+        if (actor.GetActorType() == ActorEnumType.ActorType.Character) _controlledActorsSet.Add(actor.Dynamic_Id);
+        return true;
+    }
+
+    public uint LoadActorTest(Vector3 position)
+    {
+        Object obj = ResourcesLoader.LoadTestActorResource();
+        // 初始化数据
+        var objCharacter = Object.Instantiate(obj, Vector3.zero, Quaternion.identity);
+        var charActor = objCharacter.GetComponent<GameActor>();
+        charActor.InitBase(_scriptObjectDataManager.CharacterAttrSOData.DataDictionary[charActor.id],
+            ActorEnumType.ActorStateTag.AI);
+        // 添加到id池
+        SignActor(charActor);
+
+        _mapSystem.SetGridActor(position.x, position.z, charActor);
+        charActor.transform.position = position;
+
+        return charActor.Dynamic_Id;
     }
 
     #endregion

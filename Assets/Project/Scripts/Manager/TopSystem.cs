@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using LuHec.Utils;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 /// <summary>
 ///  顶层系统
@@ -28,14 +29,27 @@ public class TopSystem : MonoBehaviour
         _turnManager = TurnManager.Instance;
         _turnManager.Init(_commandCenter, _actorsManagerCenter);
         _messageCenter.Init(_actorsManagerCenter);
-        
+
         _turnManager.AddTurn(_actorsManagerCenter.GetAllConActorsDynamicId());
     }
 
 
     private void Update()
     {
-        _turnManager.RunTurn();
+        if (MessageCenter.Instance.globalState.EditMode == false)
+        {
+            _turnManager.RunTurn();
+
+            if (PlayerInput.Instance.IsRClick)
+            {
+                // test
+                List<uint> ids = new List<uint>();
+                ids.Add(_actorsManagerCenter.LoadActorTest(new Vector3(5, 1, 5)));
+                // ids.Add(_actorsManagerCenter.LoadActorTest(new Vector3(6, 1, 6)));
+
+                TurnManager.Instance.AddTurn(ids);
+            }
+        }
     }
 
     #endregion
@@ -54,7 +68,7 @@ public class TopSystem : MonoBehaviour
     {
         _mapSystem = MapSystem.Instance;
         _pathFinding = PathFinding.Instance;
-        
+
         _pathFinding.Init(_mapSystem.GetGrid());
     }
 

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 
 /// <summary>
@@ -8,25 +9,34 @@ using UnityEngine;
 public class TurnInstance
 {
     private CommandCenter _commandCenter;
-
-    private HashSet<uint> _conActorIDSet;
-    private List<uint> _conActorDynamicIDs;
-
-    private int _turnActorPtr = 0;
+    public HashSet<uint> _conActorDynamicIDSet;
+    public List<uint> _conActorDynamicIDs;
     private ActorsManagerCenter _actorsManagerCenter;
-
-    private bool _battleMode = false;
+    private int _turnActorPtr = 0;
 
     public int turnActorPtr => _turnActorPtr;
-    public HashSet<uint> conActorIDSet => _conActorIDSet;
+    public HashSet<uint> ConActorDynamicIDSet => _conActorDynamicIDSet;
+    public List<uint> ConActorDynamicIDs => _conActorDynamicIDs;
 
-    enum State
+    // enum State
+    // {
+    //     WaitCommand,
+    //     RunCommand,
+    // }
+    //
+    // private State _state = State.WaitCommand;
+
+    public TurnInstance()
     {
-        WaitCommand,
-        RunCommand,
     }
 
-    private State _state = State.WaitCommand;
+    public TurnInstance(ActorsManagerCenter actorsManagerCenter, CommandCenter commandCenter)
+    {
+        _actorsManagerCenter = actorsManagerCenter;
+        _commandCenter = commandCenter;
+        _conActorDynamicIDs = new List<uint>();
+        _conActorDynamicIDSet = new HashSet<uint>();
+    }
 
     public TurnInstance(ActorsManagerCenter actorsManagerCenter, CommandCenter commandCenter,
         List<uint> conActorDynamicIDs)
@@ -34,9 +44,14 @@ public class TurnInstance
         _actorsManagerCenter = actorsManagerCenter;
         _commandCenter = commandCenter;
         _conActorDynamicIDs = conActorDynamicIDs;
+
+        _conActorDynamicIDSet = conActorDynamicIDs.ToHashSet();
+        foreach (uint id in _conActorDynamicIDs)
+        {
+            _actorsManagerCenter.GetActorByDynamicId(id).InitTurnIntance(this);
+        }
         // SortByActorSpeed();
     }
-
 
     /// <summary>
     /// 依据人物速度对回合进行排序
@@ -50,6 +65,22 @@ public class TurnInstance
                 ? 1
                 : -1;
         });
+    }
+
+    /// <summary>
+    /// 回合加入新actor，同时为actor设置回合
+    /// </summary>
+    /// <param name="id"></param>
+    /// <returns></returns>
+    public bool AddActorByDynamicId(uint id)
+    {
+        if (_conActorDynamicIDSet.Add(id) == false) return false;
+
+        _conActorDynamicIDs.Add(id);
+
+        _actorsManagerCenter.GetActorByDynamicId(id).InitTurnIntance(this);
+
+        return true;
     }
 
     private void PushPtr()
@@ -73,68 +104,74 @@ public class TurnInstance
 
     void OnExcuteFinished()
     {
-        _state = State.WaitCommand;
         NextTurn();
     }
 
-    void OnExcuteError()
-    {
-        _state = State.WaitCommand;
-    }
+    // void OnExcuteError()
+    // {
+    //     _state = State.WaitCommand;
+    // }
 
     public void RunTurn()
     {
         Character character = _actorsManagerCenter.GetActorByDynamicId(_conActorDynamicIDs[turnActorPtr]) as Character;
-        if (character.GetActorStateTag() == ActorEnumType.ActorStateTag.Player)
-        {
-            switch (_state)
-            {
-                case State.WaitCommand:
-                {
-                    if (_commandCenter.GenInputCommandCache())
-                    {
-                        _state = State.RunCommand;
-                        RunActorCommand(character);
-                    }
-
-                    break;
-                }
-                case State.RunCommand:
-                {
-                    RunActorCommand(character);
-                    break;
-                }
-            }
-        }
-        else if (character.GetActorStateTag() == ActorEnumType.ActorStateTag.AI)
-        {
-            switch (_state)
-            {
-                case State.WaitCommand:
-                {
-                    _commandCenter.AddCommand(character.GenAICommand(), character);
-                    _state = State.RunCommand;
-                    RunActorCommand(character);
-
-                    break;
-                }
-                case State.RunCommand:
-                {
-                    RunActorCommand(character);
-                    break;
-                }
-            }
-        }
+        RunActorCommand(character);
     }
 
-    public void RunActorCommand(GameActor actor)
+    // public void RunTurn()
+    // {
+    //     Character character = _actorsManagerCenter.GetActorByDynamicId(_conActorDynamicIDs[turnActorPtr]) as Character;
+    //     if (character.GetActorStateTag() == ActorEnumType.ActorStateTag.Player)
+    //     {
+    //         switch (_state)
+    //         {
+    //             case State.WaitCommand:
+    //             {
+    //                 if (_commandCenter.GenInputCommandCache())
+    //                 {
+    //                     _state = State.RunCommand;
+    //                     RunActorCommand(character);
+    //                 }
+    //
+    //                 break;
+    //             }
+    //             case State.RunCommand:
+    //             {
+    //                 RunActorCommand(character);
+    //                 break;
+    //             }
+    //         }
+    //     }
+    //     else if (character.GetActorStateTag() == ActorEnumType.ActorStateTag.AI)
+    //     {
+    //         switch (_state)
+    //         {
+    //             case State.WaitCommand:
+    //             {
+    //                 _commandCenter.AddCommand(character.GenAICommand(), character);
+    //                 _state = State.RunCommand;
+    //                 RunActorCommand(character);
+    //
+    //                 break;
+    //             }
+    //             case State.RunCommand:
+    //             {
+    //                 RunActorCommand(character);
+    //                 break;
+    //             }
+    //         }
+    //     }
+    // }
+
+    public void RunActorCommand(Character character)
     {
-        _commandCenter.AddCommand(_commandCenter.GetCommandCache(), actor);
+        // _commandCenter.AddCommand(character.GenCommandInstance(), character);
         // 如果操作非法，或者没有操作，将会中断执行并且返回等待命令
-        if (_commandCenter.Excute(actor.GetCommand(), actor, OnExcuteFinished) == false)
+        _commandCenter.Excute(character.GenCommandInstance(), character, () =>
         {
-            OnExcuteError();
-        }
+            OnExcuteFinished();
+            character.ClearCommandCache();
+        });
     }
 
     /// <summary>
@@ -149,7 +186,7 @@ public class TurnInstance
         if (pos == -1) return false;
 
         _conActorDynamicIDs.RemoveAt(pos);
-        _conActorIDSet.Remove(id);
+        _conActorDynamicIDSet.Remove(id);
         // 如果删除位置小于指针，需要重定位
         if (pos < _turnActorPtr) BackPtr();
 

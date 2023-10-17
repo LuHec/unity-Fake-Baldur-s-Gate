@@ -13,6 +13,9 @@ public class ActorEnumType
     [Serializable]
     public enum CharacterType
     {
+        Npc,
+        Player,
+        Follow,
     }
 
     [Serializable]

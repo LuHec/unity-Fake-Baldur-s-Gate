@@ -7,7 +7,7 @@ public class EmptyActorCommand : CommandInstance
 {
     public override bool Excute(GameActor actor, Action onExcuteFinsihed)
     {
-        onExcuteFinsihed();
+        onExcuteFinsihed?.Invoke();
         return true;
     }
 

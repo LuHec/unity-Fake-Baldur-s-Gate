@@ -20,9 +20,11 @@ public class Character : GameActor
 
     #endregion
 
-    #region #Component
+    #region #Command Component
 
+    private bool runningCommand = false;
     private AIComponent _aiComponent;
+    private InputCommandsGenerator _inputCommandsGenerator;
 
     #endregion
 
@@ -33,7 +35,12 @@ public class Character : GameActor
     public override void AddListener()
     {
         base.AddListener();
-        MessageCenter.Instance.SubmitOnActorAttacking(ref CharacterAttackingHandler);
+        MessageCenter.Instance.ListenOnActorAttacking(ref CharacterAttackingHandler);
+    }
+
+    public override void OnSelected()
+    {
+        _characterType = ActorEnumType.CharacterType.Player;
     }
 
     #endregion
@@ -42,7 +49,11 @@ public class Character : GameActor
     {
         _actorEnumType = ActorEnumType.ActorType.Character;
 
-        _aiComponent = new AIComponent(this);
+        if (_aiComponent == null)
+            _aiComponent = new AIComponent(this);
+
+        if (_inputCommandsGenerator == null)
+            _inputCommandsGenerator = new InputCommandsGenerator(this);
     }
 
     /// <summary>
@@ -69,7 +80,9 @@ public class Character : GameActor
 
     public override float GetDamage()
     {
-        return _weapon.WeaponAttributes.damage;
+        if (_weapon)
+            return _weapon.WeaponAttributes.damage;
+        else return base.GetDamage();
     }
 
     public override void Attack(GameActor actorAttacked, Action onAttackEnd)
@@ -83,7 +96,7 @@ public class Character : GameActor
             base.Attack(actorAttacked, onAttackEnd);
         }
 
-        CharacterAttackingHandler.Invoke(this,
+        CharacterAttackingHandler?.Invoke(this,
             new EventArgsType.ActorAttackingMessage(Dynamic_Id, actorAttacked.Dynamic_Id));
     }
 
@@ -92,8 +105,44 @@ public class Character : GameActor
         _characterBattleState = state;
     }
 
-    public CommandInstance GenAICommand()
+    private CommandInstance GenInputCommand()
     {
-        return _aiComponent.GenAIInstance();
+        CommandInstance cmd = _inputCommandsGenerator.GetCommand();
+        if (cmd != null)
+        {
+            
+        }
+        return cmd;
+    }
+
+    private CommandInstance GenAICommand()
+    {
+        return _aiComponent.GetCommand();
+    }
+
+    public CommandInstance GenCommandInstance()
+    {
+        if (GetActorStateTag() == ActorEnumType.ActorStateTag.Player)
+        {
+            return GenInputCommand();
+        }
+        else if (GetActorStateTag() == ActorEnumType.ActorStateTag.AI)
+        {
+            return GenAICommand();
+        }
+
+        return null;
+    }
+
+    public void ClearCommandCache()
+    {
+        if (GetActorStateTag() == ActorEnumType.ActorStateTag.Player)
+        {
+            _inputCommandsGenerator.ClearCommandCache();
+        }
+        else if (GetActorStateTag() == ActorEnumType.ActorStateTag.AI)
+        {
+            _aiComponent.ClearCommandCache();
+        }
     }
 }

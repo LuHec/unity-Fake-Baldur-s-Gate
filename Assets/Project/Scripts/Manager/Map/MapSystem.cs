@@ -26,6 +26,7 @@ public class MapSystem : Singleton<MapSystem>
 
     public GridXZ<GridObject> GetGrid() => _grid;
 
+
     /// <summary>
     /// 返回坐标对应格子上的GameActor
     /// </summary>
@@ -71,7 +72,7 @@ public class MapSystem : Singleton<MapSystem>
     }
 
     /// <summary>
-    /// 指定位置上添加Actor
+    /// 指定位置上添加Actor，需要世界坐标
     /// </summary>
     /// <returns></returns>
     public bool SetGridActor(float x, float z, GameActor actor)
@@ -80,6 +81,20 @@ public class MapSystem : Singleton<MapSystem>
         if (GetGridActor(gridPos.x, gridPos.y) == null)
         {
             _grid.GetGridObject(gridPos.x, gridPos.y).SetActor(actor);
+        }
+
+        return false;
+    }
+    
+    /// <summary>
+    /// 指定位置上添加Actor,需要格子坐标
+    /// </summary>
+    /// <returns></returns>
+    public bool SetGridActor(int x, int z, GameActor actor)
+    {
+        if (GetGridActor(x, z) == null)
+        {
+            _grid.GetGridObject(x, z).SetActor(actor);
         }
 
         return false;

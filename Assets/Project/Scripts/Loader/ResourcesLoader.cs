@@ -97,6 +97,13 @@ public static class ResourcesLoader
     #endregion
 
     #region #ActorLoader
+
+    public static Object LoadTestActorResource()
+    {
+        var actor = Resources.Load("Actors/CharacterTest/character 1");
+
+        return actor;
+    }
     
     public static Object[] LoadAllControlledActorsResource()
     {

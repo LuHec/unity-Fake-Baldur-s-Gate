@@ -10,33 +10,12 @@ public class CommandCenter
 {
     private InputCommandsGenerator _inputCommandsGenerator;
     private MapSystem _mapSystem;
-    private CommandInstance _commandInstanceCache;
     private ActorsManagerCenter _actorsManagerCenter;
 
     public CommandCenter(ActorsManagerCenter actorsManagerCenter)
     {
         _actorsManagerCenter = actorsManagerCenter;
         _inputCommandsGenerator = new InputCommandsGenerator();
-    }
-    
-    public CommandInstance GetCommandCache()
-    {
-        var res = _commandInstanceCache;
-        _commandInstanceCache = null;
-        return res;
-    }
-
-    public bool CanGenCommandCache => _commandInstanceCache == null;
-    
-    /// <summary>
-    ///  返回监听的输入指令,如果没有输入则返回false
-    /// </summary>
-    /// <returns>CommandInstance</returns>
-    public bool GenInputCommandCache()
-    {
-        if (!CanGenCommandCache) return false;
-        _commandInstanceCache = _inputCommandsGenerator.GetInputCommand();
-        return _commandInstanceCache != null;
     }
 
     /// <summary>

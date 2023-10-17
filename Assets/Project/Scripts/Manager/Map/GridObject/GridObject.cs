@@ -6,9 +6,12 @@
     public int X => _x;
     public int Y => _y;
     private GameActor _actor;
+    private PlacedObject _placedObject;
 
     public bool Reachable => _actor == null;
+
     public GridObject cameFromNode;
+
     // 起始点数
     public int gCost;
 
@@ -17,12 +20,13 @@
 
     // 总计点数
     public int fCost;
-    
+
 
     public void CalculateFCost()
     {
         fCost = gCost + hCost;
     }
+
 
     public GridObject(GridXZ<GridObject> grid, int x, int y)
     {
@@ -60,5 +64,32 @@
         return _x + "," + _y;
     }
 
+    #region #build
+
     public GameActor GetActor() => _actor;
+
+
+    public bool CanBuild()
+    {
+        return _placedObject == null;
+    }
+
+    public void SetPlacedObect(PlacedObject placedObject)
+    {
+        if (CanBuild())
+        {
+            _placedObject = placedObject;
+        }
+
+        _grid.OnGridObjectChanged(_x, _y);
+    }
+
+    public void ClearPlacedObject()
+    {
+        _placedObject = null;
+    }
+
+    public PlacedObject GetPlaceObject() => _placedObject;
+
+    #endregion
 }

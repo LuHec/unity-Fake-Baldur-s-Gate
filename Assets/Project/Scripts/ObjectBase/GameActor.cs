@@ -20,8 +20,12 @@ public class GameActor : MonoBehaviour
 
     // 运行时id
     private uint dynamic_id;
+    
+    // 处在的回合实例
+    private TurnInstance _currentTurn;
 
     public uint Dynamic_Id => dynamic_id;
+    public TurnInstance CurrentTurn => _currentTurn;
 
     public float speed;
 
@@ -59,11 +63,12 @@ public class GameActor : MonoBehaviour
     /// 初始化Actor的属性
     /// </summary>
     /// <param name="newCharacterAttribute"></param>
-    public void InitBase(CharacterAttributeSerializable newCharacterAttribute)
+    public void InitBase(CharacterAttributeSerializable newCharacterAttribute, ActorEnumType.ActorStateTag tag)
     {
+        _actorStateTag = tag;
+        
         characterAttribute = new CharacterAttribute(newCharacterAttribute.id, newCharacterAttribute.name,
             newCharacterAttribute.maxHp, newCharacterAttribute.maxActPoints, newCharacterAttribute.weaponId);
-
 
         startPos.x *= MapSystem.Instance.GetGrid().Cellsize;
         startPos.z *= MapSystem.Instance.GetGrid().Cellsize;
@@ -85,6 +90,11 @@ public class GameActor : MonoBehaviour
     {
     }
 
+    public void InitTurnIntance(TurnInstance turnInstance)
+    {
+        _currentTurn = turnInstance;
+    }
+
     public void InitDynamicId(uint id)
     {
         dynamic_id = id;
@@ -98,9 +108,14 @@ public class GameActor : MonoBehaviour
 
     public virtual void AddListener()
     {
-        MessageCenter.Instance.SubmitOnActorDied(ref ActorDiedEventHandler);
+        MessageCenter.Instance.ListenOnActorDied(ref ActorDiedEventHandler);
     }
 
+    public virtual void OnSelected()
+    {
+        
+    }
+    
     #endregion
 
     #region #AI
@@ -112,14 +127,6 @@ public class GameActor : MonoBehaviour
     public void SetCharacterStateTo(ActorEnumType.ActorStateTag newStateTag)
     {
         _actorStateTag = newStateTag;
-    }
-
-    /// <summary>
-    /// 生成AI
-    /// </summary>
-    public virtual void SelfAICalculate()
-    {
-        Debug.Log(dynamic_id + " " + "Ai Running....");
     }
 
     #endregion
@@ -179,6 +186,7 @@ public class GameActor : MonoBehaviour
     public virtual void Attack(GameActor actorAttacked, Action onAttackeEnd = null)
     {
         actorAttacked.Hurt(GetDamage());
+        onAttackeEnd?.Invoke();
     }
 
     public virtual void Hurt(float damage)
@@ -195,5 +203,6 @@ public class GameActor : MonoBehaviour
     public virtual void Die()
     {
         ActorDiedEventHandler(this, new EventArgsType.ActorDieMessage(dynamic_id));
+        GetComponentInChildren<MeshRenderer>().materials[0].color = Color.red;
     }
 }
