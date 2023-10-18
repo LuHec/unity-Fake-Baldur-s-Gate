@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using UnityEngine;
 using System.Collections.Generic;
 using Unity.VisualScripting;
@@ -20,7 +21,7 @@ public class GameActor : MonoBehaviour
 
     // 运行时id
     private uint dynamic_id;
-    
+
     // 处在的回合实例
     private TurnInstance _currentTurn;
 
@@ -66,7 +67,7 @@ public class GameActor : MonoBehaviour
     public void InitBase(CharacterAttributeSerializable newCharacterAttribute, ActorEnumType.ActorStateTag tag)
     {
         _actorStateTag = tag;
-        
+
         characterAttribute = new CharacterAttribute(newCharacterAttribute.id, newCharacterAttribute.name,
             newCharacterAttribute.maxHp, newCharacterAttribute.maxActPoints, newCharacterAttribute.weaponId);
 
@@ -113,9 +114,8 @@ public class GameActor : MonoBehaviour
 
     public virtual void OnSelected()
     {
-        
     }
-    
+
     #endregion
 
     #region #AI
@@ -183,10 +183,10 @@ public class GameActor : MonoBehaviour
         return 0;
     }
 
-    public virtual void Attack(GameActor actorAttacked, Action onAttackeEnd = null)
+    public virtual void Attack(GameActor actorAttacked, Action onAttackEnd = null)
     {
         actorAttacked.Hurt(GetDamage());
-        onAttackeEnd?.Invoke();
+        onAttackEnd?.Invoke();
     }
 
     public virtual void Hurt(float damage)
@@ -204,5 +204,24 @@ public class GameActor : MonoBehaviour
     {
         ActorDiedEventHandler(this, new EventArgsType.ActorDieMessage(dynamic_id));
         GetComponentInChildren<MeshRenderer>().materials[0].color = Color.red;
+    }
+
+    public virtual void Wait(Action onWaitEnd = null)
+    {
+        StartCoroutine(WaitCoroutine(onWaitEnd));
+    }
+
+    public IEnumerator WaitCoroutine(Action onWaitEnd)
+    {
+        float t = 1.5f;
+        float timmer = 0;
+        while (timmer < t)
+        {
+            timmer += Time.fixedDeltaTime;
+            Debug.Log("wait");
+            yield return null;
+        }
+
+        onWaitEnd?.Invoke();
     }
 }

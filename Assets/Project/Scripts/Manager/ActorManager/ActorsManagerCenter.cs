@@ -8,27 +8,30 @@ using UnityEngine;
 /// <summary>
 /// 管理中心负责管理所有的游戏内物品：物品、角色等。
 /// </summary>
-public class ActorsManagerCenter
+public class ActorsManagerCenter : Singleton<ActorsManagerCenter>
 {
     private ScriptObjectDataManager _scriptObjectDataManager;
     private DynamicIDPool _dynamicIDPool;
     private MapSystem _mapSystem;
     private HashSet<uint> _controlledActorsSet;
 
-    public ActorsManagerCenter()
+    // public ActorsManagerCenter()
+    // {
+    //     _dynamicIDPool = new DynamicIDPool();
+    //     _mapSystem = MapSystem.Instance;
+    //     _controlledActorsSet = new HashSet<uint>();
+    //
+    //     Init();
+    // }
+
+    public void Init()
     {
         _dynamicIDPool = new DynamicIDPool();
         _mapSystem = MapSystem.Instance;
         _controlledActorsSet = new HashSet<uint>();
-
-        Init();
-    }
-
-    public void Init()
-    {
         _scriptObjectDataManager = new ScriptObjectDataManager();
-        LoadAllControlledActorsResource();
-        
+        // LoadAllControlledActorsResource();
+
         MessageCenter.Instance.SubmitActorDie(OnActorDie);
     }
 
@@ -75,6 +78,48 @@ public class ActorsManagerCenter
             _mapSystem.SetGridActor(charActor.startPos.x, charActor.startPos.z, charActor);
             charActor.transform.position = charActor.startPos;
         }
+    }
+
+    public uint LoadActorTest(Vector3 position)
+    {
+        Object obj = ResourcesLoader.LoadTestActorResource();
+        // 初始化数据
+        var objCharacter = Object.Instantiate(obj, Vector3.zero, Quaternion.identity);
+        var charActor = objCharacter.GetComponent<GameActor>();
+        charActor.InitBase(_scriptObjectDataManager.CharacterAttrSOData.DataDictionary[charActor.id],
+            ActorEnumType.ActorStateTag.AI);
+        // 添加到id池
+        SignActor(charActor);
+
+        _mapSystem.SetGridActor(position.x, position.z, charActor);
+        charActor.transform.position = position;
+
+        return charActor.Dynamic_Id;
+    }
+
+    /// <summary>
+    /// 加载四个玩家控制角色
+    /// </summary>
+    /// <returns></returns>
+    public List<uint> LoadPlayerActor()
+    {
+        var list = new List<uint>();
+        list.Add(LoadActorTest(Vector3.zero));
+        list.Add(LoadActorTest(Vector3.zero));
+        list.Add(LoadActorTest(Vector3.zero));
+        list.Add(LoadActorTest(Vector3.zero));
+        
+        GetActorByDynamicId(list[0]).SetCharacterStateTo(ActorEnumType.ActorStateTag.Player);
+        GetActorByDynamicId(list[1]).SetCharacterStateTo(ActorEnumType.ActorStateTag.AI);
+        GetActorByDynamicId(list[2]).SetCharacterStateTo(ActorEnumType.ActorStateTag.AI);
+        GetActorByDynamicId(list[3]).SetCharacterStateTo(ActorEnumType.ActorStateTag.AI);
+        
+        (GetActorByDynamicId(list[0]) as Character).SetAIMode(ActorEnumType.AIMode.Follow);
+        (GetActorByDynamicId(list[1]) as Character).SetAIMode(ActorEnumType.AIMode.Follow);
+        (GetActorByDynamicId(list[2]) as Character).SetAIMode(ActorEnumType.AIMode.Follow);
+        (GetActorByDynamicId(list[3]) as Character).SetAIMode(ActorEnumType.AIMode.Follow);
+        
+        return list;
     }
 
     public Vector2Int GetRandomGridPos()
@@ -134,23 +179,6 @@ public class ActorsManagerCenter
             return false;
         if (actor.GetActorType() == ActorEnumType.ActorType.Character) _controlledActorsSet.Add(actor.Dynamic_Id);
         return true;
-    }
-
-    public uint LoadActorTest(Vector3 position)
-    {
-        Object obj = ResourcesLoader.LoadTestActorResource();
-        // 初始化数据
-        var objCharacter = Object.Instantiate(obj, Vector3.zero, Quaternion.identity);
-        var charActor = objCharacter.GetComponent<GameActor>();
-        charActor.InitBase(_scriptObjectDataManager.CharacterAttrSOData.DataDictionary[charActor.id],
-            ActorEnumType.ActorStateTag.AI);
-        // 添加到id池
-        SignActor(charActor);
-
-        _mapSystem.SetGridActor(position.x, position.z, charActor);
-        charActor.transform.position = position;
-
-        return charActor.Dynamic_Id;
     }
 
     #endregion

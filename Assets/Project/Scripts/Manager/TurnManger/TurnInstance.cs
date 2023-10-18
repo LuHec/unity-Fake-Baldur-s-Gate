@@ -18,24 +18,25 @@ public class TurnInstance
     public HashSet<uint> ConActorDynamicIDSet => _conActorDynamicIDSet;
     public List<uint> ConActorDynamicIDs => _conActorDynamicIDs;
 
-    // enum State
-    // {
-    //     WaitCommand,
-    //     RunCommand,
-    // }
-    //
-    // private State _state = State.WaitCommand;
+    #region #delgate
+
+    private EventHandler<EventArgsType.TurnNeedRemoveMessage> TurnNeedRemoveHandler;
+
+    private void InitListen()
+    {
+        _commandCenter = CommandCenter.Instance;
+        _actorsManagerCenter = ActorsManagerCenter.Instance;
+        MessageCenter.Instance.ListenOnTurnNeedRemove(ref TurnNeedRemoveHandler);
+    }
+
+    #endregion
 
     public TurnInstance()
     {
-    }
-
-    public TurnInstance(ActorsManagerCenter actorsManagerCenter, CommandCenter commandCenter)
-    {
-        _actorsManagerCenter = actorsManagerCenter;
-        _commandCenter = commandCenter;
         _conActorDynamicIDs = new List<uint>();
         _conActorDynamicIDSet = new HashSet<uint>();
+        
+        InitListen();
     }
 
     public TurnInstance(ActorsManagerCenter actorsManagerCenter, CommandCenter commandCenter,
@@ -51,7 +52,10 @@ public class TurnInstance
             _actorsManagerCenter.GetActorByDynamicId(id).InitTurnIntance(this);
         }
         // SortByActorSpeed();
+
+        InitListen();
     }
+
 
     /// <summary>
     /// 依据人物速度对回合进行排序
@@ -80,6 +84,9 @@ public class TurnInstance
 
         _actorsManagerCenter.GetActorByDynamicId(id).InitTurnIntance(this);
 
+        // 如果在自由模式中需要退出来
+        if (TurnManager.Instance.QueryFreeModeByActorId(id)) TurnManager.Instance.RemoveFreeModeActorById(id);
+
         return true;
     }
 
@@ -90,6 +97,8 @@ public class TurnInstance
 
     private void BackPtr()
     {
+        _turnActorPtr -= 1;
+        if (_turnActorPtr < 0) _turnActorPtr = _conActorDynamicIDs.Count - 1;
     }
 
     public void NextTurn()
@@ -107,66 +116,43 @@ public class TurnInstance
         NextTurn();
     }
 
-    // void OnExcuteError()
-    // {
-    //     _state = State.WaitCommand;
-    // }
 
     public void RunTurn()
     {
+        CheckTurn();
         Character character = _actorsManagerCenter.GetActorByDynamicId(_conActorDynamicIDs[turnActorPtr]) as Character;
         RunActorCommand(character);
     }
 
-    // public void RunTurn()
-    // {
-    //     Character character = _actorsManagerCenter.GetActorByDynamicId(_conActorDynamicIDs[turnActorPtr]) as Character;
-    //     if (character.GetActorStateTag() == ActorEnumType.ActorStateTag.Player)
-    //     {
-    //         switch (_state)
-    //         {
-    //             case State.WaitCommand:
-    //             {
-    //                 if (_commandCenter.GenInputCommandCache())
-    //                 {
-    //                     _state = State.RunCommand;
-    //                     RunActorCommand(character);
-    //                 }
-    //
-    //                 break;
-    //             }
-    //             case State.RunCommand:
-    //             {
-    //                 RunActorCommand(character);
-    //                 break;
-    //             }
-    //         }
-    //     }
-    //     else if (character.GetActorStateTag() == ActorEnumType.ActorStateTag.AI)
-    //     {
-    //         switch (_state)
-    //         {
-    //             case State.WaitCommand:
-    //             {
-    //                 _commandCenter.AddCommand(character.GenAICommand(), character);
-    //                 _state = State.RunCommand;
-    //                 RunActorCommand(character);
-    //
-    //                 break;
-    //             }
-    //             case State.RunCommand:
-    //             {
-    //                 RunActorCommand(character);
-    //                 break;
-    //             }
-    //         }
-    //     }
-    // }
+    /// <summary>
+    /// 检查回合是否需要被移除
+    /// </summary>
+    private void CheckTurn()
+    {
+        // 只剩下一个就要移除
+        if (ConActorDynamicIDSet.Count == 1)
+        {
+            TurnNeedRemoveHandler(this, new EventArgsType.TurnNeedRemoveMessage(this));
+            return;
+        }
+
+        // 全是玩家就要移除
+        bool needRemove = true;
+        foreach (var id in ConActorDynamicIDSet)
+        {
+            if (_actorsManagerCenter.GetActorByDynamicId(id).GetActorStateTag() != ActorEnumType.ActorStateTag.Player)
+            {
+                needRemove = false;
+                break;
+            }
+        }
+
+        if (needRemove) TurnNeedRemoveHandler(this, new EventArgsType.TurnNeedRemoveMessage(this));
+    }
 
     public void RunActorCommand(Character character)
     {
-        // _commandCenter.AddCommand(character.GenCommandInstance(), character);
-        // 如果操作非法，或者没有操作，将会中断执行并且返回等待命令
+        _commandCenter.AddCommand(character.GenCommandInstance(), character);
         _commandCenter.Excute(character.GenCommandInstance(), character, () =>
         {
             OnExcuteFinished();
@@ -180,7 +166,7 @@ public class TurnInstance
     /// <param name="id"></param>
     /// <param name="removeFromIDPool">是否执行全局删除actor</param>
     /// <returns></returns>
-    public bool RemoveActorByDynamicId(uint id, bool removeFromIDPool = false)
+    public bool RemoveActorByDynamicId(uint id)
     {
         var pos = _conActorDynamicIDs.FindIndex((uint f_id) => { return id == f_id; });
         if (pos == -1) return false;
@@ -190,8 +176,23 @@ public class TurnInstance
         // 如果删除位置小于指针，需要重定位
         if (pos < _turnActorPtr) BackPtr();
 
-        // 是否执行全局删除
-        if (removeFromIDPool) return _actorsManagerCenter.RemoveConActorByDynamicId(id);
+        return true;
+    }
+
+    /// <summary>
+    /// 回合结束后把角色移出回合模式
+    /// </summary>
+    /// <param name="id"></param>
+    /// <returns></returns>
+    public bool RemoveActorToFreeMode(uint id)
+    {
+        var pos = _conActorDynamicIDs.FindIndex((uint f_id) => { return id == f_id; });
+        if (pos == -1) return false;
+
+        _conActorDynamicIDs.RemoveAt(pos);
+        _conActorDynamicIDSet.Remove(id);
+        // 如果删除位置小于指针，需要重定位往后退一格
+        if (pos < _turnActorPtr) BackPtr();
 
         return true;
     }

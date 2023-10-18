@@ -24,13 +24,12 @@ public class TopSystem : MonoBehaviour
     /// </summary>
     private void Start()
     {
+        _turnManager = TurnManager.Instance;
         InitMap();
         InitSystem();
-        _turnManager = TurnManager.Instance;
-        _turnManager.Init(_commandCenter, _actorsManagerCenter);
-        _messageCenter.Init(_actorsManagerCenter);
-
-        _turnManager.AddTurn(_actorsManagerCenter.GetAllConActorsDynamicId());
+        
+        // _turnManager.AddTurn(_actorsManagerCenter.GetAllConActorsDynamicId());
+        _turnManager.InitActorContainer(_actorsManagerCenter.LoadPlayerActor());
     }
 
 
@@ -42,12 +41,7 @@ public class TopSystem : MonoBehaviour
 
             if (PlayerInput.Instance.IsRClick)
             {
-                // test
-                List<uint> ids = new List<uint>();
-                ids.Add(_actorsManagerCenter.LoadActorTest(new Vector3(5, 1, 5)));
-                // ids.Add(_actorsManagerCenter.LoadActorTest(new Vector3(6, 1, 6)));
-
-                TurnManager.Instance.AddTurn(ids);
+                TurnManager.Instance.AddFreeModeActorById(_actorsManagerCenter.LoadActorTest(PlayerInput.Instance.GetMouse3DPosition(LayerMask.GetMask("Default"))));
             }
         }
     }
@@ -59,9 +53,13 @@ public class TopSystem : MonoBehaviour
 
     void InitSystem()
     {
-        _actorsManagerCenter = new ActorsManagerCenter();
-        _commandCenter = new CommandCenter(_actorsManagerCenter);
+        _actorsManagerCenter = ActorsManagerCenter.Instance;
+        _commandCenter = CommandCenter.Instance;
         _messageCenter = MessageCenter.Instance;
+        
+        _actorsManagerCenter.Init();
+        _turnManager.Init();
+        _messageCenter.Init();
     }
 
     void InitMap()

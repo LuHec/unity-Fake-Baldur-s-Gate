@@ -9,7 +9,6 @@ using Object = System.Object;
 public class MessageCenter : Singleton<MessageCenter>
 {
     [SerializeField] private float maxEnemySearchDistance = 20f;
-    private MapSystem _mapSystem;
     public GlobalState globalState;
     private ActorsManagerCenter _actorsManagerCenter;
 
@@ -22,13 +21,12 @@ public class MessageCenter : Singleton<MessageCenter>
 
     private void Start()
     {
-        _mapSystem = MapSystem.Instance;
         globalState = new GlobalState();
     }
 
-    public void Init(ActorsManagerCenter actorsManagerCenter)
+    public void Init()
     {
-        _actorsManagerCenter = actorsManagerCenter;
+        _actorsManagerCenter = ActorsManagerCenter.Instance;
     }
 
     #region #Listener
@@ -41,6 +39,11 @@ public class MessageCenter : Singleton<MessageCenter>
     public void ListenOnActorAttacking(ref EventHandler<EventArgsType.ActorAttackingMessage> handler)
     {
         handler += OnActorAttacked;
+    }
+
+    public void ListenOnTurnNeedRemove(ref EventHandler<EventArgsType.TurnNeedRemoveMessage> handler)
+    {
+        handler += OnTurnNeedRemove;
     }
 
     public void OnActorDied(object sender, EventArgsType.ActorDieMessage message)
@@ -59,6 +62,15 @@ public class MessageCenter : Singleton<MessageCenter>
     {
         Debug.Log("attacker: " + message.attacker_dynamic_id + " attacked :" + message.attacked_dynamic_id);
         AddNewTurnByAttack(message.attacker_dynamic_id, message.attacked_dynamic_id);
+    }
+
+    public void OnTurnNeedRemove(object sender, EventArgsType.TurnNeedRemoveMessage message)
+    {
+        TurnInstance turnInstance = message.turnInstance;
+        var removeSet = new HashSet<TurnInstance>();
+        
+        removeSet.Add(turnInstance);
+        UpdateTurn(new EventArgsType.UpdateTurnManagerMessage(null, removeSet));
     }
 
     #endregion
@@ -136,6 +148,10 @@ public class MessageCenter : Singleton<MessageCenter>
     private void AddNewTurnByAttack(uint attackerId, uint attackedId)
     {
         GameActor attacker = _actorsManagerCenter.GetActorByDynamicId(attackerId);
+        
+        // 非玩家角色不进行播报
+        if (_actorsManagerCenter.GetActorByDynamicId(attackerId).GetActorStateTag() !=
+            ActorEnumType.ActorStateTag.Player) return;
 
         // 受到攻击的对象可能不在侦测范围内
         GameActor beAttacked = _actorsManagerCenter.GetActorByDynamicId(attackedId);

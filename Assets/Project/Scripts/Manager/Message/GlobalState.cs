@@ -1,9 +1,11 @@
-﻿public class GlobalState
+﻿using System;
+
+public class GlobalState
 {
     public bool TurnMode => _turnMode;
     private bool _turnMode = false;
     public bool EditMode => _editMode;
-    private bool _editMode = true;
+    private bool _editMode = false;
 
     public void SetTurnMode(bool val)
     {

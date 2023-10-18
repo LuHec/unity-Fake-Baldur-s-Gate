@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 public class Character : GameActor
 {
@@ -10,11 +11,21 @@ public class Character : GameActor
 
     #region #TypeInfo
 
-    [SerializeField] protected ActorEnumType.CharacterType _characterType;
+    [SerializeField] protected ActorEnumType.AIMode aiMode;
     [SerializeField] protected ActorEnumType.ActorBattleState _characterBattleState;
     [SerializeField] protected ActorEnumType.ActorHateState _actorHateState;
 
-    public ActorEnumType.CharacterType GetCharacterType() => _characterType;
+    public ActorEnumType.AIMode GetCharacterType() => aiMode;
+
+    /// <summary>
+    /// 当前AI状态
+    /// </summary>
+    /// <param name="type"></param>
+    public void SetAIMode(ActorEnumType.AIMode type)
+    {
+        aiMode = type;
+    }
+
     public ActorEnumType.ActorBattleState GetCharacterBattleState() => _characterBattleState;
     public ActorEnumType.ActorHateState GetCharacterHateState => _actorHateState;
 
@@ -40,7 +51,7 @@ public class Character : GameActor
 
     public override void OnSelected()
     {
-        _characterType = ActorEnumType.CharacterType.Player;
+        aiMode = ActorEnumType.AIMode.Player;
     }
 
     #endregion
@@ -110,8 +121,8 @@ public class Character : GameActor
         CommandInstance cmd = _inputCommandsGenerator.GetCommand();
         if (cmd != null)
         {
-            
         }
+
         return cmd;
     }
 

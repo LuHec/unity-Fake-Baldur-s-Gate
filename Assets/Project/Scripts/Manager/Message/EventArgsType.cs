@@ -14,6 +14,16 @@ public class EventArgsType
         }
     }
 
+    public class TurnNeedRemoveMessage : EventArgs
+    {
+        public TurnInstance turnInstance;
+
+        public TurnNeedRemoveMessage(TurnInstance turnInstance)
+        {
+            this.turnInstance = turnInstance;
+        }
+    }
+
     public class ActorAttackingMessage : EventArgs
     {
         // 发动攻击方
@@ -38,6 +48,16 @@ public class EventArgsType
         {
             this.newTurn = newTurn;
             this.turnRemoveSet = turnRemoveSets;
+        }
+    }
+
+    public class PlayerSelectMessage : EventArgs
+    {
+        public int idx;
+
+        public PlayerSelectMessage(int idx)
+        {
+            this.idx = idx;
         }
     }
 }

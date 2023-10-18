@@ -9,9 +9,9 @@ public class ActorEnumType
         Pickableitem,
         Unpickableitem
     }
-
     [Serializable]
-    public enum CharacterType
+
+    public enum AIMode
     {
         Npc,
         Player,

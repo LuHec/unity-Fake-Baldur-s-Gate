@@ -81,11 +81,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 402f97e296502d84fb988cae94b8ab46, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _actorStateTag: 0
   id: 10002
   speed: 0
-  _moveSpeed: 15
+  _moveSpeed: 8
   startPos: {x: 2, y: 1, z: 2}
   weaponTransform: {fileID: 4550683832639960110}
+  _characterType: 0
+  _characterBattleState: 0
+  _actorHateState: 0
 --- !u!82 &6241281784570992230
 AudioSource:
   m_ObjectHideFlags: 0

@@ -6,16 +6,20 @@ using UnityEngine;
 /// <summary>
 /// 用于发布指令给指定角色，不关心具体角色和指令
 /// </summary>
-public class CommandCenter
+public class CommandCenter : Singleton<CommandCenter>
 {
     private InputCommandsGenerator _inputCommandsGenerator;
     private MapSystem _mapSystem;
     private ActorsManagerCenter _actorsManagerCenter;
 
-    public CommandCenter(ActorsManagerCenter actorsManagerCenter)
+    // public CommandCenter(ActorsManagerCenter actorsManagerCenter)
+    // {
+    //     _actorsManagerCenter = actorsManagerCenter;
+    //     _inputCommandsGenerator = new InputCommandsGenerator();
+    // }
+
+    public void Init()
     {
-        _actorsManagerCenter = actorsManagerCenter;
-        _inputCommandsGenerator = new InputCommandsGenerator();
     }
 
     /// <summary>
