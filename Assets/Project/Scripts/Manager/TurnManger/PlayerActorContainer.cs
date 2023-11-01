@@ -4,7 +4,7 @@ using OfficeOpenXml.FormulaParsing.Excel.Operators;
 
 public class PlayerActorContainer
 {
-    public List<uint> PlayerActors => _playerActors;
+    public List<uint> PlayerActorsIdList => _playerActorsIdList;
     public int Ptr => _ptr;
     private ActorsManagerCenter _actorsManagerCenter;
 
@@ -16,48 +16,41 @@ public class PlayerActorContainer
 
     #endregion
 
-    private List<uint> _playerActors;
+    private List<uint> _playerActorsIdList;
     private int _ptr;
 
     public PlayerActorContainer(List<uint> playerList)
     {
         _actorsManagerCenter = ActorsManagerCenter.Instance;
-        _playerActors = playerList;
+        _playerActorsIdList = playerList;
     }
 
     public void Init(List<uint> initIds)
     {
-        _playerActors = initIds;
+        _playerActorsIdList = initIds;
     }
 
     public void AddPlayerById(uint id)
     {
-        PlayerActors.Add(id);
+        PlayerActorsIdList.Add(id);
     }
 
-    public uint GetPlayerIdByIndex(int idx) => PlayerActors[idx];
-    public uint GetCurrentPlayer => PlayerActors[_ptr];
+    public uint GetPlayerIdByIndex(int idx) => PlayerActorsIdList[idx];
+    public uint GetCurrentPlayer => PlayerActorsIdList[_ptr];
 
     /// <summary>
     /// 切换角色，调整ai模块
     /// </summary>
     /// <param name="idx"></param>
-    public void ChangePlayerById(int idx)
+    public void ChangePlayerByIdx(int idx)
     {
+        var currentPlayer = ActorsManagerCenter.Instance.GetActorByDynamicId(GetCurrentPlayer) as Character;
         _ptr = idx;
+        var newPlayer = ActorsManagerCenter.Instance.GetActorByDynamicId(GetCurrentPlayer) as Character;
 
-        for (int i = 0; i < PlayerActors.Count; i++)
-        {
-            GameActor actor = _actorsManagerCenter.GetActorByDynamicId(PlayerActors[i]);
-            if (i == _ptr)
-            {
-                actor.SetCharacterStateTo(ActorEnumType.ActorStateTag.Player);
-            }
-            else
-            {
-                actor.SetCharacterStateTo(ActorEnumType.ActorStateTag.AI);
-                (actor as Character).SetAIMode(ActorEnumType.AIMode.Follow);
-            }
-        }
+        currentPlayer.SetCharacterStateTo(ActorEnumType.ActorStateTag.AI);
+        currentPlayer.SetAIMode(ActorEnumType.AIMode.Follow);
+
+        newPlayer.SetCharacterStateTo(ActorEnumType.ActorStateTag.Player);
     }
 }

@@ -32,14 +32,16 @@ public class ActorsManagerCenter : Singleton<ActorsManagerCenter>
         _scriptObjectDataManager = new ScriptObjectDataManager();
         // LoadAllControlledActorsResource();
 
-        MessageCenter.Instance.SubmitActorDie(OnActorDie);
+        // 暂时禁用，死亡不移除id
+        // MessageCenter.Instance.SubmitActorDie(OnActorDie);
     }
 
     #region #Listener
 
     public void OnActorDie(System.Object sender, EventArgsType.ActorDieMessage message)
     {
-        RemoveConActorByDynamicId(message.dead_dynamic_id);
+        if(message.removeActor)
+            RemoveConActorByDynamicId(message.dead_dynamic_id);
     }
 
     #endregion
@@ -80,6 +82,20 @@ public class ActorsManagerCenter : Singleton<ActorsManagerCenter>
         }
     }
 
+    public uint LoadWeapon(uint weaponId)
+    {
+        // 获取初始武器并注册到idpool
+        var weaponObj =
+            Object.Instantiate(ResourcesLoader.LoadWeaponById(weaponId),
+                Vector3.zero, Quaternion.identity);
+        var weaponActor = weaponObj.GetComponent<Weapon>();
+        weaponActor.InitBase();
+        weaponActor.InitWeaponAttribute(_scriptObjectDataManager.WeaponAttrSOData.weaponAttDict[weaponActor.id]);
+        SignActor(weaponActor);
+
+        return weaponActor.Dynamic_Id;
+    }
+
     public uint LoadActorTest(Vector3 position)
     {
         Object obj = ResourcesLoader.LoadTestActorResource();
@@ -91,6 +107,9 @@ public class ActorsManagerCenter : Singleton<ActorsManagerCenter>
         // 添加到id池
         SignActor(charActor);
 
+        var weapon = GetActorByDynamicId(LoadWeapon(charActor.characterAttribute.WeaponId));
+        (charActor as Character).EquipWeapon(weapon);
+        
         _mapSystem.SetGridActor(position.x, position.z, charActor);
         charActor.transform.position = position;
 
@@ -108,17 +127,17 @@ public class ActorsManagerCenter : Singleton<ActorsManagerCenter>
         list.Add(LoadActorTest(Vector3.zero));
         list.Add(LoadActorTest(Vector3.zero));
         list.Add(LoadActorTest(Vector3.zero));
-        
+
         GetActorByDynamicId(list[0]).SetCharacterStateTo(ActorEnumType.ActorStateTag.Player);
         GetActorByDynamicId(list[1]).SetCharacterStateTo(ActorEnumType.ActorStateTag.AI);
         GetActorByDynamicId(list[2]).SetCharacterStateTo(ActorEnumType.ActorStateTag.AI);
         GetActorByDynamicId(list[3]).SetCharacterStateTo(ActorEnumType.ActorStateTag.AI);
-        
+
         (GetActorByDynamicId(list[0]) as Character).SetAIMode(ActorEnumType.AIMode.Follow);
         (GetActorByDynamicId(list[1]) as Character).SetAIMode(ActorEnumType.AIMode.Follow);
         (GetActorByDynamicId(list[2]) as Character).SetAIMode(ActorEnumType.AIMode.Follow);
         (GetActorByDynamicId(list[3]) as Character).SetAIMode(ActorEnumType.AIMode.Follow);
-        
+
         return list;
     }
 

@@ -32,7 +32,11 @@ public class InputCommandsGenerator
         if (_playerInput.IsLClick)
         {
             // 判断是否点击到UI上，这里的GameObject是EventGameObject
-            if (EventSystem.current.IsPointerOverGameObject()) _commandCache = null;
+            if (EventSystem.current.IsPointerOverGameObject())
+            {
+                _commandCache = null;
+                return;
+            }
 
             // 检测目标格子是否有人
             Vector3 mousePos = _playerInput.GetMouse3DPosition(LayerMask.GetMask("Default"));
@@ -66,7 +70,7 @@ public class InputCommandsGenerator
         // Debug.Log("Map is" + (_mapSystem == null));
         Vector3 mousePos = _playerInput.GetMouse3DPosition(LayerMask.GetMask("Default"));
 
-        return new MoveActorCommand(mousePos.x, mousePos.z);
+        return new MoveActorCommand(mousePos.x, mousePos.z, _actor.transform.position);
     }
 
     CommandInstance GetAttackActorCommand(GameActor gridActor)

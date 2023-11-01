@@ -25,8 +25,7 @@ public class MapSystem : Singleton<MapSystem>
     }
 
     public GridXZ<GridObject> GetGrid() => _grid;
-
-
+    
     /// <summary>
     /// 返回坐标对应格子上的GameActor
     /// </summary>

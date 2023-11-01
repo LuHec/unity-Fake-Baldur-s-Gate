@@ -12,13 +12,6 @@ public class MessageCenter : Singleton<MessageCenter>
     public GlobalState globalState;
     private ActorsManagerCenter _actorsManagerCenter;
 
-    #region #delegate
-
-    public event EventHandler<EventArgsType.UpdateTurnManagerMessage> TurnUpdateHandler;
-    public event EventHandler<EventArgsType.ActorDieMessage> ActorDieHandler;
-
-    #endregion
-
     private void Start()
     {
         globalState = new GlobalState();
@@ -28,6 +21,14 @@ public class MessageCenter : Singleton<MessageCenter>
     {
         _actorsManagerCenter = ActorsManagerCenter.Instance;
     }
+
+    #region #delegate
+
+    public event EventHandler<EventArgsType.UpdateTurnManagerMessage> TurnUpdateHandler;
+    public event EventHandler<EventArgsType.ActorDieMessage> ActorDieHandler;
+    public event EventHandler<EventArgsType.PlayerBackTurnMessage> BackTurnHandler; 
+
+    #endregion
 
     #region #Listener
 
@@ -46,31 +47,115 @@ public class MessageCenter : Singleton<MessageCenter>
         handler += OnTurnNeedRemove;
     }
 
-    public void OnActorDied(object sender, EventArgsType.ActorDieMessage message)
+    public void ListenOnGameModeSwitch(ref EventHandler<EventArgsType.GameModeSwitchMessage> handler)
+    {
+        handler += OnGameModeSwitch;
+    }
+
+    public void ListenOnPlayerSelect(ref EventHandler<EventArgsType.PlayerSelectMessage> handler)
+    {
+        handler += OnPlayerSelect;
+    }
+
+    public void ListenOnPlayerBackTurn(ref EventHandler<EventArgsType.PlayerBackTurnMessage> handler)
+    {
+        handler += OnPlayerBackTurn;
+    }
+    
+    private void OnActorDied(object sender, EventArgsType.ActorDieMessage message)
     {
         Debug.Log("Id " + "Died");
         //     
-        OnActorDie(message);
+        ActorDieHandler?.Invoke(this, message);
+
+        // 从地图上清理掉
+        var gridObject = MapSystem.Instance.GetGridObject(ActorsManagerCenter.Instance
+            .GetActorByDynamicId(message.dead_dynamic_id).transform.position);
+        gridObject.ClearActor();
     }
+
 
     /// <summary>
     /// 暂时只播报玩家控制角色
     /// </summary>
     /// <param name="sender"></param>
     /// <param name="message"></param>
-    public void OnActorAttacked(object sender, EventArgsType.ActorAttackingMessage message)
+    private void OnActorAttacked(object sender, EventArgsType.ActorAttackingMessage message)
     {
         Debug.Log("attacker: " + message.attacker_dynamic_id + " attacked :" + message.attacked_dynamic_id);
         AddNewTurnByAttack(message.attacker_dynamic_id, message.attacked_dynamic_id);
     }
 
-    public void OnTurnNeedRemove(object sender, EventArgsType.TurnNeedRemoveMessage message)
+    private void OnTurnNeedRemove(object sender, EventArgsType.TurnNeedRemoveMessage message)
     {
         TurnInstance turnInstance = message.turnInstance;
         var removeSet = new HashSet<TurnInstance>();
-        
+
         removeSet.Add(turnInstance);
         UpdateTurn(new EventArgsType.UpdateTurnManagerMessage(null, removeSet));
+    }
+
+    /// <summary>
+    /// 由ui端调用，切换游戏模式
+    /// </summary>
+    private void OnGameModeSwitch(object sender, EventArgsType.GameModeSwitchMessage message)
+    {
+        var currentPlayerTurn = ActorsManagerCenter.Instance
+            .GetActorByDynamicId(TurnManager.Instance.GetCurrentPlayerId())
+            .CurrentTurn;
+
+        // 检查切换类型
+        if (message.gameMode == EventArgsType.GameModeSwitchMessage.GameMode.Turn)
+        {
+            // 检查是否已经在回合内
+            if (currentPlayerTurn != null)
+            {
+                Debug.Log("Already In turn!");
+                return;
+            }
+
+            // 获取玩家列表
+            var playerActorList = TurnManager.Instance.GetAllPlayerIdList();
+
+            // 通过就进行添加到回合内
+            currentPlayerTurn = new TurnInstance(playerActorList, true);
+            UpdateTurn(new EventArgsType.UpdateTurnManagerMessage(currentPlayerTurn, null));
+
+
+            Debug.Log("Switch");
+        }
+        else
+        {
+            var removeSet = new HashSet<TurnInstance>();
+
+            // 找到角色所在回合
+            removeSet.Add(currentPlayerTurn);
+
+            UpdateTurn(new EventArgsType.UpdateTurnManagerMessage(null, removeSet));
+
+            Debug.Log("Free from turn!");
+        }
+    }
+
+    public void OnPlayerSelect(object sender, EventArgsType.PlayerSelectMessage message)
+    {
+        TurnManager.Instance.SlectPlayer(message.PlayerIdx);
+        Debug.Log(message.PlayerIdx);
+    }
+
+    public void OnPlayerBackTurn(object sender, EventArgsType.PlayerBackTurnMessage message)
+    {
+        // 找到当前操控角色所在回合，back ptr，undo并弹出所有状态
+        Character player = ActorsManagerCenter.Instance.GetActorByDynamicId(TurnManager.Instance.GetCurrentPlayerId()) as Character;
+
+        var turnInstance = player.CurrentTurn;
+        if (turnInstance != null)
+        {
+            for (int i = 0; i < message.backCount; i++)
+            {
+                turnInstance.BackTurn();
+            }
+        }
     }
 
     #endregion
@@ -92,12 +177,9 @@ public class MessageCenter : Singleton<MessageCenter>
         ActorDieHandler += listener;
     }
 
-    private void OnActorDie(EventArgsType.ActorDieMessage message)
-    {
-        ActorDieHandler?.Invoke(this, message);
-    }
-
     #endregion
+
+    #region #HelpFunctions
 
     /// <summary>
     /// 合并两个回合，回合2的所有actor都会被改成回合1
@@ -148,16 +230,13 @@ public class MessageCenter : Singleton<MessageCenter>
     private void AddNewTurnByAttack(uint attackerId, uint attackedId)
     {
         GameActor attacker = _actorsManagerCenter.GetActorByDynamicId(attackerId);
-        
+
         // 非玩家角色不进行播报
         if (_actorsManagerCenter.GetActorByDynamicId(attackerId).GetActorStateTag() !=
             ActorEnumType.ActorStateTag.Player) return;
 
         // 受到攻击的对象可能不在侦测范围内
         GameActor beAttacked = _actorsManagerCenter.GetActorByDynamicId(attackedId);
-
-        // 判断是否需要移除
-        bool needRemove = false;
 
         // 更新Instance
         TurnInstance newTurn = attacker.CurrentTurn;
@@ -169,12 +248,17 @@ public class MessageCenter : Singleton<MessageCenter>
         // 需要去除的回合
         HashSet<TurnInstance> removeSet = new HashSet<TurnInstance>();
 
+        // 如果攻击者不在回合内，就创建回合
         if (newTurn == null)
         {
             newTurn = new TurnInstance();
             newTurn.AddActorByDynamicId(attackerId);
         }
 
+        // 不管怎样先把回合类型设置为非手动回合模式
+        newTurn.SetGameTurnMode(false);
+        
+        // 把攻击方加入到集合中
         idSet.Add(attackerId);
 
         // 被攻击对象可能已经死亡
@@ -220,7 +304,7 @@ public class MessageCenter : Singleton<MessageCenter>
         // newTurn会检测是否为已有回合；removeSet如果传空什么也不会做
         EventArgsType.UpdateTurnManagerMessage message = new EventArgsType.UpdateTurnManagerMessage(newTurn, removeSet);
 
-        Debug.Log("TurnCount: " + TurnManager.Instance.TurnCount + "NewTurn: " + newTurn.ConActorDynamicIDs.Count);
+        // Debug.Log("TurnCount: " + TurnManager.Instance.TurnCount + "NewTurn: " + newTurn.ConActorDynamicIDs.Count);
 
         // // 如果没有新的回合添加，就传空信息
         // if (needRemove || oldTurnInstance != newTurn)
@@ -234,4 +318,6 @@ public class MessageCenter : Singleton<MessageCenter>
     public void OnTurnEnd()
     {
     }
+
+    #endregion
 }

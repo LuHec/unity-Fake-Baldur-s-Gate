@@ -5,19 +5,15 @@ using UnityEngine;
 
 public class CommandQueue
 {
-    private Queue<CommandInstance> _cmdQueue;
+    private List<CommandInstance> _cmdQueue;
     private int _maxSize = 5;
+    private GameActor _actor;
 
-    public CommandQueue()
+    public CommandQueue(GameActor actor, int maxSize = 5)
     {
-        _maxSize = 5;
-        _cmdQueue = new Queue<CommandInstance>();
-    }
-    
-    public CommandQueue(int maxSize)
-    {
-        _maxSize = maxSize; 
-        _cmdQueue = new Queue<CommandInstance>();
+        _maxSize = maxSize;
+        _cmdQueue = new List<CommandInstance>();
+        _actor = actor;
     }
 
     public void Clear()
@@ -27,11 +23,12 @@ public class CommandQueue
 
     public bool Add(CommandInstance cmdInstance)
     {
-        _cmdQueue.Enqueue(cmdInstance);
+        _cmdQueue.Add(cmdInstance);
         if (Size() > MaxSize)
         {
             PopFront();
         }
+
         return true;
     }
 
@@ -44,16 +41,38 @@ public class CommandQueue
     public CommandInstance Front()
     {
         if (Empty()) return null;
-        return _cmdQueue.Peek();
+        return _cmdQueue[0];
     }
 
     public CommandInstance PopFront()
     {
         if (!Empty())
         {
-            return _cmdQueue.Dequeue();
+            var res = _cmdQueue[0];
+            _cmdQueue.RemoveAt(0);
+            return res;
         }
         else return null;
+    }
+
+    public CommandInstance PopBack()
+    {
+        if (!Empty())
+        {
+            var res = _cmdQueue[Size() - 1];
+            _cmdQueue.RemoveAt(Size() - 1);
+            return res;
+        }
+        else return null;
+    }
+
+    public void Undo()
+    {
+        var cmd = PopBack();
+        if (cmd != null)
+        {
+            cmd.Undo(_actor);
+        }
     }
 
     public bool Empty() => _cmdQueue.Count == 0;

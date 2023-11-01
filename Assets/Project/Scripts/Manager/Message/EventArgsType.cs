@@ -7,10 +7,12 @@ public class EventArgsType
     public class ActorDieMessage : EventArgs
     {
         public uint dead_dynamic_id;
+        public bool removeActor = false;
 
-        public ActorDieMessage(uint deadDynamicID)
+        public ActorDieMessage(uint deadDynamicID, bool remove = false)
         {
             dead_dynamic_id = deadDynamicID;
+            removeActor = remove;
         }
     }
 
@@ -51,13 +53,35 @@ public class EventArgsType
         }
     }
 
+    public class GameModeSwitchMessage : EventArgs
+    {
+        public enum GameMode
+        {
+            _3RD,
+            Turn    
+        }
+
+        public GameMode gameMode;
+
+        public GameModeSwitchMessage(GameMode mode)
+        {
+            gameMode = mode;
+        }
+    }
+    
     public class PlayerSelectMessage : EventArgs
     {
-        public int idx;
+        public int PlayerIdx => playerIdx;
+        private int playerIdx;
 
-        public PlayerSelectMessage(int idx)
+        public PlayerSelectMessage(int playerIdx)
         {
-            this.idx = idx;
+            this.playerIdx = playerIdx;
         }
+    }
+
+    public class PlayerBackTurnMessage : EventArgs
+    {
+        public int backCount = 5;
     }
 }

@@ -11,7 +11,7 @@ public class AIComponent
     {
         _character = character;
     }
-
+    
     private void GenAICommand()
     {
         if (_character.CurrentTurn == null)
@@ -48,7 +48,7 @@ public class AIComponent
                 randY >= MapSystem.Instance.GetGrid().Width) continue;
 
             if (MapSystem.Instance.GetGridActor(randX, randY) == null)
-                return new MoveActorCommand(randX, randY);
+                return new MoveActorCommand(randX, randY, _character.transform.position);
         }
 
         return null;
@@ -75,7 +75,7 @@ public class AIComponent
             if (MapSystem.Instance.GetGridActor(randX, randY) == null)
             {
                 // Debug.Log("Player : " + player.transform + " " + randX + " " + randY);
-                return new MoveActorCommand(randX, randY);
+                return new MoveActorCommand(randX, randY, _character.transform.position);
             }
         }
 

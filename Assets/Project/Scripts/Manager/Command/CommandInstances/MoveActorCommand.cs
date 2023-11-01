@@ -15,13 +15,16 @@ public class MoveActorCommand : CommandInstance
     private bool _hasFound = false;
     private float _targetX;
     private float _targetZ;
+    private Vector3 _originWorldPos;
 
-    public MoveActorCommand(float targetX, float targetZ)
+    public MoveActorCommand(float targetX, float targetZ, Vector3 originWorldPos)
     {
         _mapSystem = MapSystem.Instance;
         _pathFinding = PathFinding.Instance;
         _targetX = targetX;
         _targetZ = targetZ;
+        // 记录初始位置用以回放
+        _originWorldPos = originWorldPos;
     }
 
     public void SetTargetPoint(float x, float z)
@@ -97,5 +100,12 @@ public class MoveActorCommand : CommandInstance
 
     private void UnDoMove(GameActor actor)
     {
+        // 网格位置回放
+        var gridObject = MapSystem.Instance.GetGridObject(actor.transform.position);
+        gridObject.ClearActor();
+            
+        // 物理位置回放
+        actor.transform.position = _originWorldPos;
+        MapSystem.Instance.GetGridObject(_originWorldPos).SetActor(actor);
     }
 }

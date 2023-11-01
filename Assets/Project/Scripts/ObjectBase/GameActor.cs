@@ -38,6 +38,7 @@ public class GameActor : MonoBehaviour
 
     public Vector3 startPos;
     private CommandQueue _cmdQue;
+    public CommandQueue CmdQue => _cmdQue;
 
     private MapSystem _mapSystem;
 
@@ -56,7 +57,7 @@ public class GameActor : MonoBehaviour
     {
         if (actorAudio == null) _actorAudio = GetComponent<ActorAudio>();
 
-        if (_cmdQue == null) _cmdQue = new CommandQueue();
+        if (_cmdQue == null) _cmdQue = new CommandQueue(this);
         else _cmdQue.Clear();
     }
 
@@ -139,6 +140,7 @@ public class GameActor : MonoBehaviour
     public bool AddCommand(CommandInstance cmdInstance)
     {
         if (cmdInstance == null) return false;
+        if (_cmdQue.Back() == cmdInstance) return false;
         _cmdQue.Add(cmdInstance);
         return true;
     }

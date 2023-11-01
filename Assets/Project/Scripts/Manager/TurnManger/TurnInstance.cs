@@ -18,6 +18,13 @@ public class TurnInstance
     public HashSet<uint> ConActorDynamicIDSet => _conActorDynamicIDSet;
     public List<uint> ConActorDynamicIDs => _conActorDynamicIDs;
 
+    #region #Tag
+
+    public bool IsGameModeTurn => _isGameModeTurn;
+    private bool _isGameModeTurn = false;
+
+    #endregion
+
     #region #delgate
 
     private EventHandler<EventArgsType.TurnNeedRemoveMessage> TurnNeedRemoveHandler;
@@ -31,31 +38,46 @@ public class TurnInstance
 
     #endregion
 
-    public TurnInstance()
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="isGameModeTurn">是否为手动切换的gamemode，缺省false</param>
+    public TurnInstance(bool isGameModeTurn = false)
     {
+        _isGameModeTurn = isGameModeTurn;
+
+        InitListen();
+
         _conActorDynamicIDs = new List<uint>();
         _conActorDynamicIDSet = new HashSet<uint>();
-        
-        InitListen();
     }
 
-    public TurnInstance(ActorsManagerCenter actorsManagerCenter, CommandCenter commandCenter,
-        List<uint> conActorDynamicIDs)
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="conActorDynamicIDs"></param>
+    /// <param name="isGameModeTurn">是否为手动切换的gamemode，缺省false</param>
+    public TurnInstance(List<uint> conActorDynamicIDs, bool isGameModeTurn = false)
     {
-        _actorsManagerCenter = actorsManagerCenter;
-        _commandCenter = commandCenter;
-        _conActorDynamicIDs = conActorDynamicIDs;
+        _isGameModeTurn = isGameModeTurn;
 
-        _conActorDynamicIDSet = conActorDynamicIDs.ToHashSet();
-        foreach (uint id in _conActorDynamicIDs)
+        InitListen();
+
+        _conActorDynamicIDs = new List<uint>();
+        _conActorDynamicIDSet = new HashSet<uint>();
+
+        // 添加id，需要从自由列表中移除
+        foreach (uint id in conActorDynamicIDs)
         {
             _actorsManagerCenter.GetActorByDynamicId(id).InitTurnIntance(this);
+            AddActorByDynamicId(id);
         }
-        // SortByActorSpeed();
-
-        InitListen();
     }
 
+    public void SetGameTurnMode(bool isGameModeTurn)
+    {
+        _isGameModeTurn = isGameModeTurn;
+    }
 
     /// <summary>
     /// 依据人物速度对回合进行排序
@@ -81,11 +103,10 @@ public class TurnInstance
         if (_conActorDynamicIDSet.Add(id) == false) return false;
 
         _conActorDynamicIDs.Add(id);
-
         _actorsManagerCenter.GetActorByDynamicId(id).InitTurnIntance(this);
 
         // 如果在自由模式中需要退出来
-        if (TurnManager.Instance.QueryFreeModeByActorId(id)) TurnManager.Instance.RemoveFreeModeActorById(id);
+        TurnManager.Instance.RemoveFreeModeActorById(id);
 
         return true;
     }
@@ -109,6 +130,12 @@ public class TurnInstance
     public void BackTurn()
     {
         BackPtr();
+
+        foreach (var uid in _conActorDynamicIDs)
+        {
+            Character character = ActorsManagerCenter.Instance.GetActorByDynamicId(uid) as Character;
+            character.CmdQue.Undo();
+        }
     }
 
     void OnExcuteFinished()
@@ -129,6 +156,9 @@ public class TurnInstance
     /// </summary>
     private void CheckTurn()
     {
+        // 手动切换的不用检查
+        if (IsGameModeTurn) return;
+
         // 只剩下一个就要移除
         if (ConActorDynamicIDSet.Count == 1)
         {
@@ -142,15 +172,19 @@ public class TurnInstance
         {
             if (_actorsManagerCenter.GetActorByDynamicId(id).GetActorStateTag() != ActorEnumType.ActorStateTag.Player)
             {
-                needRemove = false;
-                break;
+                if ((_actorsManagerCenter.GetActorByDynamicId(id) as Character).GetCharacterType() !=
+                    ActorEnumType.AIMode.Follow)
+                {
+                    needRemove = false;
+                    break;
+                }
             }
         }
 
         if (needRemove) TurnNeedRemoveHandler(this, new EventArgsType.TurnNeedRemoveMessage(this));
     }
 
-    public void RunActorCommand(Character character)
+    private void RunActorCommand(Character character)
     {
         _commandCenter.AddCommand(character.GenCommandInstance(), character);
         _commandCenter.Excute(character.GenCommandInstance(), character, () =>

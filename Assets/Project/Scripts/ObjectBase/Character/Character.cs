@@ -111,9 +111,12 @@ public class Character : GameActor
             new EventArgsType.ActorAttackingMessage(Dynamic_Id, actorAttacked.Dynamic_Id));
     }
 
-    public void SetBattleState(ActorEnumType.ActorBattleState state)
+    public bool IsCommandCacheEmpty()
     {
-        _characterBattleState = state;
+        if (GetActorStateTag() == ActorEnumType.ActorStateTag.AI)
+            return _aiComponent.CanGenCommandCache;
+        else
+            return _inputCommandsGenerator.CanGenCommandCache;
     }
 
     private CommandInstance GenInputCommand()
@@ -139,6 +142,7 @@ public class Character : GameActor
         }
         else if (GetActorStateTag() == ActorEnumType.ActorStateTag.AI)
         {
+            Debug.Log(transform.name + " GenAi");
             return GenAICommand();
         }
 

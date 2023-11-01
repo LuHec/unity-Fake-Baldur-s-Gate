@@ -16,13 +16,20 @@ public class TurnManager : Singleton<TurnManager>
 
     private HashSet<TurnInstance> _turnInstancesSet;
     private CommandCenter _commandCenter;
-    public ActorsManagerCenter _actorsManagerCenter;
+    private ActorsManagerCenter _actorsManagerCenter;
     private Character currConChara;
     private bool runTurn = true;
     private PlayerActorContainer _playerActorContainer;
 
+    /// <summary>
+    /// 每一帧内加入
+    /// </summary>
+    private TurnInstance[] _turnNeedRemove;
+
+    private TurnInstance _turnNeedAdd;
+
     public Character CurrConChara => currConChara;
-    public EventHandler onConCharaChanged;
+    public EventHandler<int> onConCharaChanged;
     public int TurnCount => _turnInstancesSet.Count;
 
     public void Init()
@@ -47,6 +54,11 @@ public class TurnManager : Singleton<TurnManager>
     }
 
 
+    public void SlectPlayer(int playerIdx)
+    {
+        _playerActorContainer.ChangePlayerByIdx(playerIdx);
+    }
+
     /// <summary>
     /// 加入新的回合。可能会有被重组的id，因此会进行去重
     /// </summary>
@@ -59,7 +71,8 @@ public class TurnManager : Singleton<TurnManager>
         {
             globalFreeModeActorIdSet.Remove(id);
         }
-        _turnInstancesSet.Add(new TurnInstance(_actorsManagerCenter, _commandCenter, conActorDynamic_id));
+
+        _turnInstancesSet.Add(new TurnInstance(conActorDynamic_id));
     }
 
     public bool QueryFreeModeByActorId(uint id)
@@ -70,6 +83,11 @@ public class TurnManager : Singleton<TurnManager>
     public uint GetCurrentPlayerId()
     {
         return _playerActorContainer.GetCurrentPlayer;
+    }
+
+    public List<uint> GetAllPlayerIdList()
+    {
+        return _playerActorContainer.PlayerActorsIdList;
     }
 
     /// <summary>
@@ -129,14 +147,31 @@ public class TurnManager : Singleton<TurnManager>
         {
             turnInstance.RunTurn();
 
-            if (!runTurn)
+            // if (!runTurn)
+            // {
+            //     // 更新回合在turnInstance.RunTurn()内部完成，这里强制结束回合运行，直接进入下一帧，重新运行回合实例
+            //     // 每个回合实例的回合数依然是正常保存的
+            //     Debug.Log("turn end");
+            //     runTurn = true;
+            //     break;
+            // }
+
+            // if(_turnInstancesSet.Count == 0) break;
+        }
+
+        if (_turnNeedRemove != null && _turnNeedRemove.Length != 0)
+        {
+            foreach (var turn in _turnNeedRemove)
             {
-                // 更新回合在turnInstance.RunTurn()内部完成，这里强制结束回合运行，直接进入下一帧，重新运行回合实例
-                // 每个回合实例的回合数依然是正常保存的
-                Debug.Log("turn end");
-                runTurn = true;
-                break;
+                RemoveTurn(turn);
             }
+            _turnNeedRemove = null;
+        }
+
+        if (_turnNeedAdd != null)
+        {
+            AddTurn(_turnNeedAdd);
+            _turnNeedAdd = null;
         }
     }
 
@@ -157,6 +192,8 @@ public class TurnManager : Singleton<TurnManager>
         {
             var character = ActorsManagerCenter.Instance.GetActorByDynamicId(id) as Character;
             CommandCenter.Instance.AddCommand(character.GenCommandInstance(), character);
+
+            // 结束后要清除指令
             _commandCenter.Excute(character.GenCommandInstance(), character, () => { character.ClearCommandCache(); });
 
             // 可能会被合并回合打断
@@ -175,20 +212,24 @@ public class TurnManager : Singleton<TurnManager>
     public void OnMessageCenterUpdateTurn(Object sender, EventArgsType.UpdateTurnManagerMessage message)
     {
         // 如果有回合要移除，就要中断回合
-        if (message.turnRemoveSet.Count != 0)
+        if (message.turnRemoveSet != null && message.turnRemoveSet.Count != 0)
         {
-            ForceQuitTurn();
             Debug.Log("Remove Turn");
-            foreach (var instance in message.turnRemoveSet)
-            {
-                RemoveTurn(instance);
-                _turnInstancesSet.Remove(instance);
-            }
+
+            _turnNeedRemove = message.turnRemoveSet.ToArray();
+            // foreach (var instance in message.turnRemoveSet)
+            // {
+            //     RemoveTurn(instance);
+            // }
+
+            // 如果移除后还有残余的，需要中断回合，防止迭代器出错
+            // if(_turnInstancesSet.Count != 0) ForceQuitTurn();
         }
 
         // 如果回合不是原来就有的，就需要中断回合
-        if (AddTurn(message.newTurn))
-            ForceQuitTurn();
+        // if (AddTurn(message.newTurn))
+        //     ForceQuitTurn();
+        _turnNeedAdd = message.newTurn;
     }
 
     private void ForceQuitTurn()
@@ -198,7 +239,7 @@ public class TurnManager : Singleton<TurnManager>
 
     private void OnActorDie(Object sender, EventArgsType.ActorDieMessage message)
     {
-        RemoveActorByDynamicID(message.dead_dynamic_id);
+        RemoveActorByDynamicID(message.dead_dynamic_id, true);
     }
 
     #endregion

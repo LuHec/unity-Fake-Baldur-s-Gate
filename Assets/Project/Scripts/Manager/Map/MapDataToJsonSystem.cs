@@ -28,7 +28,6 @@ public class MapDataToJsonSystem
     
     public void SaveMap()
     {
-        Debug.Log("11");
         MapSaveInfo data = new MapSaveInfo();
         var grid = MapSystem.Instance.GetGrid();
 

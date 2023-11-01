@@ -86,7 +86,7 @@ public class DynamicIDPool
     /// <returns></returns>
     public GameActor GetActorById(uint id)
     {
-        if (!ActorExist(id)) return null;
+        // if (!ActorExist(id)) return null;
         return _dynamicIDdict[id];
     }
 
@@ -127,7 +127,7 @@ public class DynamicIDPool
     {
         if (!ItemSignable()) return false;
 
-        _dynamicIDdict[_assignableItemID++] = actor;
+        _dynamicIDdict[_assignableItemID] = actor;
         actor.InitDynamicId(_assignableItemID ++);
         return true;
     }

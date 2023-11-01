@@ -58,13 +58,13 @@ public class GridXZ<TGridObject>
                     GetWorldPosition(x, z) + new Vector3(0.5f * cellsize, 0, 0.5f * cellsize), 8, Color.black,
                     TextAnchor.MiddleCenter, TextAlignment.Center);
 
-                Debug.DrawLine(GetWorldPosition(x, z), GetWorldPosition(x, z + 1), Color.white, 100f);
-                Debug.DrawLine(GetWorldPosition(x, z), GetWorldPosition(x + 1, z), Color.white, 100f);
+                // Debug.DrawLine(GetWorldPosition(x, z), GetWorldPosition(x, z + 1), Color.white, 100f);
+                // Debug.DrawLine(GetWorldPosition(x, z), GetWorldPosition(x + 1, z), Color.white, 100f);
             }
         }
 
-        Debug.DrawLine(GetWorldPosition(0, _height), GetWorldPosition(_width, _height), Color.white, 100f);
-        Debug.DrawLine(GetWorldPosition(_width, 0), GetWorldPosition(_width, _height), Color.white, 100f);
+        // Debug.DrawLine(GetWorldPosition(0, _height), GetWorldPosition(_width, _height), Color.white, 100f);
+        // Debug.DrawLine(GetWorldPosition(_width, 0), GetWorldPosition(_width, _height), Color.white, 100f);
     }
 
     void UpdateMap(object sender, OnGridChangedEventArgs arg)
@@ -142,6 +142,6 @@ public class GridXZ<TGridObject>
     /// <param name="z"></param>
     public void OnGridObjectChanged(int x, int z)
     {
-        OnGridChanged?.Invoke(this, new OnGridChangedEventArgs{x = x, z = z});
+        // OnGridChanged?.Invoke(this, new OnGridChangedEventArgs{x = x, z = z});
     }
 }
