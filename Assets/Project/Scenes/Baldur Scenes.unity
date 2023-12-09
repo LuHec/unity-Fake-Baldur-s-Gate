@@ -1985,7 +1985,6 @@ GameObject:
   m_Component:
   - component: {fileID: 691765044}
   - component: {fileID: 691765043}
-  - component: {fileID: 691765045}
   m_Layer: 0
   m_Name: UIManager
   m_TagString: Untagged
@@ -2023,25 +2022,6 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 6
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &691765045
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 691765042}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7ea01f800a90cd043accd11bd7fa4f23, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  queueTxtMaxSize: 10
-  screeTxtMaxSize: 50
-  debugCanvasGroup: {fileID: 1530446254}
-  logRect: {fileID: 5618081008171444194}
-  logText: {fileID: 34400669}
-  inputField: {fileID: 1230957344}
-  rcvInput: {fileID: 1566791159}
 --- !u!1 &700306798
 GameObject:
   m_ObjectHideFlags: 0
@@ -4081,6 +4061,7 @@ GameObject:
   - component: {fileID: 1530446252}
   - component: {fileID: 1530446253}
   - component: {fileID: 1530446254}
+  - component: {fileID: 1530446255}
   m_Layer: 5
   m_Name: DebugUI
   m_TagString: Untagged
@@ -4132,6 +4113,27 @@ CanvasGroup:
   m_Interactable: 0
   m_BlocksRaycasts: 0
   m_IgnoreParentGroups: 0
+--- !u!114 &1530446255
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1530446251}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7ea01f800a90cd043accd11bd7fa4f23, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  pause: 0
+  logUpdateTime: 0.5
+  queueTxtMaxSize: 10
+  screeTxtMaxSize: 50
+  debugCanvasGroup: {fileID: 1530446254}
+  logRect: {fileID: 5618081008171444194}
+  logText: {fileID: 34400669}
+  inputField: {fileID: 1230957344}
+  rcvInput: {fileID: 1566791159}
 --- !u!1 &1557262026
 GameObject:
   m_ObjectHideFlags: 0
@@ -5780,12 +5782,12 @@ PrefabInstance:
     - target: {fileID: 313325691609874164, guid: c9fc222090195fb4cba677f22d67052c,
         type: 3}
       propertyPath: m_LocalRotation.y
-      value: -0.000000021059849
+      value: 0.000000021059849
       objectReference: {fileID: 0}
     - target: {fileID: 313325691609874164, guid: c9fc222090195fb4cba677f22d67052c,
         type: 3}
       propertyPath: m_LocalRotation.z
-      value: 0.000000012190231
+      value: -0.000000012190231
       objectReference: {fileID: 0}
     - target: {fileID: 313325691609874164, guid: c9fc222090195fb4cba677f22d67052c,
         type: 3}
@@ -5849,12 +5851,12 @@ PrefabInstance:
     - target: {fileID: 1841606593551711228, guid: 96ef13e3d881fcd4cbb83ff4e12c71c8,
         type: 3}
       propertyPath: m_LocalRotation.y
-      value: -0.000000021059849
+      value: 0.000000021059849
       objectReference: {fileID: 0}
     - target: {fileID: 1841606593551711228, guid: 96ef13e3d881fcd4cbb83ff4e12c71c8,
         type: 3}
       propertyPath: m_LocalRotation.z
-      value: 0.000000012190231
+      value: -0.000000012190231
       objectReference: {fileID: 0}
     - target: {fileID: 1841606593551711228, guid: 96ef13e3d881fcd4cbb83ff4e12c71c8,
         type: 3}
@@ -6093,7 +6095,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 5618081008586050133}
   m_HandleRect: {fileID: 5618081008586050130}
   m_Direction: 2
-  m_Value: 1
+  m_Value: 0
   m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:

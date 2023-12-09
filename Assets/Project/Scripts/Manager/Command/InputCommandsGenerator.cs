@@ -38,19 +38,12 @@ public class InputCommandsGenerator
                 return;
             }
 
-            // 检测目标格子是否有人
+            // 左键移动
             Vector3 mousePos = playerInput.GetMouse3DPosition(LayerMask.GetMask("Default"));
             // _mapSystem.GetGrid().GetXZ(mousePos.x, mousePos.z, out int xMouse, out int zMouse);
-            GameActor targetGridActor = mapSystem.GetGridObject(mousePos.x, mousePos.z).GetActor();
+            // GameActor targetGridActor = mapSystem.GetGridObject(mousePos.x, mousePos.z).GetActor();
 
-            if (targetGridActor == null)
-            {
-                commandCache = GetMoveActorCommand();
-            }
-            else
-            {
-                commandCache = GetAttackActorCommand(targetGridActor);
-            }
+            commandCache = GetMoveActorCommand();
         }
     }
 

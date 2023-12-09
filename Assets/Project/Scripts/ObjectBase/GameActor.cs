@@ -165,7 +165,7 @@ public class GameActor : MonoBehaviour
     public Vector3 MoveTo(float x, float z)
     {
         transform.position = Vector3.MoveTowards(
-            transform.position, new Vector3(x, transform.position.y, z), moveSpeed);
+            transform.position, new Vector3(x, transform.position.y, z), moveSpeed * Time.deltaTime);
 
         return transform.position;
     }

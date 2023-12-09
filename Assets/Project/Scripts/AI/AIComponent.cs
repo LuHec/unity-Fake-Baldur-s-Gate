@@ -11,7 +11,7 @@ public class AIComponent
     {
         _character = character;
     }
-    
+
     private void GenAICommand()
     {
         if (_character.CurrentTurn == null)
@@ -47,8 +47,8 @@ public class AIComponent
             if (randX < 0 || randX >= MapSystem.Instance.GetGrid().Width || randY < 0 ||
                 randY >= MapSystem.Instance.GetGrid().Width) continue;
 
-            if (MapSystem.Instance.GetGridActor(randX, randY) == null)
-                return new MoveActorCommand(randX, randY, _character.transform.position);
+            // if (MapSystem.Instance.GetGridActor(randX, randY) == null)
+            return new MoveActorCommand(randX, randY, _character.transform.position);
         }
 
         return null;
@@ -72,11 +72,11 @@ public class AIComponent
             if (randX < 0 || randX >= MapSystem.Instance.GetGrid().Width || randY < 0 ||
                 randY >= MapSystem.Instance.GetGrid().Width) continue;
 
-            if (MapSystem.Instance.GetGridActor(randX, randY) == null)
-            {
-                // Debug.Log("Player : " + player.transform + " " + randX + " " + randY);
-                return new MoveActorCommand(randX, randY, _character.transform.position);
-            }
+            // if (MapSystem.Instance.GetGridActor(randX, randY) == null)
+            // {
+            // Debug.Log("Player : " + player.transform + " " + randX + " " + randY);
+            return new MoveActorCommand(randX, randY, _character.transform.position);
+            // }
         }
 
         return null;

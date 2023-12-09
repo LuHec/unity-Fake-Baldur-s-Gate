@@ -78,6 +78,12 @@ public class GridXZ<TGridObject>
         return new Vector3(x, 0, z) * _cellsize + _originPos;
     }
     
+    /// <summary>
+    /// 返回格子中心的位置
+    /// </summary>
+    /// <param name="x"></param>
+    /// <param name="z"></param>
+    /// <returns></returns>
     public Vector3 GetOffsetWorldPosition(int x, int z)
     {
         return new Vector3(x, 0, z) * _cellsize + _originPos + new Vector3(_cellsize / 2, 0, _cellsize / 2) ;

@@ -32,18 +32,6 @@ public class PathFinding : Singleton<PathFinding>
 
     public void Clear()
     {
-        // for (int x = 0; x < _grid.Width; x++)
-        // {
-        //     for (int y = 0; y < _grid.Height; y++)
-        //     {
-        //         GridObject pathNode = _grid.GetGridObject(x, y);
-        //         pathNode.gCost = 0;
-        //         pathNode.hCost = 0;
-        //         pathNode.fCost = 0;
-        //         pathNode.cameFromNode = null;
-        //     }
-        // }
-        
         // 初始化,原点在左下角
         for (int x = 0; x < grid.Width; x++)
         {
@@ -137,6 +125,7 @@ public class PathFinding : Singleton<PathFinding>
     private List<GridObject> CalculatePath(GridObject endNode)
     {
         List<GridObject> resPath = new List<GridObject> { endNode };
+
         while (resPath[^1].cameFromNode != null)
         {
             resPath.Add(resPath[^1].cameFromNode);

@@ -10,8 +10,12 @@ using UnityEngine.UI;
 
 public class RunTimeDebugger : Singleton<RunTimeDebugger>
 {
+    [SerializeField] private bool pause = false;
+    [SerializeField] private float logUpdateTime = 0.5f;
     [SerializeField] private int queueTxtMaxSize = 10;
     [SerializeField] private int screeTxtMaxSize = 50;
+    
+    [Space]
     [SerializeField] private CanvasGroup debugCanvasGroup;
     [SerializeField] private ScrollRect logRect;
     [SerializeField] private TMP_Text logText;
@@ -23,6 +27,9 @@ public class RunTimeDebugger : Singleton<RunTimeDebugger>
     private Queue<DebugStringBuffer> logQueue = new Queue<DebugStringBuffer>();
     private StringBuilder logStringBuilder = new StringBuilder(80 * 15);
     private int screenTxtCounter;
+    
+    // 计时更新log
+    private float timer;
 
     private void Start()
     {
@@ -39,6 +46,16 @@ public class RunTimeDebugger : Singleton<RunTimeDebugger>
         {
             isShow = !isShow;
             ShowDebug(isShow);
+        }
+
+        if (isShow)
+        {
+            timer += Time.deltaTime;
+            if (timer > logUpdateTime)
+            {
+                UpdateLog();
+                timer = 0;
+            }
         }
     }
 
@@ -57,13 +74,16 @@ public class RunTimeDebugger : Singleton<RunTimeDebugger>
         else
         {
             // 暂停游戏
-            Time.timeScale = 0;
-            
+            if (pause)
+                Time.timeScale = 0;
+
             isShow = true;
 
             debugCanvasGroup.alpha = 1;
             debugCanvasGroup.interactable = true;
             debugCanvasGroup.blocksRaycasts = true;
+            
+            UpdateLog();
         }
     }
 
@@ -93,9 +113,6 @@ public class RunTimeDebugger : Singleton<RunTimeDebugger>
 
         logStringBuilder.Append('\n');
         logStringBuilder.Append(debugStringBuffer);
-
-
-        UpdateLog();
     }
 
     public void SetColor()

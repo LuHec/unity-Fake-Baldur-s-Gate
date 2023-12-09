@@ -72,7 +72,7 @@ public class MessageCenter : Singleton<MessageCenter>
         // 从地图上清理掉
         var gridObject = MapSystem.Instance.GetGridObject(ActorsManagerCenter.Instance
             .GetActorByDynamicId(message.dead_dynamic_id).transform.position);
-        gridObject.ClearActor();
+        // gridObject.ClearActor();
     }
 
 

@@ -26,7 +26,8 @@ public class TaskFollow : BehaviorNode
             if (randX < 0 || randX >= MapSystem.Instance.GetGrid().Width || randY < 0 ||
                 randY >= MapSystem.Instance.GetGrid().Width) continue;
 
-            if (MapSystem.Instance.GetGridActor(randX, randY) == null)
+            // if (MapSystem.Instance.GetGridActor(randX, randY) == null)
+            if(true)
             {
                 // Debug.Log("Player : " + player.transform + " " + randX + " " + randY);
                 var moveActorCommand = new MoveActorCommand(randX, randY, _character.transform.position);

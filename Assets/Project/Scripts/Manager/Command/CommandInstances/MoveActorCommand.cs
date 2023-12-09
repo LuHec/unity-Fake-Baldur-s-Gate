@@ -84,24 +84,44 @@ public class MoveActorCommand : CommandInstance
     bool Move(GameActor actor, Action onMoveFinished)
     {
         Vector3 nextWorldPos = mapSystem.GetGrid().GetOffsetWorldPosition(path[pathPtr].X, path[pathPtr].Y);
-        Vector3 actualPos = actor.CalculateMoveTo(nextWorldPos.x, nextWorldPos.z);
+        // Vector3 actualPos = actor.CalculateMoveTo(nextWorldPos.x, nextWorldPos.z);
+        Vector3 actualPos = actor.MoveTo(nextWorldPos.x, nextWorldPos.z);
 
-        if (mapSystem.MoveGameActor(actualPos.x, actualPos.z, actor) && pathPtr < path.Count - 1)
+        // if (actor.GetActorStateTag() == ActorEnumType.ActorStateTag.Player)
+        //     RunTimeDebugger.Instance.LogMessage("nextPos: " + nextWorldPos +   " actualPos: " + actualPos);
+
+        // 判定是否进入下个格子范围了
+        var currentGrid = mapSystem.GetXZ(actualPos.x, actualPos.z);
+        if (pathPtr < path.Count - 1 && (currentGrid.x != path[pathPtr].X || currentGrid.y != path[pathPtr].Y))
         {
             pathPtr++;
         }
 
-        actor.DirectMoveTo(actualPos);
+        // if (mapSystem.MoveGameActor(actualPos.x, actualPos.z, actor) && pathPtr < path.Count - 1)
+        // {
+        //     pathPtr++;
+        // }
+
+        // actor.DirectMoveTo(actualPos);
 
         // 修正高度
-        Vector3 currPos = mapSystem.GetGrid().GetOffsetWorldPosition(path[^1].X, path[^1].Y);
-        currPos.y = actor.transform.position.y;
+        // Vector3 currPos = mapSystem.GetGrid().GetOffsetWorldPosition(path[^1].X, path[^1].Y);
+        // currPos.y = actor.transform.position.y;
 
-        // 由于斜角移动会遇到已存在物体，所以强制更改最后一格
-        if (Vector3.Distance(actualPos, currPos) < 0.1)
+        // // 由于斜角移动会遇到已存在物体，所以强制更改最后一格
+        // if (Vector3.Distance(actualPos, currPos) < 0.1)
+        // {
+        //     // mapSystem.MoveGameActor(actualPos.x, actualPos.z, actor, true);
+        //     pathFinding.Clear();
+        //     onMoveFinished();
+        // }
+
+        // 
+        if (Vector3.Distance(actualPos, mapSystem.GetGrid().GetOffsetWorldPosition(path[^1].X, path[^1].Y)) < 0.1f)
         {
-            mapSystem.MoveGameActor(actualPos.x, actualPos.z, actor, true);
             pathFinding.Clear();
+            if (actor.GetActorStateTag() == ActorEnumType.ActorStateTag.Player)
+                RunTimeDebugger.Instance.LogMessage("Finished");
             onMoveFinished();
         }
 
@@ -112,10 +132,10 @@ public class MoveActorCommand : CommandInstance
     {
         // 网格位置回放
         var gridObject = MapSystem.Instance.GetGridObject(actor.transform.position);
-        gridObject.ClearActor();
+        // gridObject.ClearActor();
 
         // 物理位置回放
         actor.transform.position = originWorldPos;
-        MapSystem.Instance.GetGridObject(originWorldPos).SetActor(actor);
+        // MapSystem.Instance.GetGridObject(originWorldPos).SetActor(actor);
     }
 }

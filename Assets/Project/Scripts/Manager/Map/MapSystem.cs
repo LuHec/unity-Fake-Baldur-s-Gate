@@ -27,21 +27,21 @@ public class MapSystem : Singleton<MapSystem>
 
     public GridXZ<GridObject> GetGrid() => grid;
     
-    /// <summary>
-    /// 返回坐标对应格子上的GameActor
-    /// </summary>
-    /// <param name="x"></param>
-    /// <param name="z"></param>
-    /// <returns>GameActor</returns>
-    public GameActor GetGridActor(float x, float z)
-    {
-        return GetGridObject((int)x, (int)z)?.GetActor();
-    }
+    // /// <summary>
+    // /// 返回坐标对应格子上的GameActor
+    // /// </summary>
+    // /// <param name="x"></param>
+    // /// <param name="z"></param>
+    // /// <returns>GameActor</returns>
+    // public GameActor GetGridActor(float x, float z)
+    // {
+    //     return GetGridObject((int)x, (int)z)?.GetActor();
+    // }
 
-    public GameActor GetGridActor(Vector3 worldPosition)
-    {
-        return GetGridActor(worldPosition.x, worldPosition.z);
-    }
+    // public GameActor GetGridActor(Vector3 worldPosition)
+    // {
+    //     return GetGridActor(worldPosition.x, worldPosition.z);
+    // }
 
     public Vector2Int GetXZ(float x, float z)
     {
@@ -71,88 +71,88 @@ public class MapSystem : Singleton<MapSystem>
         return GetGridObject(worldPosition.x, worldPosition.z);
     }
 
-    /// <summary>
-    /// 指定位置上添加Actor，需要世界坐标
-    /// </summary>
-    /// <returns></returns>
-    public bool SetGridActor(float x, float z, GameActor actor)
-    {
-        var gridPos = GetXZ(x, z);
-        if (GetGridActor(gridPos.x, gridPos.y) == null)
-        {
-            grid.GetGridObject(gridPos.x, gridPos.y).SetActor(actor);
-        }
+    // /// <summary>
+    // /// 指定位置上添加Actor，需要世界坐标
+    // /// </summary>
+    // /// <returns></returns>
+    // public bool SetGridActor(float x, float z, GameActor actor)
+    // {
+    //     var gridPos = GetXZ(x, z);
+    //     if (GetGridActor(gridPos.x, gridPos.y) == null)
+    //     {
+    //         grid.GetGridObject(gridPos.x, gridPos.y).SetActor(actor);
+    //     }
+    //
+    //     return false;
+    // }
+    //
+    // /// <summary>
+    // /// 指定位置上添加Actor,需要格子坐标
+    // /// </summary>
+    // /// <returns></returns>
+    // public bool SetGridActor(int x, int z, GameActor actor)
+    // {
+    //     if (GetGridActor(x, z) == null)
+    //     {
+    //         grid.GetGridObject(x, z).SetActor(actor);
+    //     }
+    //
+    //     return false;
+    // }
 
-        return false;
-    }
-    
-    /// <summary>
-    /// 指定位置上添加Actor,需要格子坐标
-    /// </summary>
-    /// <returns></returns>
-    public bool SetGridActor(int x, int z, GameActor actor)
-    {
-        if (GetGridActor(x, z) == null)
-        {
-            grid.GetGridObject(x, z).SetActor(actor);
-        }
-
-        return false;
-    }
-
-    /// <summary>
-    /// 把actor移动到指定位置
-    /// </summary>
-    /// <param name="targetX">目标x</param>
-    /// <param name="targetZ">目标y</param>
-    /// <param name="actor">指定目标</param>
-    /// <param name="force">是否强制移动</param>
-    /// <returns>移动是否成功</returns>
-    public bool MoveGameActor(float targetX, float targetZ, GameActor actor, bool force = false)
-    {
-        // 移动只在格子范围内不进行修改
-        grid.GetXZ(new Vector2(actor.transform.position.x, actor.transform.position.z), out int x1, out int z1);
-        grid.GetXZ(new Vector2(targetX, targetZ), out int x2, out int z2);
-
-        if (x1 == x2 && z1 == z2) return true;
-        
-        if (force)
-        {
-            grid.GetGridObject(x1, z1).ClearActor();
-            grid.GetGridObject(x2, z2).SetActor(actor);
-            return true;
-        }
-
-
-        if (grid.GetGridObject(x1, z1).GetActor() == null || grid.GetGridObject(x1, z1).GetActor() == actor)
-        {
-            grid.GetGridObject(x1, z1).ClearActor();
-            grid.GetGridObject(x2, z2).SetActor(actor);
-        }
-
-        // // 原始位置
-        // List<Vector2Int> gridList =
-        //     actor.PlacedObject.GetGridPositionList(new Vector2Int(x1, z1),
-        //         PlacedObjectTypeSO.Dir.Up);
-        //
-        // foreach (var gridPos in gridList)
-        // {
-        //     GridObject gridObject = GetGridObject(gridPos.x, gridPos.y);
-        //     gridObject.ClearActor();
-        // }
-        //
-        // // 目标位置
-        //
-        // List<Vector2Int> gridTargetList =
-        //     actor.PlacedObject.GetGridPositionList(new Vector2Int(x2, z2),
-        //         PlacedObjectTypeSO.Dir.Up);
-        //
-        // foreach (var gridTargetPos in gridTargetList)
-        // {
-        //     GridObject gridObject = GetGridObject(gridTargetPos.x, gridTargetPos.y);
-        //     gridObject.SetActor(actor);
-        // }
-
-        return true;
-    }
+    // /// <summary>
+    // /// 把actor移动到指定位置
+    // /// </summary>
+    // /// <param name="targetX">目标x</param>
+    // /// <param name="targetZ">目标y</param>
+    // /// <param name="actor">指定目标</param>
+    // /// <param name="force">是否强制移动</param>
+    // /// <returns>移动是否成功</returns>
+    // public bool MoveGameActor(float targetX, float targetZ, GameActor actor, bool force = false)
+    // {
+    //     // 移动只在格子范围内不进行修改
+    //     grid.GetXZ(new Vector2(actor.transform.position.x, actor.transform.position.z), out int x1, out int z1);
+    //     grid.GetXZ(new Vector2(targetX, targetZ), out int x2, out int z2);
+    //
+    //     if (x1 == x2 && z1 == z2) return true;
+    //     
+    //     if (force)
+    //     {
+    //         grid.GetGridObject(x1, z1).ClearActor();
+    //         grid.GetGridObject(x2, z2).SetActor(actor);
+    //         return true;
+    //     }
+    //
+    //
+    //     if (grid.GetGridObject(x1, z1).GetActor() == null || grid.GetGridObject(x1, z1).GetActor() == actor)
+    //     {
+    //         grid.GetGridObject(x1, z1).ClearActor();
+    //         grid.GetGridObject(x2, z2).SetActor(actor);
+    //     }
+    //
+    //     // // 原始位置
+    //     // List<Vector2Int> gridList =
+    //     //     actor.PlacedObject.GetGridPositionList(new Vector2Int(x1, z1),
+    //     //         PlacedObjectTypeSO.Dir.Up);
+    //     //
+    //     // foreach (var gridPos in gridList)
+    //     // {
+    //     //     GridObject gridObject = GetGridObject(gridPos.x, gridPos.y);
+    //     //     gridObject.ClearActor();
+    //     // }
+    //     //
+    //     // // 目标位置
+    //     //
+    //     // List<Vector2Int> gridTargetList =
+    //     //     actor.PlacedObject.GetGridPositionList(new Vector2Int(x2, z2),
+    //     //         PlacedObjectTypeSO.Dir.Up);
+    //     //
+    //     // foreach (var gridTargetPos in gridTargetList)
+    //     // {
+    //     //     GridObject gridObject = GetGridObject(gridTargetPos.x, gridTargetPos.y);
+    //     //     gridObject.SetActor(actor);
+    //     // }
+    //
+    //     return true;
+    // }
 }

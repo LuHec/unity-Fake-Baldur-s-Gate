@@ -1,14 +1,14 @@
 ﻿public class GridObject
 {
-    private GridXZ<GridObject> _grid;
-    private int _x;
-    private int _y;
-    public int X => _x;
-    public int Y => _y;
-    private GameActor _actor;
-    private PlacedObject _placedObject;
+    private GridXZ<GridObject> grid;
+    private int x;
+    private int y;
+    public int X => x;
+    public int Y => y;
+    // private GameActor _actor;
+    private PlacedObject placedObject;
 
-    public bool Reachable => _actor == null;
+    public bool Reachable => true;
 
     public GridObject cameFromNode;
 
@@ -30,66 +30,66 @@
 
     public GridObject(GridXZ<GridObject> grid, int x, int y)
     {
-        _grid = grid;
-        _x = x;
-        _y = y;
+        this.grid = grid;
+        this.x = x;
+        this.y = y;
     }
 
-    public bool Empty()
-    {
-        return _actor == null;
-    }
+    // public bool Empty()
+    // {
+    //     return _actor == null;
+    // }
 
-    public bool SetActor(GameActor actor)
-    {
-        if (Empty())
-        {
-            _actor = actor;
-            _grid.OnGridObjectChanged(_x, _y);
-            return true;
-        }
+    // public bool SetActor(GameActor actor)
+    // {
+    //     if (Empty())
+    //     {
+    //         _actor = actor;
+    //         _grid.OnGridObjectChanged(_x, _y);
+    //         return true;
+    //     }
+    //
+    //     return false;
+    // }
 
-        return false;
-    }
-
-    public void ClearActor()
-    {
-        _actor = null;
-        _grid.OnGridObjectChanged(_x, _y);
-    }
+    // public void ClearActor()
+    // {
+    //     _actor = null;
+    //     grid.OnGridObjectChanged(x, y);
+    // }
 
     public override string ToString()
     {
-        if (_actor) return _actor.name;
-        return _x + "," + _y;
+        // if (_actor) return _actor.name;
+        return x + "," + y;
     }
 
     #region #build
 
-    public GameActor GetActor() => _actor;
+    // public GameActor GetActor() => _actor;
 
 
     public bool CanBuild()
     {
-        return _placedObject == null;
+        return placedObject == null;
     }
 
     public void SetPlacedObect(PlacedObject placedObject)
     {
         if (CanBuild())
         {
-            _placedObject = placedObject;
+            this.placedObject = placedObject;
         }
 
-        _grid.OnGridObjectChanged(_x, _y);
+        grid.OnGridObjectChanged(x, y);
     }
 
     public void ClearPlacedObject()
     {
-        _placedObject = null;
+        placedObject = null;
     }
 
-    public PlacedObject GetPlaceObject() => _placedObject;
+    public PlacedObject GetPlaceObject() => placedObject;
 
     #endregion
 }

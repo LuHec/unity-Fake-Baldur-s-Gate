@@ -68,7 +68,7 @@ public class ActorsManagerCenter : Singleton<ActorsManagerCenter>
 
             // 随机生成到地图上可用位置
             Vector2Int randomPos = GetRandomGridPos();
-            _mapSystem.SetGridActor(charActor.startPos.x, charActor.startPos.z, charActor);
+            // _mapSystem.SetGridActor(charActor.startPos.x, charActor.startPos.z, charActor);
             charActor.transform.position = charActor.startPos;
         }
     }
@@ -101,7 +101,7 @@ public class ActorsManagerCenter : Singleton<ActorsManagerCenter>
         var weapon = GetActorByDynamicId(LoadWeapon(charActor.characterAttribute.WeaponId));
         (charActor as Character).EquipWeapon(weapon);
         
-        _mapSystem.SetGridActor(position.x, position.z, charActor);
+        // _mapSystem.SetGridActor(position.x, position.z, charActor);
         charActor.transform.position = position;
 
         return charActor.DynamicId;
@@ -149,7 +149,7 @@ public class ActorsManagerCenter : Singleton<ActorsManagerCenter>
     public bool RemoveConActorByDynamicId(uint id)
     {
         if (_controlledActorsSet.Remove(id) == false) return false;
-        _mapSystem.GetGridObject(GetActorByDynamicId(id).transform.position).ClearActor();
+        // _mapSystem.GetGridObject(GetActorByDynamicId(id).transform.position).ClearActor();
         return _dynamicIDPool.RemoveActorById(id);
     }
 
