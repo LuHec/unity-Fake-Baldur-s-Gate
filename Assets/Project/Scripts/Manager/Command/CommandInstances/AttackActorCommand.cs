@@ -7,23 +7,23 @@ public class AttackActorCommand : CommandInstance
     private bool hasAttacked = false;
 
     // 攻击者
-    private GameActor _actorAttacker;
+    private GameActor actorAttacker;
     // 被攻击者
-    private GameActor _actorAttacked;
+    private GameActor actorAttacked;
 
     public AttackActorCommand(GameActor actorAttacked)
     {
-        _actorAttacked = actorAttacked;
+        this.actorAttacked = actorAttacked;
     }
 
     public override bool Excute(GameActor attacker, Action onExcuteFinsihed)
     {
-        if (attacker == _actorAttacked) return false;
+        if (attacker == actorAttacked) return false;
 
         if (!hasAttacked)
         {
             hasAttacked = true;
-            Attacking(attacker, _actorAttacked, onExcuteFinsihed);
+            Attacking(attacker, actorAttacked, onExcuteFinsihed);
         }
 
         return true;

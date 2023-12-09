@@ -5,25 +5,25 @@ using UnityEngine;
 
 public class CommandQueue
 {
-    private List<CommandInstance> _cmdQueue;
-    private int _maxSize = 5;
-    private GameActor _actor;
+    private List<CommandInstance> cmdQueue;
+    private int maxSize = 5;
+    private GameActor actor;
 
     public CommandQueue(GameActor actor, int maxSize = 5)
     {
-        _maxSize = maxSize;
-        _cmdQueue = new List<CommandInstance>();
-        _actor = actor;
+        this.maxSize = maxSize;
+        cmdQueue = new List<CommandInstance>();
+        this.actor = actor;
     }
 
     public void Clear()
     {
-        _cmdQueue.Clear();
+        cmdQueue.Clear();
     }
 
     public bool Add(CommandInstance cmdInstance)
     {
-        _cmdQueue.Add(cmdInstance);
+        cmdQueue.Add(cmdInstance);
         if (Size() > MaxSize)
         {
             PopFront();
@@ -35,21 +35,21 @@ public class CommandQueue
     public CommandInstance Back()
     {
         if (Empty()) return null;
-        return _cmdQueue.Last();
+        return cmdQueue.Last();
     }
 
     public CommandInstance Front()
     {
         if (Empty()) return null;
-        return _cmdQueue[0];
+        return cmdQueue[0];
     }
 
     public CommandInstance PopFront()
     {
         if (!Empty())
         {
-            var res = _cmdQueue[0];
-            _cmdQueue.RemoveAt(0);
+            var res = cmdQueue[0];
+            cmdQueue.RemoveAt(0);
             return res;
         }
         else return null;
@@ -59,8 +59,8 @@ public class CommandQueue
     {
         if (!Empty())
         {
-            var res = _cmdQueue[Size() - 1];
-            _cmdQueue.RemoveAt(Size() - 1);
+            var res = cmdQueue[Size() - 1];
+            cmdQueue.RemoveAt(Size() - 1);
             return res;
         }
         else return null;
@@ -71,11 +71,11 @@ public class CommandQueue
         var cmd = PopBack();
         if (cmd != null)
         {
-            cmd.Undo(_actor);
+            cmd.Undo(actor);
         }
     }
 
-    public bool Empty() => _cmdQueue.Count == 0;
-    public int Size() => _cmdQueue.Count;
-    public int MaxSize => _maxSize;
+    public bool Empty() => cmdQueue.Count == 0;
+    public int Size() => cmdQueue.Count;
+    public int MaxSize => maxSize;
 }

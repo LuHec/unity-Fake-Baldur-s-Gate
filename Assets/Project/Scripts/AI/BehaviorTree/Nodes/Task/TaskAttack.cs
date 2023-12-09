@@ -10,7 +10,7 @@
     public override NodeState Evaluate()
     {
         TurnInstance turnInstance = _character.CurrentTurn;
-        foreach (var id in turnInstance._conActorDynamicIDs)
+        foreach (var id in turnInstance.ConActorDynamicIDs)
         {
             if (ActorsManagerCenter.Instance.GetActorByDynamicId(id).GetActorStateTag() ==
                 ActorEnumType.ActorStateTag.Player)

@@ -8,36 +8,36 @@ using UnityEngine.Serialization;
 
 public class Grid3DSystem : MonoBehaviour
 {
-    private GridXZ<GridObjectOrigin> _grid;
+    private GridXZ<GridObjectOrigin> grid;
     [SerializeField] private List<PlacedObjectTypeSO> placedObjectTypeSos;
     [SerializeField] private int gridwidth = 10;
     [SerializeField] private int gridheight = 10;
     [SerializeField] private float cellsize = 10f;
-    [SerializeField] private PlacedObjectTypeSO.Dir _dir = PlacedObjectTypeSO.Dir.Up;
+    [SerializeField] private PlacedObjectTypeSO.Dir dir = PlacedObjectTypeSO.Dir.Up;
 
-    private PlacedObjectTypeSO _placedObjectTypeSo;
-    private int _ptr = 0;
+    private PlacedObjectTypeSO placedObjectTypeSo;
+    private int ptr = 0;
 
     void ChangeBuilding()
     {
-        _ptr = (_ptr + 1) % placedObjectTypeSos.Count;
-        _placedObjectTypeSo = placedObjectTypeSos[_ptr];
+        ptr = (ptr + 1) % placedObjectTypeSos.Count;
+        placedObjectTypeSo = placedObjectTypeSos[ptr];
     }
 
     private void Awake()
     {
-        _grid = new GridXZ<GridObjectOrigin>(gridwidth, gridheight, cellsize, Vector3.zero,
+        grid = new GridXZ<GridObjectOrigin>(gridwidth, gridheight, cellsize, Vector3.zero,
             (GridXZ<GridObjectOrigin> g, int x, int y) => new GridObjectOrigin(g, x, y));
 
-        _placedObjectTypeSo = placedObjectTypeSos[0];
+        placedObjectTypeSo = placedObjectTypeSos[0];
     }
 
     private void Update()
     {
         if (Input.GetKeyDown(KeyCode.R))
         {
-            _dir = _placedObjectTypeSo.GetNextDir(_dir);
-            UtilsClass.CreateWorldTextPopup(_dir.ToString(), Utilties.GetMouse3DPosition("Default"));
+            dir = placedObjectTypeSo.GetNextDir(dir);
+            UtilsClass.CreateWorldTextPopup(dir.ToString(), Utilties.GetMouse3DPosition("Default"));
         }
 
         if (Input.GetKeyDown(KeyCode.Q))
@@ -61,7 +61,7 @@ public class Grid3DSystem : MonoBehaviour
     /// </summary>
     private void DestoryBuilding()
     {
-        GridObjectOrigin gridObjectOrigin = _grid.GetGridObject(Utilties.GetMouse3DPosition("Default"));
+        GridObjectOrigin gridObjectOrigin = grid.GetGridObject(Utilties.GetMouse3DPosition("Default"));
         PlacedObject placedObject = gridObjectOrigin.GetPlaceObject();
         if (placedObject != null)
         {
@@ -70,7 +70,7 @@ public class Grid3DSystem : MonoBehaviour
 
             foreach (var gridPos in gridList)
             {
-                _grid.GetGridObject(gridPos.x, gridPos.y).ClearPlacedObject();
+                grid.GetGridObject(gridPos.x, gridPos.y).ClearPlacedObject();
             }
             
             placedObject.DestroySelf();
@@ -83,15 +83,15 @@ public class Grid3DSystem : MonoBehaviour
     void SetBuilding()
     {
         Vector3 mousePos = Utilties.GetMouse3DPosition("Default");
-        _grid.GetXZ(mousePos, out int x, out int z);
+        grid.GetXZ(mousePos, out int x, out int z);
         List<Vector2Int> gridList =
-            _placedObjectTypeSo.GetGridPositionList(new Vector2Int(x, z), _dir);
+            placedObjectTypeSo.GetGridPositionList(new Vector2Int(x, z), dir);
 
         // 遍历所有占领的格子，只有全部可以建造才能建造
         bool canBuild = true;
         foreach (var gridPos in gridList)
         {
-            if (!_grid.GetGridObject(gridPos.x, gridPos.y).CanBuild())
+            if (!grid.GetGridObject(gridPos.x, gridPos.y).CanBuild())
             {
                 canBuild = false;
                 break;
@@ -100,15 +100,15 @@ public class Grid3DSystem : MonoBehaviour
 
         if (canBuild)
         {
-            Vector2Int objRotationOffset = _placedObjectTypeSo.GetRotationOffset(_dir);
-            Vector3 worldPos = _grid.GetWorldPosition(x, z) +
+            Vector2Int objRotationOffset = placedObjectTypeSo.GetRotationOffset(dir);
+            Vector3 worldPos = grid.GetWorldPosition(x, z) +
                                new Vector3(objRotationOffset.x, 0, objRotationOffset.y) * cellsize;
             PlacedObject placedObject =
-                PlacedObject.Create(worldPos, new Vector2Int(x, z), _dir, _placedObjectTypeSo);
+                PlacedObject.Create(worldPos, new Vector2Int(x, z), dir, placedObjectTypeSo);
 
             foreach (var gridPos in gridList)
             {
-                _grid.GetGridObject(gridPos.x, gridPos.y).SetPlacedObect(placedObject);
+                grid.GetGridObject(gridPos.x, gridPos.y).SetPlacedObect(placedObject);
             }
         }
         else

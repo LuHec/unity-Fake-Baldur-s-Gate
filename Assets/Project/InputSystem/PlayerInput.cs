@@ -7,33 +7,35 @@ using UnityEngine.InputSystem;
 
 public class PlayerInput : Singleton<PlayerInput>
 {
-    private PlayerInputSystem _playerInputSystem;
+    private PlayerInputSystem playerInputSystem;
 
-    public Vector2 PlayerMovement => _playerInputSystem.Player.Move.ReadValue<Vector2>();
+    public Vector2 PlayerMovement => playerInputSystem.Player.Move.ReadValue<Vector2>();
     public bool IsMove => PlayerMovement.sqrMagnitude != 0;
-    public bool IsLPress => _playerInputSystem.Player.Click.IsPressed();
-    public bool IsLClick => _playerInputSystem.Player.Click.WasPressedThisFrame();
-    public bool IsRClick => _playerInputSystem.Player.RightClick.WasPressedThisFrame();
-    public Vector2 Axis => _playerInputSystem.Player.Look.ReadValue<Vector2>().normalized;
-    public bool IsEscape => _playerInputSystem.Player.Exit.WasPressedThisFrame();
-    public Vector2 MouseScroll => _playerInputSystem.Player.MouseScroll.ReadValue<Vector2>();
-    public Vector2 MouseAxis => _playerInputSystem.Player.MouseAxis.ReadValue<Vector2>();
-    public Vector2 MousePos => _playerInputSystem.Player.MousePos.ReadValue<Vector2>();
-    public Vector2 MouseDelta => _playerInputSystem.Player.MouseDelta.ReadValue<Vector2>();
+    public bool IsLPress => playerInputSystem.Player.Click.IsPressed();
+    public bool IsLClick => playerInputSystem.Player.Click.WasPressedThisFrame();
+    public bool IsRClick => playerInputSystem.Player.RightClick.WasPressedThisFrame();
+    public Vector2 Axis => playerInputSystem.Player.Look.ReadValue<Vector2>().normalized;
+    public bool IsEscape => playerInputSystem.Player.Exit.WasPressedThisFrame();
+    public Vector2 MouseScroll => playerInputSystem.Player.MouseScroll.ReadValue<Vector2>();
+    public Vector2 MouseAxis => playerInputSystem.Player.MouseAxis.ReadValue<Vector2>();
+    public Vector2 MousePos => playerInputSystem.Player.MousePos.ReadValue<Vector2>();
+    public Vector2 MouseDelta => playerInputSystem.Player.MouseDelta.ReadValue<Vector2>();
 
-    public bool Epress => _playerInputSystem.Player.E.IsPressed();
-    public bool Qpress => _playerInputSystem.Player.Q.IsPressed();
+    public bool Epress => playerInputSystem.Player.E.IsPressed();
+    public bool Qpress => playerInputSystem.Player.Q.IsPressed();
+
+    public bool DebugPress => playerInputSystem.Player.Debug.WasPressedThisFrame();
 
     protected override void Awake()
     {
         base.Awake();
-        _playerInputSystem = new PlayerInputSystem();
+        playerInputSystem = new PlayerInputSystem();
         EnableGamePlayInputs();
     }
 
     public void EnableGamePlayInputs()
     {
-        _playerInputSystem.Player.Enable();
+        playerInputSystem.Player.Enable();
         Cursor.lockState = CursorLockMode.Confined;
     }
 
@@ -45,6 +47,7 @@ public class PlayerInput : Singleton<PlayerInput>
 #if UNITY_EDITOR
             // Debug.Log(raycastHit.point);
 #endif
+            var actor = ActorsManagerCenter.Instance.GetActorByDynamicId(TurnManager.Instance.GetCurrentPlayerId());
             return raycastHit.point;
         }
         else
@@ -54,5 +57,6 @@ public class PlayerInput : Singleton<PlayerInput>
 #endif
             return Vector3.zero;
         }
+        
     }
 }

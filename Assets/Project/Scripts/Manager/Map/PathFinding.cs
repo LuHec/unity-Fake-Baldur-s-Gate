@@ -11,70 +11,88 @@ public class PathFinding : Singleton<PathFinding>
     private const int MOVE_STRAIGHT_COST = 10;
     private const int MOVE_DIAGONAL_COST = 14;
 
-    private GridXZ<GridObject> _grid;
+    private GridXZ<GridObject> grid;
 
     // 已经检索过的点
-    private List<GridObject> _openList;
+    private List<GridObject> openList;
 
     // 还未检索过的点
-    private List<GridObject> _closeList;
+    private List<GridObject> closeList;
 
-    public GridXZ<GridObject> GetGrid() => _grid;
+    public GridXZ<GridObject> GetGrid() => grid;
 
     public void Init(GridXZ<GridObject> grid)
     {
-        _grid = grid;
+        this.grid = grid;
+        openList = new List<GridObject>();
+        closeList = new List<GridObject>();
+
+        Clear();
     }
 
     public void Clear()
     {
-        for (int x = 0; x < _grid.Width; x++)
+        // for (int x = 0; x < _grid.Width; x++)
+        // {
+        //     for (int y = 0; y < _grid.Height; y++)
+        //     {
+        //         GridObject pathNode = _grid.GetGridObject(x, y);
+        //         pathNode.gCost = 0;
+        //         pathNode.hCost = 0;
+        //         pathNode.fCost = 0;
+        //         pathNode.cameFromNode = null;
+        //     }
+        // }
+        
+        // 初始化,原点在左下角
+        for (int x = 0; x < grid.Width; x++)
         {
-            for (int y = 0; y < _grid.Height; y++)
+            for (int y = 0; y < grid.Height; y++)
             {
-                GridObject pathNode = _grid.GetGridObject(x, y);
-                pathNode.gCost = 0;
+                GridObject pathNode = grid.GetGridObject(x, y);
                 pathNode.hCost = 0;
-                pathNode.fCost = 0;
+                pathNode.gCost = int.MaxValue;
+                pathNode.CalculateFCost();
                 pathNode.cameFromNode = null;
             }
         }
 
-        _openList.Clear();
-        _closeList.Clear();
+        openList.Clear();
+        closeList.Clear();
     }
 
     public List<GridObject> FindPath(int startX, int startY, int endX, int endY)
     {
         if (startX == endX && startY == endY) return null;
-        
-        GridObject startNode = _grid.GetGridObject(startX, startY);
-        GridObject endNode = _grid.GetGridObject(endX, endY);
 
-        _openList = new List<GridObject> { startNode };
-        _closeList = new List<GridObject>();
+        GridObject startNode = grid.GetGridObject(startX, startY);
+        GridObject endNode = grid.GetGridObject(endX, endY);
 
-        // 初始化,原点在左下角
-        for (int x = 0; x < _grid.Width; x++)
-        {
-            for (int y = 0; y < _grid.Height; y++)
-            {
-                GridObject pathNode = _grid.GetGridObject(x, y);
-                pathNode.gCost = int.MaxValue;
-                pathNode.CalculateFCost();
-                // 这里不初始化hcost是因为有些点是不会经过的，没有必要去算所有的hcost，只在遍历到的时候计算hcost
-                pathNode.cameFromNode = null;
-            }
-        }
+        // _openList.Add(startNode);
+        openList = new List<GridObject> { startNode };
+        closeList = new List<GridObject>();
+
+        // // // 初始化,原点在左下角
+        // for (int x = 0; x < _grid.Width; x++)
+        // {
+        //     for (int y = 0; y < _grid.Height; y++)
+        //     {
+        //         GridObject pathNode = _grid.GetGridObject(x, y);
+        //         pathNode.gCost = int.MaxValue;
+        //         pathNode.CalculateFCost();
+        //         // 这里不初始化hcost是因为有些点是不会经过的，没有必要去算所有的hcost，只在遍历到的时候计算hcost
+        //         pathNode.cameFromNode = null;
+        //     }
+        // }
 
         startNode.gCost = 0;
         startNode.hCost = CalculateDistanceCost(startNode, endNode);
         startNode.CalculateFCost();
 
-        while (_openList.Count > 0)
+        while (openList.Count > 0)
         {
             // c# 没有优先队列，因此需要手动找到最近的点
-            GridObject currentNode = GetLowestFCostNode(_openList);
+            GridObject currentNode = GetLowestFCostNode(openList);
             // 如果当前最近点是终点，直接返回路径
             if (currentNode == endNode)
             {
@@ -83,18 +101,18 @@ public class PathFinding : Singleton<PathFinding>
 
             // 如果还未到达终点，则删除当前点，并加入到已经遍历过的列表中
             // 该点已经是最近的走法了，不需要再更新
-            _openList.Remove(currentNode);
-            _closeList.Add(currentNode);
+            openList.Remove(currentNode);
+            closeList.Add(currentNode);
 
             // 和迪杰斯特拉一样，更新周围的点。如果当前点到目标点的消耗小于它的起始点数，则更新为当前的消耗
             List<GridObject> neighbourNodes = GetNeighbourList(currentNode);
             foreach (var neighbourNode in neighbourNodes)
             {
-                if (_closeList.Contains(neighbourNode)) continue;
+                if (closeList.Contains(neighbourNode)) continue;
 
                 if (!neighbourNode.Reachable)
                 {
-                    _closeList.Add(neighbourNode);
+                    closeList.Add(neighbourNode);
                     continue;
                 }
 
@@ -106,9 +124,9 @@ public class PathFinding : Singleton<PathFinding>
                     neighbourNode.hCost = CalculateDistanceCost(neighbourNode, endNode);
                 }
 
-                if (!_openList.Contains(neighbourNode))
+                if (!openList.Contains(neighbourNode))
                 {
-                    _openList.Add(neighbourNode);
+                    openList.Add(neighbourNode);
                 }
             }
         }
@@ -118,8 +136,7 @@ public class PathFinding : Singleton<PathFinding>
 
     private List<GridObject> CalculatePath(GridObject endNode)
     {
-        List<GridObject> resPath = new List<GridObject>();
-        resPath.Add(endNode);
+        List<GridObject> resPath = new List<GridObject> { endNode };
         while (resPath[^1].cameFromNode != null)
         {
             resPath.Add(resPath[^1].cameFromNode);
@@ -173,10 +190,10 @@ public class PathFinding : Singleton<PathFinding>
             {
                 int neiX = currentNode.X + path[x][y].x;
                 int neiY = currentNode.Y + path[x][y].y;
-                if (neiX >= 0 && neiX < _grid.Width && neiY >= 0 && neiY < _grid.Height &&
+                if (neiX >= 0 && neiX < grid.Width && neiY >= 0 && neiY < grid.Height &&
                     path[x][y] != Vector2Int.zero)
                 {
-                    neighbourList.Add(_grid.GetGridObject(neiX, neiY));
+                    neighbourList.Add(grid.GetGridObject(neiX, neiY));
                 }
             }
         }

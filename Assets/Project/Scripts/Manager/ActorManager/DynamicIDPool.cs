@@ -7,20 +7,20 @@ using UnityEngine;
 /// </summary>
 public class DynamicIDPool
 {
-    private Dictionary<uint, GameActor> _dynamicIDdict;
+    private Dictionary<uint, GameActor> dynamicIDdict;
 
-    private const uint MinCharacterId = 100001;
-    private const uint MaxCharacterId = 800000;
-    private const uint MinItemId = 1000001;
-    private const uint MaxItemId = 10000000;
-    private uint _assignableCharacterID;
-    private uint _assignableItemID;
+    private const uint MIN_CHARACTER_ID = 100001;
+    private const uint MAX_CHARACTER_ID = 800000;
+    private const uint MIN_ITEM_ID = 1000001;
+    private const uint MAX_ITEM_ID = 10000000;
+    private uint assignableCharacterID;
+    private uint assignableItemID;
 
     /// <summary>
     /// 队列存储回收的id
     /// </summary>
-    private Queue<uint> _assignableCharacterIDQueue;
-    private Queue<uint> _assignableItemIDQueue;
+    private Queue<uint> assignableCharacterIDQueue;
+    private Queue<uint> assignableItemIDQueue;
 
     #region #CheckFunction
 
@@ -31,39 +31,39 @@ public class DynamicIDPool
     private uint GetAssignableItemID()
     {
         // 如果队列空了才会推进指针，否则从队列里拿。队列内永远不会存当前指针的值
-        if (_assignableItemIDQueue.Count == 0)
+        if (assignableItemIDQueue.Count == 0)
         {
-            return _assignableItemID++;
+            return assignableItemID++;
         }
         
-        return _assignableItemIDQueue.Dequeue();
+        return assignableItemIDQueue.Dequeue();
     }
     
     private uint GetAssignableCharacterID()
     {
-        if (_assignableCharacterIDQueue.Count == 0)
+        if (assignableCharacterIDQueue.Count == 0)
         {
-            return _assignableCharacterID++;
+            return assignableCharacterID++;
         }
 
-        return _assignableCharacterIDQueue.Dequeue();
+        return assignableCharacterIDQueue.Dequeue();
     }
     
 
-    public bool CharacterSignable() => _assignableCharacterID < MaxCharacterId;
-    public bool ItemSignable() => _assignableItemID < MaxItemId;
-    private bool ActorExist(uint id) => _dynamicIDdict.ContainsKey(id);
+    public bool CharacterSignable() => assignableCharacterID < MAX_CHARACTER_ID;
+    public bool ItemSignable() => assignableItemID < MAX_ITEM_ID;
+    private bool ActorExist(uint id) => dynamicIDdict.ContainsKey(id);
 
     #endregion
 
     public DynamicIDPool()
     {
-        _dynamicIDdict = new Dictionary<uint, GameActor>();
-        _assignableCharacterIDQueue = new Queue<uint>();
-        _assignableItemIDQueue = new Queue<uint>();
+        dynamicIDdict = new Dictionary<uint, GameActor>();
+        assignableCharacterIDQueue = new Queue<uint>();
+        assignableItemIDQueue = new Queue<uint>();
 
-        _assignableCharacterID = MinCharacterId;
-        _assignableItemID = MinItemId;
+        assignableCharacterID = MIN_CHARACTER_ID;
+        assignableItemID = MIN_ITEM_ID;
     }
 
     /// <summary>
@@ -87,7 +87,7 @@ public class DynamicIDPool
     public GameActor GetActorById(uint id)
     {
         // if (!ActorExist(id)) return null;
-        return _dynamicIDdict[id];
+        return dynamicIDdict[id];
     }
 
     /// <summary>
@@ -100,10 +100,10 @@ public class DynamicIDPool
         if (!ActorExist(id)) return false;
 
         // 回收id
-        if(GetActorById(id).GetActorType() == ActorEnumType.ActorType.Character) _assignableCharacterIDQueue.Enqueue(id);
-        else _assignableItemIDQueue.Enqueue(id);
+        if(GetActorById(id).GetActorType() == ActorEnumType.ActorType.Character) assignableCharacterIDQueue.Enqueue(id);
+        else assignableItemIDQueue.Enqueue(id);
         
-        _dynamicIDdict.Remove(id);
+        dynamicIDdict.Remove(id);
         
         return true;
     }
@@ -118,8 +118,8 @@ public class DynamicIDPool
     {
         if (!CharacterSignable()) return false;
 
-        _dynamicIDdict[_assignableCharacterID] = actor;
-        actor.InitDynamicId(_assignableCharacterID ++);
+        dynamicIDdict[assignableCharacterID] = actor;
+        actor.InitDynamicId(assignableCharacterID ++);
         return true;
     }
 
@@ -127,8 +127,8 @@ public class DynamicIDPool
     {
         if (!ItemSignable()) return false;
 
-        _dynamicIDdict[_assignableItemID] = actor;
-        actor.InitDynamicId(_assignableItemID ++);
+        dynamicIDdict[assignableItemID] = actor;
+        actor.InitDynamicId(assignableItemID ++);
         return true;
     }
 }

@@ -4,9 +4,8 @@ using OfficeOpenXml.FormulaParsing.Excel.Operators;
 
 public class PlayerActorContainer
 {
-    public List<uint> PlayerActorsIdList => _playerActorsIdList;
-    public int Ptr => _ptr;
-    private ActorsManagerCenter _actorsManagerCenter;
+    public List<uint> PlayerActorsIdList => playerActorsIdList;
+    public int Ptr => ptr;
 
     #region #delgate
 
@@ -16,18 +15,17 @@ public class PlayerActorContainer
 
     #endregion
 
-    private List<uint> _playerActorsIdList;
-    private int _ptr;
+    private List<uint> playerActorsIdList;
+    private int ptr;
 
     public PlayerActorContainer(List<uint> playerList)
     {
-        _actorsManagerCenter = ActorsManagerCenter.Instance;
-        _playerActorsIdList = playerList;
+        playerActorsIdList = playerList;
     }
 
     public void Init(List<uint> initIds)
     {
-        _playerActorsIdList = initIds;
+        playerActorsIdList = initIds;
     }
 
     public void AddPlayerById(uint id)
@@ -36,7 +34,7 @@ public class PlayerActorContainer
     }
 
     public uint GetPlayerIdByIndex(int idx) => PlayerActorsIdList[idx];
-    public uint GetCurrentPlayer => PlayerActorsIdList[_ptr];
+    public uint GetCurrentPlayer => PlayerActorsIdList[ptr];
 
     /// <summary>
     /// 切换角色，调整ai模块
@@ -45,7 +43,7 @@ public class PlayerActorContainer
     public void ChangePlayerByIdx(int idx)
     {
         var currentPlayer = ActorsManagerCenter.Instance.GetActorByDynamicId(GetCurrentPlayer) as Character;
-        _ptr = idx;
+        ptr = idx;
         var newPlayer = ActorsManagerCenter.Instance.GetActorByDynamicId(GetCurrentPlayer) as Character;
 
         currentPlayer.SetCharacterStateTo(ActorEnumType.ActorStateTag.AI);

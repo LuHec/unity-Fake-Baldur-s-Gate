@@ -4,23 +4,23 @@ using UnityEngine.EventSystems;
 
 public class InputCommandsGenerator
 {
-    private GameActor _actor;
-    private PlayerInput _playerInput;
-    private MapSystem _mapSystem;
-    private CommandInstance _commandCache;
-    public bool CanGenCommandCache => _commandCache == null;
+    private GameActor actor;
+    private PlayerInput playerInput;
+    private MapSystem mapSystem;
+    private CommandInstance commandCache;
+    public bool CanGenCommandCache => commandCache == null;
 
     public InputCommandsGenerator()
     {
-        _mapSystem = MapSystem.Instance;
-        _playerInput = PlayerInput.Instance;
+        mapSystem = MapSystem.Instance;
+        playerInput = PlayerInput.Instance;
     }
 
     public InputCommandsGenerator(GameActor actor)
     {
-        _mapSystem = MapSystem.Instance;
-        _playerInput = PlayerInput.Instance;
-        _actor = actor;
+        mapSystem = MapSystem.Instance;
+        playerInput = PlayerInput.Instance;
+        this.actor = actor;
     }
 
     /// <summary>
@@ -29,27 +29,27 @@ public class InputCommandsGenerator
     /// <returns>CommandInstance</returns>
     private void GenInputCommand()
     {
-        if (_playerInput.IsLClick)
+        if (playerInput.IsLClick)
         {
             // 判断是否点击到UI上，这里的GameObject是EventGameObject
-            if (EventSystem.current.IsPointerOverGameObject())
+            if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject())
             {
-                _commandCache = null;
+                commandCache = null;
                 return;
             }
 
             // 检测目标格子是否有人
-            Vector3 mousePos = _playerInput.GetMouse3DPosition(LayerMask.GetMask("Default"));
+            Vector3 mousePos = playerInput.GetMouse3DPosition(LayerMask.GetMask("Default"));
             // _mapSystem.GetGrid().GetXZ(mousePos.x, mousePos.z, out int xMouse, out int zMouse);
-            GameActor targetGridActor = _mapSystem.GetGridObject(mousePos.x, mousePos.z).GetActor();
+            GameActor targetGridActor = mapSystem.GetGridObject(mousePos.x, mousePos.z).GetActor();
 
             if (targetGridActor == null)
             {
-                _commandCache = GetMoveActorCommand();
+                commandCache = GetMoveActorCommand();
             }
             else
             {
-                _commandCache = GetAttackActorCommand(targetGridActor);
+                commandCache = GetAttackActorCommand(targetGridActor);
             }
         }
     }
@@ -57,20 +57,21 @@ public class InputCommandsGenerator
     public CommandInstance GetCommand()
     {
         // 运行Cache状态下不能产生新的命令
+        // 闲置状态下会返回空
         if (CanGenCommandCache)
         {
             GenInputCommand();
         }
 
-        return _commandCache;
+        return commandCache;
     }
 
     CommandInstance GetMoveActorCommand()
     {
         // Debug.Log("Map is" + (_mapSystem == null));
-        Vector3 mousePos = _playerInput.GetMouse3DPosition(LayerMask.GetMask("Default"));
+        Vector3 mousePos = playerInput.GetMouse3DPosition(LayerMask.GetMask("Default"));
 
-        return new MoveActorCommand(mousePos.x, mousePos.z, _actor.transform.position);
+        return new MoveActorCommand(mousePos.x, mousePos.z, actor.transform.position);
     }
 
     CommandInstance GetAttackActorCommand(GameActor gridActor)
@@ -80,6 +81,6 @@ public class InputCommandsGenerator
 
     public void ClearCommandCache()
     {
-        _commandCache = null;
+        commandCache = null;
     }
 }

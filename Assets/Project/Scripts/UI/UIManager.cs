@@ -7,13 +7,13 @@ using UnityEngine.UI;
 
 public class UIManager : MonoBehaviour
 {
-    private MessageCenter _messageCenter;
+    private MessageCenter messageCenter;
 
     [SerializeField] private Button switchState;
     [SerializeField] private LayoutGroup playerLayoutGroup;
     [SerializeField] private Button backTurn;
 
-    private TMP_Text _text_button;
+    private TMP_Text textButton;
 
     // 切换模式
     private bool turnMode = false;
@@ -28,9 +28,9 @@ public class UIManager : MonoBehaviour
 
     public void Start()
     {
-        _text_button = switchState.GetComponentInChildren<TMP_Text>();
+        textButton = switchState.GetComponentInChildren<TMP_Text>();
         switchState.onClick.AddListener(OnGameModeSwitchButtonClick);
-        _messageCenter = MessageCenter.Instance;
+        messageCenter = MessageCenter.Instance;
 
         AddListener();
     }
@@ -43,9 +43,9 @@ public class UIManager : MonoBehaviour
     /// </summary>
     void AddListener()
     {
-        _messageCenter.ListenOnGameModeSwitch(ref GameModeHandler);
-        _messageCenter.ListenOnPlayerSelect(ref PlayerSelectHandler);
-        _messageCenter.ListenOnPlayerBackTurn(ref PlayerBackTurnHandler);
+        messageCenter.ListenOnGameModeSwitch(ref GameModeHandler);
+        messageCenter.ListenOnPlayerSelect(ref PlayerSelectHandler);
+        messageCenter.ListenOnPlayerBackTurn(ref PlayerBackTurnHandler);
 
         int childCnt = playerLayoutGroup.transform.childCount;
         for (int i = 0; i < childCnt; i++)

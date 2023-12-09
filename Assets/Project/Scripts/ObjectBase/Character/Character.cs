@@ -7,13 +7,13 @@ using UnityEngine.Serialization;
 public class Character : GameActor
 {
     [SerializeField] private Transform weaponTransform;
-    private Weapon _weapon;
+    private Weapon weapon;
 
     #region #TypeInfo
 
     [SerializeField] protected ActorEnumType.AIMode aiMode;
-    [SerializeField] protected ActorEnumType.ActorBattleState _characterBattleState;
-    [SerializeField] protected ActorEnumType.ActorHateState _actorHateState;
+    [SerializeField] protected ActorEnumType.ActorBattleState characterBattleState;
+    [SerializeField] protected ActorEnumType.ActorHateState actorHateState;
 
     public ActorEnumType.AIMode GetCharacterType() => aiMode;
 
@@ -26,16 +26,16 @@ public class Character : GameActor
         aiMode = type;
     }
 
-    public ActorEnumType.ActorBattleState GetCharacterBattleState() => _characterBattleState;
-    public ActorEnumType.ActorHateState GetCharacterHateState => _actorHateState;
+    public ActorEnumType.ActorBattleState GetCharacterBattleState() => characterBattleState;
+    public ActorEnumType.ActorHateState GetCharacterHateState => actorHateState;
 
     #endregion
 
     #region #Command Component
 
     private bool runningCommand = false;
-    private AIComponent _aiComponent;
-    private InputCommandsGenerator _inputCommandsGenerator;
+    private AIComponent aiComponent;
+    private InputCommandsGenerator inputCommandsGenerator;
 
     #endregion
 
@@ -58,13 +58,13 @@ public class Character : GameActor
 
     protected override void InitExtend()
     {
-        _actorEnumType = ActorEnumType.ActorType.Character;
+        actorEnumType = ActorEnumType.ActorType.Character;
 
-        if (_aiComponent == null)
-            _aiComponent = new AIComponent(this);
+        if (aiComponent == null)
+            aiComponent = new AIComponent(this);
 
-        if (_inputCommandsGenerator == null)
-            _inputCommandsGenerator = new InputCommandsGenerator(this);
+        if (inputCommandsGenerator == null)
+            inputCommandsGenerator = new InputCommandsGenerator(this);
     }
 
     /// <summary>
@@ -79,9 +79,9 @@ public class Character : GameActor
             var pickableItem = actor as PickableItem;
             if (pickableItem.GetPickableItemType() == ActorEnumType.PickableItemType.Weapon)
             {
-                _weapon = pickableItem as Weapon;
+                weapon = pickableItem as Weapon;
 
-                _weapon.SetEquipPosition(weaponTransform);
+                weapon.SetEquipPosition(weaponTransform);
                 return true;
             }
         }
@@ -91,16 +91,16 @@ public class Character : GameActor
 
     public override float GetDamage()
     {
-        if (_weapon)
-            return _weapon.WeaponAttributes.damage;
+        if (weapon)
+            return weapon.WeaponAttributes.damage;
         else return base.GetDamage();
     }
 
     public override void Attack(GameActor actorAttacked, Action onAttackEnd)
     {
-        if (!ReferenceEquals(_weapon, null))
+        if (!ReferenceEquals(weapon, null))
         {
-            _weapon.Attack(actorAttacked, onAttackEnd);
+            weapon.Attack(actorAttacked, onAttackEnd);
         }
         else
         {
@@ -108,41 +108,42 @@ public class Character : GameActor
         }
 
         CharacterAttackingHandler?.Invoke(this,
-            new EventArgsType.ActorAttackingMessage(Dynamic_Id, actorAttacked.Dynamic_Id));
+            new EventArgsType.ActorAttackingMessage(DynamicId, actorAttacked.DynamicId));
     }
 
     public bool IsCommandCacheEmpty()
     {
         if (GetActorStateTag() == ActorEnumType.ActorStateTag.AI)
-            return _aiComponent.CanGenCommandCache;
+            return aiComponent.CanGenCommandCache;
         else
-            return _inputCommandsGenerator.CanGenCommandCache;
+            return inputCommandsGenerator.CanGenCommandCache;
     }
 
     private CommandInstance GenInputCommand()
     {
-        CommandInstance cmd = _inputCommandsGenerator.GetCommand();
-        if (cmd != null)
-        {
-        }
+        CommandInstance cmd = inputCommandsGenerator.GetCommand();
+        AddCommand(cmd);
 
         return cmd;
     }
 
     private CommandInstance GenAICommand()
     {
-        return _aiComponent.GetCommand();
+        CommandInstance cmd = aiComponent.GetCommand();
+        AddCommand(cmd);
+
+        return cmd;
     }
 
-    public CommandInstance GenCommandInstance()
+    public CommandInstance GetCommandInstance()
     {
         if (GetActorStateTag() == ActorEnumType.ActorStateTag.Player)
         {
             return GenInputCommand();
         }
-        else if (GetActorStateTag() == ActorEnumType.ActorStateTag.AI)
+
+        if (GetActorStateTag() == ActorEnumType.ActorStateTag.AI)
         {
-            Debug.Log(transform.name + " GenAi");
             return GenAICommand();
         }
 
@@ -153,11 +154,11 @@ public class Character : GameActor
     {
         if (GetActorStateTag() == ActorEnumType.ActorStateTag.Player)
         {
-            _inputCommandsGenerator.ClearCommandCache();
+            inputCommandsGenerator.ClearCommandCache();
         }
         else if (GetActorStateTag() == ActorEnumType.ActorStateTag.AI)
         {
-            _aiComponent.ClearCommandCache();
+            aiComponent.ClearCommandCache();
         }
     }
 }

@@ -47,24 +47,24 @@ public class GridXZ<TGridObject>
         _gridArray = new TGridObject[_width, _height];
         _debugTextArray = new TextMesh[_width, _height];
 
-        Submit(UpdateMap);
+        // Submit(UpdateMap);
 
         for (int x = 0; x < _width; x++)
         {
             for (int z = 0; z < _height; z++)
             {
                 _gridArray[x, z] = CreateGridObject(this, x, z);
-                _debugTextArray[x, z] = UtilsClass.CreateWorldText(_gridArray[x, z].ToString(), null,
-                    GetWorldPosition(x, z) + new Vector3(0.5f * cellsize, 0, 0.5f * cellsize), 8, Color.black,
-                    TextAnchor.MiddleCenter, TextAlignment.Center);
+                // _debugTextArray[x, z] = UtilsClass.CreateWorldText(_gridArray[x, z].ToString(), null,
+                //     GetWorldPosition(x, z) + new Vector3(0.5f * cellsize, 0, 0.5f * cellsize), 8, Color.black,
+                //     TextAnchor.MiddleCenter, TextAlignment.Center);
 
-                // Debug.DrawLine(GetWorldPosition(x, z), GetWorldPosition(x, z + 1), Color.white, 100f);
-                // Debug.DrawLine(GetWorldPosition(x, z), GetWorldPosition(x + 1, z), Color.white, 100f);
+                Debug.DrawLine(GetWorldPosition(x, z), GetWorldPosition(x, z + 1), Color.white, 1000f);
+                Debug.DrawLine(GetWorldPosition(x, z), GetWorldPosition(x + 1, z), Color.white, 1000f);
             }
         }
 
-        // Debug.DrawLine(GetWorldPosition(0, _height), GetWorldPosition(_width, _height), Color.white, 100f);
-        // Debug.DrawLine(GetWorldPosition(_width, 0), GetWorldPosition(_width, _height), Color.white, 100f);
+        Debug.DrawLine(GetWorldPosition(0, _height), GetWorldPosition(_width, _height), Color.white, 1000f);
+        Debug.DrawLine(GetWorldPosition(_width, 0), GetWorldPosition(_width, _height), Color.white, 1000f);
     }
 
     void UpdateMap(object sender, OnGridChangedEventArgs arg)

@@ -10,7 +10,7 @@ public class MessageCenter : Singleton<MessageCenter>
 {
     [SerializeField] private float maxEnemySearchDistance = 20f;
     public GlobalState globalState;
-    private ActorsManagerCenter _actorsManagerCenter;
+    private ActorsManagerCenter actorsManagerCenter;
 
     private void Start()
     {
@@ -19,14 +19,15 @@ public class MessageCenter : Singleton<MessageCenter>
 
     public void Init()
     {
-        _actorsManagerCenter = ActorsManagerCenter.Instance;
+        actorsManagerCenter = ActorsManagerCenter.Instance;
     }
 
     #region #delegate
 
     public event EventHandler<EventArgsType.UpdateTurnManagerMessage> TurnUpdateHandler;
     public event EventHandler<EventArgsType.ActorDieMessage> ActorDieHandler;
-    public event EventHandler<EventArgsType.PlayerBackTurnMessage> BackTurnHandler; 
+    public event EventHandler<EventArgsType.PlayerBackTurnMessage> BackTurnHandler;
+    public event EventHandler<EventArgsType.PlayerSelectMessage> PlayerSelectHandler; 
 
     #endregion
 
@@ -139,8 +140,8 @@ public class MessageCenter : Singleton<MessageCenter>
 
     public void OnPlayerSelect(object sender, EventArgsType.PlayerSelectMessage message)
     {
-        TurnManager.Instance.SlectPlayer(message.PlayerIdx);
-        Debug.Log(message.PlayerIdx);
+        TurnManager.Instance.SelectPlayer(message.PlayerIdx);
+        PlayerSelectHandler(sender, message);
     }
 
     public void OnPlayerBackTurn(object sender, EventArgsType.PlayerBackTurnMessage message)
@@ -177,6 +178,11 @@ public class MessageCenter : Singleton<MessageCenter>
         ActorDieHandler += listener;
     }
 
+    public void SubmitPlayerSelectActor(EventHandler<EventArgsType.PlayerSelectMessage> listener)
+    {
+        PlayerSelectHandler += listener;
+    }
+
     #endregion
 
     #region #HelpFunctions
@@ -196,7 +202,7 @@ public class MessageCenter : Singleton<MessageCenter>
         {
             if (idSet.Add(id))
             {
-                removeSet.Add(_actorsManagerCenter.GetActorByDynamicId(id).CurrentTurn);
+                removeSet.Add(actorsManagerCenter.GetActorByDynamicId(id).CurrentTurn);
                 newTurn.AddActorByDynamicId(id);
             }
         }
@@ -207,9 +213,9 @@ public class MessageCenter : Singleton<MessageCenter>
         List<uint> resList = new List<uint>();
 
         // 从直接ActorManager的列表里找，效率更高
-        var idList = _actorsManagerCenter.GetAllConActorsDynamicId();
+        var idList = actorsManagerCenter.GetAllConActorsDynamicId();
 
-        GameActor centerActor = _actorsManagerCenter.GetActorByDynamicId(centerId);
+        GameActor centerActor = actorsManagerCenter.GetActorByDynamicId(centerId);
 
         // 如果满足距离条件则加入List
         foreach (uint id in idList)
@@ -217,7 +223,7 @@ public class MessageCenter : Singleton<MessageCenter>
             if (id != centerId)
             {
                 if (Vector3.Distance(centerActor.transform.position,
-                        _actorsManagerCenter.GetActorByDynamicId(id).transform.position) <= distance)
+                        actorsManagerCenter.GetActorByDynamicId(id).transform.position) <= distance)
                 {
                     resList.Add(id);
                 }
@@ -229,14 +235,14 @@ public class MessageCenter : Singleton<MessageCenter>
 
     private void AddNewTurnByAttack(uint attackerId, uint attackedId)
     {
-        GameActor attacker = _actorsManagerCenter.GetActorByDynamicId(attackerId);
+        GameActor attacker = actorsManagerCenter.GetActorByDynamicId(attackerId);
 
         // 非玩家角色不进行播报
-        if (_actorsManagerCenter.GetActorByDynamicId(attackerId).GetActorStateTag() !=
+        if (actorsManagerCenter.GetActorByDynamicId(attackerId).GetActorStateTag() !=
             ActorEnumType.ActorStateTag.Player) return;
 
         // 受到攻击的对象可能不在侦测范围内
-        GameActor beAttacked = _actorsManagerCenter.GetActorByDynamicId(attackedId);
+        GameActor beAttacked = actorsManagerCenter.GetActorByDynamicId(attackedId);
 
         // 更新Instance
         TurnInstance newTurn = attacker.CurrentTurn;
@@ -266,8 +272,8 @@ public class MessageCenter : Singleton<MessageCenter>
         {
             if (beAttacked.CurrentTurn == null)
             {
-                newTurn.AddActorByDynamicId(beAttacked.Dynamic_Id);
-                idSet.Add(beAttacked.Dynamic_Id);
+                newTurn.AddActorByDynamicId(beAttacked.DynamicId);
+                idSet.Add(beAttacked.DynamicId);
             }
             else
             {
@@ -281,12 +287,12 @@ public class MessageCenter : Singleton<MessageCenter>
         // 范围内
         foreach (uint id in distIdList)
         {
-            GameActor distActor = _actorsManagerCenter.GetActorByDynamicId(id);
+            GameActor distActor = actorsManagerCenter.GetActorByDynamicId(id);
 
             // 如果不在回合内则直接加入
             if (distActor.CurrentTurn == null)
             {
-                newTurn.AddActorByDynamicId(distActor.Dynamic_Id);
+                newTurn.AddActorByDynamicId(distActor.DynamicId);
                 idSet.Add(distActor.id);
             }
             else

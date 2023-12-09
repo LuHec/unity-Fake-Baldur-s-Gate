@@ -8,20 +8,20 @@ using UnityEngine;
 /// </summary>
 public class TurnInstance
 {
-    private CommandCenter _commandCenter;
-    public HashSet<uint> _conActorDynamicIDSet;
-    public List<uint> _conActorDynamicIDs;
-    private ActorsManagerCenter _actorsManagerCenter;
-    private int _turnActorPtr = 0;
+    private CommandCenter commandCenter;
+    private HashSet<uint> conActorDynamicIDSet;
+    private List<uint> conActorDynamicIDs;
+    private ActorsManagerCenter actorsManagerCenter;
+    private int turnActorPtr = 0;
 
-    public int turnActorPtr => _turnActorPtr;
-    public HashSet<uint> ConActorDynamicIDSet => _conActorDynamicIDSet;
-    public List<uint> ConActorDynamicIDs => _conActorDynamicIDs;
+    public int TurnActorPtr => turnActorPtr;
+    public HashSet<uint> ConActorDynamicIDSet => conActorDynamicIDSet;
+    public List<uint> ConActorDynamicIDs => conActorDynamicIDs;
 
     #region #Tag
 
-    public bool IsGameModeTurn => _isGameModeTurn;
-    private bool _isGameModeTurn = false;
+    public bool IsGameModeTurn => isGameModeTurn;
+    private bool isGameModeTurn = false;
 
     #endregion
 
@@ -31,8 +31,8 @@ public class TurnInstance
 
     private void InitListen()
     {
-        _commandCenter = CommandCenter.Instance;
-        _actorsManagerCenter = ActorsManagerCenter.Instance;
+        commandCenter = CommandCenter.Instance;
+        actorsManagerCenter = ActorsManagerCenter.Instance;
         MessageCenter.Instance.ListenOnTurnNeedRemove(ref TurnNeedRemoveHandler);
     }
 
@@ -44,12 +44,12 @@ public class TurnInstance
     /// <param name="isGameModeTurn">是否为手动切换的gamemode，缺省false</param>
     public TurnInstance(bool isGameModeTurn = false)
     {
-        _isGameModeTurn = isGameModeTurn;
+        this.isGameModeTurn = isGameModeTurn;
 
         InitListen();
 
-        _conActorDynamicIDs = new List<uint>();
-        _conActorDynamicIDSet = new HashSet<uint>();
+        conActorDynamicIDs = new List<uint>();
+        conActorDynamicIDSet = new HashSet<uint>();
     }
 
     /// <summary>
@@ -59,24 +59,24 @@ public class TurnInstance
     /// <param name="isGameModeTurn">是否为手动切换的gamemode，缺省false</param>
     public TurnInstance(List<uint> conActorDynamicIDs, bool isGameModeTurn = false)
     {
-        _isGameModeTurn = isGameModeTurn;
+        this.isGameModeTurn = isGameModeTurn;
 
         InitListen();
 
-        _conActorDynamicIDs = new List<uint>();
-        _conActorDynamicIDSet = new HashSet<uint>();
+        this.conActorDynamicIDs = new List<uint>();
+        conActorDynamicIDSet = new HashSet<uint>();
 
         // 添加id，需要从自由列表中移除
         foreach (uint id in conActorDynamicIDs)
         {
-            _actorsManagerCenter.GetActorByDynamicId(id).InitTurnIntance(this);
+            actorsManagerCenter.GetActorByDynamicId(id).InitTurnIntance(this);
             AddActorByDynamicId(id);
         }
     }
 
     public void SetGameTurnMode(bool isGameModeTurn)
     {
-        _isGameModeTurn = isGameModeTurn;
+        this.isGameModeTurn = isGameModeTurn;
     }
 
     /// <summary>
@@ -84,10 +84,10 @@ public class TurnInstance
     /// </summary>
     public void SortByActorSpeed()
     {
-        _conActorDynamicIDs.Sort((uint ida, uint idb) =>
+        conActorDynamicIDs.Sort((uint ida, uint idb) =>
         {
-            return _actorsManagerCenter.GetActorByDynamicId(ida).speed >
-                   _actorsManagerCenter.GetActorByDynamicId(idb).speed
+            return actorsManagerCenter.GetActorByDynamicId(ida).speed >
+                   actorsManagerCenter.GetActorByDynamicId(idb).speed
                 ? 1
                 : -1;
         });
@@ -100,10 +100,10 @@ public class TurnInstance
     /// <returns></returns>
     public bool AddActorByDynamicId(uint id)
     {
-        if (_conActorDynamicIDSet.Add(id) == false) return false;
+        if (conActorDynamicIDSet.Add(id) == false) return false;
 
-        _conActorDynamicIDs.Add(id);
-        _actorsManagerCenter.GetActorByDynamicId(id).InitTurnIntance(this);
+        conActorDynamicIDs.Add(id);
+        actorsManagerCenter.GetActorByDynamicId(id).InitTurnIntance(this);
 
         // 如果在自由模式中需要退出来
         TurnManager.Instance.RemoveFreeModeActorById(id);
@@ -113,13 +113,13 @@ public class TurnInstance
 
     private void PushPtr()
     {
-        _turnActorPtr = (_turnActorPtr + 1) % _conActorDynamicIDs.Count;
+        turnActorPtr = (turnActorPtr + 1) % conActorDynamicIDs.Count;
     }
 
     private void BackPtr()
     {
-        _turnActorPtr -= 1;
-        if (_turnActorPtr < 0) _turnActorPtr = _conActorDynamicIDs.Count - 1;
+        turnActorPtr -= 1;
+        if (turnActorPtr < 0) turnActorPtr = conActorDynamicIDs.Count - 1;
     }
 
     public void NextTurn()
@@ -131,7 +131,7 @@ public class TurnInstance
     {
         BackPtr();
 
-        foreach (var uid in _conActorDynamicIDs)
+        foreach (var uid in conActorDynamicIDs)
         {
             Character character = ActorsManagerCenter.Instance.GetActorByDynamicId(uid) as Character;
             character.CmdQue.Undo();
@@ -147,7 +147,7 @@ public class TurnInstance
     public void RunTurn()
     {
         CheckTurn();
-        Character character = _actorsManagerCenter.GetActorByDynamicId(_conActorDynamicIDs[turnActorPtr]) as Character;
+        Character character = actorsManagerCenter.GetActorByDynamicId(conActorDynamicIDs[TurnActorPtr]) as Character;
         RunActorCommand(character);
     }
 
@@ -170,9 +170,9 @@ public class TurnInstance
         bool needRemove = true;
         foreach (var id in ConActorDynamicIDSet)
         {
-            if (_actorsManagerCenter.GetActorByDynamicId(id).GetActorStateTag() != ActorEnumType.ActorStateTag.Player)
+            if (actorsManagerCenter.GetActorByDynamicId(id).GetActorStateTag() != ActorEnumType.ActorStateTag.Player)
             {
-                if ((_actorsManagerCenter.GetActorByDynamicId(id) as Character).GetCharacterType() !=
+                if ((actorsManagerCenter.GetActorByDynamicId(id) as Character).GetCharacterType() !=
                     ActorEnumType.AIMode.Follow)
                 {
                     needRemove = false;
@@ -184,10 +184,11 @@ public class TurnInstance
         if (needRemove) TurnNeedRemoveHandler(this, new EventArgsType.TurnNeedRemoveMessage(this));
     }
 
+    // 需要修改，不用命令中心了，直接让Actor自己生成
     private void RunActorCommand(Character character)
     {
-        _commandCenter.AddCommand(character.GenCommandInstance(), character);
-        _commandCenter.Excute(character.GenCommandInstance(), character, () =>
+        // commandCenter.AddCommand(character.GetCommandInstance(), character);
+        commandCenter.Excute(character.GetCommandInstance(), character, () =>
         {
             OnExcuteFinished();
             character.ClearCommandCache();
@@ -202,31 +203,13 @@ public class TurnInstance
     /// <returns></returns>
     public bool RemoveActorByDynamicId(uint id)
     {
-        var pos = _conActorDynamicIDs.FindIndex((uint f_id) => { return id == f_id; });
+        var pos = conActorDynamicIDs.FindIndex((uint f_id) => { return id == f_id; });
         if (pos == -1) return false;
 
-        _conActorDynamicIDs.RemoveAt(pos);
-        _conActorDynamicIDSet.Remove(id);
+        conActorDynamicIDs.RemoveAt(pos);
+        conActorDynamicIDSet.Remove(id);
         // 如果删除位置小于指针，需要重定位
-        if (pos < _turnActorPtr) BackPtr();
-
-        return true;
-    }
-
-    /// <summary>
-    /// 回合结束后把角色移出回合模式
-    /// </summary>
-    /// <param name="id"></param>
-    /// <returns></returns>
-    public bool RemoveActorToFreeMode(uint id)
-    {
-        var pos = _conActorDynamicIDs.FindIndex((uint f_id) => { return id == f_id; });
-        if (pos == -1) return false;
-
-        _conActorDynamicIDs.RemoveAt(pos);
-        _conActorDynamicIDSet.Remove(id);
-        // 如果删除位置小于指针，需要重定位往后退一格
-        if (pos < _turnActorPtr) BackPtr();
+        if (pos < turnActorPtr) BackPtr();
 
         return true;
     }

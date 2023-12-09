@@ -9,10 +9,10 @@ using UnityEngine.Serialization;
 public class CameraSystem : MonoBehaviour
 {
     [SerializeField] private bool useMouse = false;
-    [SerializeField] private CinemachineVirtualCamera _cinemachineVirtualCamera;
+    [SerializeField] private CinemachineVirtualCamera cinemachineVirtualCamera;
     [SerializeField] private float moveSpeed = 50;
     [SerializeField] private float rotateSpeed = 150;
-    [SerializeField] private float _edgeScrollSize = 20;
+    [SerializeField] private float edgeScrollSize = 20;
     [SerializeField] private float maxFieldOfView = 110;
     [SerializeField] private float minFieldOfView = 30;
     [SerializeField] private float minFollowOffset = 5f;
@@ -20,18 +20,25 @@ public class CameraSystem : MonoBehaviour
     [SerializeField] private float shakeIntensity = 1f;
     [SerializeField] private float shakeTime = 0.2f;
 
-    private CinemachineBasicMultiChannelPerlin _cbmp;
+    private CinemachineBasicMultiChannelPerlin cbmp;
 
-    private PlayerInput _input;
-    private CinemachineTransposer _cinemachineTransposer;
+    private PlayerInput input;
+    private CinemachineTransposer cinemachineTransposer;
     float targetFieldOfView = 50;
-    private Vector3 _followOffset;
+    private Vector3 followOffset;
 
     private void Start()
     {
-        _input = PlayerInput.Instance;
-        _cinemachineTransposer = _cinemachineVirtualCamera.GetCinemachineComponent<CinemachineTransposer>();
-        _followOffset = _cinemachineTransposer.m_FollowOffset;
+        input = PlayerInput.Instance;
+        cinemachineTransposer = cinemachineVirtualCamera.GetCinemachineComponent<CinemachineTransposer>();
+        followOffset = cinemachineTransposer.m_FollowOffset;
+
+        AddListener();
+    }
+
+    void AddListener()
+    {
+        MessageCenter.Instance.SubmitPlayerSelectActor(OnPlayerSelect);
     }
 
     private void Update()
@@ -43,18 +50,38 @@ public class CameraSystem : MonoBehaviour
         HandleCameraZoomForward();
     }
 
+    void OnPlayerSelect(object sender, EventArgsType.PlayerSelectMessage message)
+    {
+        var actor = ActorsManagerCenter.Instance.GetActorByDynamicId(TurnManager.Instance.GetCurrentPlayerId());
+
+        StopCoroutine(nameof(PlayerSelectCoroutine));
+        StartCoroutine(nameof(PlayerSelectCoroutine), new Vector3(actor.transform.position.x, transform.position.y,
+            actor.transform.position.z));
+    }
+
+    IEnumerator PlayerSelectCoroutine(Vector3 postion)
+    {
+        while (Vector3.SqrMagnitude(postion - transform.position) > 1f)
+        {
+            transform.position = Vector3.MoveTowards(
+                transform.position, postion, moveSpeed * Time.deltaTime);
+
+            yield return null;
+        }
+    }
+
     void HandleCameraMove()
     {
-        Vector3 inputDir = new Vector3(_input.PlayerMovement.x, 0, _input.PlayerMovement.y);
+        Vector3 inputDir = new Vector3(input.PlayerMovement.x, 0, input.PlayerMovement.y);
 
         if (useMouse)
         {
-            var mousePos2D = _input.MousePos;
+            var mousePos2D = input.MousePos;
             // screen space 原点在左下角
-            if (mousePos2D.x < _edgeScrollSize) inputDir.x = -1f;
-            if (mousePos2D.y < _edgeScrollSize) inputDir.z = -1f;
-            if (mousePos2D.x > Screen.width - _edgeScrollSize) inputDir.x = 1f;
-            if (mousePos2D.y > Screen.height - _edgeScrollSize) inputDir.z = 1f;
+            if (mousePos2D.x < edgeScrollSize) inputDir.x = -1f;
+            if (mousePos2D.y < edgeScrollSize) inputDir.z = -1f;
+            if (mousePos2D.x > Screen.width - edgeScrollSize) inputDir.x = 1f;
+            if (mousePos2D.y > Screen.height - edgeScrollSize) inputDir.z = 1f;
         }
 
         Vector3 moveDir = transform.forward * inputDir.z + transform.right * inputDir.x;
@@ -63,12 +90,12 @@ public class CameraSystem : MonoBehaviour
 
     void HandleCameraRotation()
     {
-        if (_input.Qpress)
+        if (input.Qpress)
         {
             transform.rotation = Quaternion.AngleAxis(rotateSpeed * Time.deltaTime, transform.up) * transform.rotation;
         }
 
-        if (_input.Epress)
+        if (input.Epress)
         {
             transform.rotation =
                 Quaternion.AngleAxis(-rotateSpeed * Time.deltaTime, transform.up) * transform.rotation;
@@ -77,47 +104,47 @@ public class CameraSystem : MonoBehaviour
 
     void HandleCameraZoom_FOV()
     {
-        if (_input.MouseScroll.y < 0)
+        if (input.MouseScroll.y < 0)
         {
             targetFieldOfView += 5;
         }
 
-        if (_input.MouseScroll.y > 0)
+        if (input.MouseScroll.y > 0)
         {
             targetFieldOfView -= 5;
         }
 
         targetFieldOfView = Mathf.Clamp(targetFieldOfView, minFieldOfView, maxFieldOfView);
-        _cinemachineVirtualCamera.m_Lens.FieldOfView = Mathf.Lerp(_cinemachineVirtualCamera.m_Lens.FieldOfView,
+        cinemachineVirtualCamera.m_Lens.FieldOfView = Mathf.Lerp(cinemachineVirtualCamera.m_Lens.FieldOfView,
             targetFieldOfView, Time.deltaTime * 10f);
     }
 
     void HandleCameraZoomForward()
     {
-        Vector3 zoomDir = _followOffset.normalized;
+        Vector3 zoomDir = followOffset.normalized;
 
-        if (_input.MouseScroll.y < 0)
+        if (input.MouseScroll.y < 0)
         {
-            _followOffset += zoomDir;
+            followOffset += zoomDir;
         }
 
-        if (_input.MouseScroll.y > 0)
+        if (input.MouseScroll.y > 0)
         {
-            _followOffset -= zoomDir;
+            followOffset -= zoomDir;
         }
 
-        if (_followOffset.magnitude < minFollowOffset)
+        if (followOffset.magnitude < minFollowOffset)
         {
-            _followOffset = zoomDir * minFollowOffset;
+            followOffset = zoomDir * minFollowOffset;
         }
 
-        if (_followOffset.magnitude > maxFollowOffset)
+        if (followOffset.magnitude > maxFollowOffset)
         {
-            _followOffset = zoomDir * maxFollowOffset;
+            followOffset = zoomDir * maxFollowOffset;
         }
 
         float zoomSpeed = 10f;
-        _cinemachineTransposer.m_FollowOffset = Vector3.Lerp(_cinemachineTransposer.m_FollowOffset, _followOffset,
+        cinemachineTransposer.m_FollowOffset = Vector3.Lerp(cinemachineTransposer.m_FollowOffset, followOffset,
             Time.deltaTime * zoomSpeed);
     }
 
@@ -134,8 +161,8 @@ public class CameraSystem : MonoBehaviour
     IEnumerator ShakeCameraCoroutine()
     {
         float timer = 0f;
-        _cbmp = _cinemachineVirtualCamera.GetCinemachineComponent<CinemachineBasicMultiChannelPerlin>();
-        _cbmp.m_AmplitudeGain = shakeIntensity;
+        cbmp = cinemachineVirtualCamera.GetCinemachineComponent<CinemachineBasicMultiChannelPerlin>();
+        cbmp.m_AmplitudeGain = shakeIntensity;
 
         while (timer < shakeTime)
         {
@@ -143,6 +170,6 @@ public class CameraSystem : MonoBehaviour
             yield return null;
         }
 
-        _cbmp.m_AmplitudeGain = 0;
+        cbmp.m_AmplitudeGain = 0;
     }
 }

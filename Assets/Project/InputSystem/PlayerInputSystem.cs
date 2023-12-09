@@ -125,6 +125,15 @@ public partial class @PlayerInputSystem : IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""Debug"",
+                    ""type"": ""Button"",
+                    ""id"": ""ff4f0b80-98f3-4f9d-ab5a-90c8f4c55ccb"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -369,6 +378,17 @@ public partial class @PlayerInputSystem : IInputActionCollection2, IDisposable
                     ""action"": ""Q"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""263c6d13-6f69-4466-bf7d-8e437c9e9f66"",
+                    ""path"": ""<Keyboard>/backquote"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Debug"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -411,6 +431,7 @@ public partial class @PlayerInputSystem : IInputActionCollection2, IDisposable
         m_Player_MouseDelta = m_Player.FindAction("MouseDelta", throwIfNotFound: true);
         m_Player_E = m_Player.FindAction("E", throwIfNotFound: true);
         m_Player_Q = m_Player.FindAction("Q", throwIfNotFound: true);
+        m_Player_Debug = m_Player.FindAction("Debug", throwIfNotFound: true);
     }
 
     public void Dispose()
@@ -481,6 +502,7 @@ public partial class @PlayerInputSystem : IInputActionCollection2, IDisposable
     private readonly InputAction m_Player_MouseDelta;
     private readonly InputAction m_Player_E;
     private readonly InputAction m_Player_Q;
+    private readonly InputAction m_Player_Debug;
     public struct PlayerActions
     {
         private @PlayerInputSystem m_Wrapper;
@@ -496,6 +518,7 @@ public partial class @PlayerInputSystem : IInputActionCollection2, IDisposable
         public InputAction @MouseDelta => m_Wrapper.m_Player_MouseDelta;
         public InputAction @E => m_Wrapper.m_Player_E;
         public InputAction @Q => m_Wrapper.m_Player_Q;
+        public InputAction @Debug => m_Wrapper.m_Player_Debug;
         public InputActionMap Get() { return m_Wrapper.m_Player; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -538,6 +561,9 @@ public partial class @PlayerInputSystem : IInputActionCollection2, IDisposable
                 @Q.started -= m_Wrapper.m_PlayerActionsCallbackInterface.OnQ;
                 @Q.performed -= m_Wrapper.m_PlayerActionsCallbackInterface.OnQ;
                 @Q.canceled -= m_Wrapper.m_PlayerActionsCallbackInterface.OnQ;
+                @Debug.started -= m_Wrapper.m_PlayerActionsCallbackInterface.OnDebug;
+                @Debug.performed -= m_Wrapper.m_PlayerActionsCallbackInterface.OnDebug;
+                @Debug.canceled -= m_Wrapper.m_PlayerActionsCallbackInterface.OnDebug;
             }
             m_Wrapper.m_PlayerActionsCallbackInterface = instance;
             if (instance != null)
@@ -575,6 +601,9 @@ public partial class @PlayerInputSystem : IInputActionCollection2, IDisposable
                 @Q.started += instance.OnQ;
                 @Q.performed += instance.OnQ;
                 @Q.canceled += instance.OnQ;
+                @Debug.started += instance.OnDebug;
+                @Debug.performed += instance.OnDebug;
+                @Debug.canceled += instance.OnDebug;
             }
         }
     }
@@ -610,5 +639,6 @@ public partial class @PlayerInputSystem : IInputActionCollection2, IDisposable
         void OnMouseDelta(InputAction.CallbackContext context);
         void OnE(InputAction.CallbackContext context);
         void OnQ(InputAction.CallbackContext context);
+        void OnDebug(InputAction.CallbackContext context);
     }
 }

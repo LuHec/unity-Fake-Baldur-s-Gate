@@ -2,18 +2,18 @@
 
 public class GlobalState
 {
-    public bool TurnMode => _turnMode;
-    private bool _turnMode = false;
-    public bool EditMode => _editMode;
-    private bool _editMode = false;
+    public bool TurnMode => turnMode;
+    private bool turnMode = false;
+    public bool EditMode => editMode;
+    private bool editMode = false;
 
     public void SetTurnMode(bool val)
     {
-        _turnMode = val;
+        turnMode = val;
     }
 
     public void SetEditMode(bool val)
     {
-        _editMode = val;
+        editMode = val;
     }
 }

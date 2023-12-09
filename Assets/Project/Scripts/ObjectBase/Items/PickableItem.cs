@@ -9,6 +9,6 @@
 
     protected override void InitExtend()
     {
-        _actorEnumType = ActorEnumType.ActorType.Pickableitem;
+        actorEnumType = ActorEnumType.ActorType.Pickableitem;
     }
 }

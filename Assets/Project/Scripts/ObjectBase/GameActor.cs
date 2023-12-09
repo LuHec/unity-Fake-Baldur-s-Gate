@@ -3,51 +3,46 @@ using System.Collections;
 using UnityEngine;
 using System.Collections.Generic;
 using Unity.VisualScripting;
+using UnityEngine.Serialization;
 
 [RequireComponent(typeof(ActorAudio))]
 public class GameActor : MonoBehaviour
 {
     #region #Info
 
-    protected ActorEnumType.ActorType _actorEnumType;
-    [SerializeField] private ActorEnumType.ActorStateTag _actorStateTag;
+    protected ActorEnumType.ActorType actorEnumType;
+    [SerializeField] private ActorEnumType.ActorStateTag actorStateTag;
 
-    public ActorEnumType.ActorType GetActorType() => _actorEnumType;
-    public ActorEnumType.ActorStateTag GetActorStateTag() => _actorStateTag;
-
+    public ActorEnumType.ActorType GetActorType() => actorEnumType;
+    public ActorEnumType.ActorStateTag GetActorStateTag() => actorStateTag;
 
     // 资源加载id
     public uint id;
 
     // 运行时id
-    private uint dynamic_id;
+    private uint dynamicID;
 
     // 处在的回合实例
-    private TurnInstance _currentTurn;
+    private TurnInstance currentTurn;
 
-    public uint Dynamic_Id => dynamic_id;
-    public TurnInstance CurrentTurn => _currentTurn;
+    public uint DynamicId => dynamicID;
+    public TurnInstance CurrentTurn => currentTurn;
 
     public float speed;
 
-    // [SerializeField] private PlacedObjectTypeSO _placedObjectTypeSo;
-    [SerializeField] private float _moveSpeed = 2.0f;
+    [FormerlySerializedAs("_moveSpeed")] [SerializeField] private float moveSpeed = 2.0f;
 
     public CharacterAttribute characterAttribute;
-    // public PlacedObjectTypeSO PlacedObject => _placedObjectTypeSo;
 
     public Vector3 startPos;
-    private CommandQueue _cmdQue;
-    public CommandQueue CmdQue => _cmdQue;
-
-    private MapSystem _mapSystem;
+    private CommandQueue cmdQue;
+    public CommandQueue CmdQue => cmdQue;
 
     #endregion
 
     #region #Component
 
-    public ActorAudio actorAudio => _actorAudio;
-    private ActorAudio _actorAudio;
+    public ActorAudio actorAudio;
 
     #endregion
 
@@ -55,10 +50,10 @@ public class GameActor : MonoBehaviour
 
     private void OnEnable()
     {
-        if (actorAudio == null) _actorAudio = GetComponent<ActorAudio>();
+        if (actorAudio == null) actorAudio = GetComponent<ActorAudio>();
 
-        if (_cmdQue == null) _cmdQue = new CommandQueue(this);
-        else _cmdQue.Clear();
+        if (cmdQue == null) cmdQue = new CommandQueue(this);
+        else cmdQue.Clear();
     }
 
     /// <summary>
@@ -67,7 +62,7 @@ public class GameActor : MonoBehaviour
     /// <param name="newCharacterAttribute"></param>
     public void InitBase(CharacterAttributeSerializable newCharacterAttribute, ActorEnumType.ActorStateTag tag)
     {
-        _actorStateTag = tag;
+        actorStateTag = tag;
 
         characterAttribute = new CharacterAttribute(newCharacterAttribute.id, newCharacterAttribute.name,
             newCharacterAttribute.maxHp, newCharacterAttribute.maxActPoints, newCharacterAttribute.weaponId);
@@ -94,12 +89,12 @@ public class GameActor : MonoBehaviour
 
     public void InitTurnIntance(TurnInstance turnInstance)
     {
-        _currentTurn = turnInstance;
+        currentTurn = turnInstance;
     }
 
     public void InitDynamicId(uint id)
     {
-        dynamic_id = id;
+        dynamicID = id;
     }
 
     #endregion
@@ -127,7 +122,7 @@ public class GameActor : MonoBehaviour
     /// <param name="newStateTag"></param>
     public void SetCharacterStateTo(ActorEnumType.ActorStateTag newStateTag)
     {
-        _actorStateTag = newStateTag;
+        actorStateTag = newStateTag;
     }
 
     #endregion
@@ -139,9 +134,8 @@ public class GameActor : MonoBehaviour
     /// <returns></returns>
     public bool AddCommand(CommandInstance cmdInstance)
     {
-        if (cmdInstance == null) return false;
-        if (_cmdQue.Back() == cmdInstance) return false;
-        _cmdQue.Add(cmdInstance);
+        if (cmdInstance == null || cmdQue.Back() == cmdInstance) return false;
+        cmdQue.Add(cmdInstance);
         return true;
     }
 
@@ -149,7 +143,7 @@ public class GameActor : MonoBehaviour
     /// 获取命令队列的队尾
     /// </summary>
     /// <returns></returns>
-    public CommandInstance GetCommand() => _cmdQue.Back();
+    public CommandInstance GetCommand() => cmdQue.Back();
 
     /// <summary>
     /// 输入XZ，返回世界坐标
@@ -160,7 +154,7 @@ public class GameActor : MonoBehaviour
     public Vector3 CalculateMoveTo(float x, float z)
     {
         return Vector3.MoveTowards(
-            transform.position, new Vector3(x, transform.position.y, z), _moveSpeed * Time.deltaTime);
+            transform.position, new Vector3(x, transform.position.y, z), moveSpeed * Time.deltaTime);
     }
 
     public void DirectMoveTo(Vector3 position)
@@ -171,7 +165,7 @@ public class GameActor : MonoBehaviour
     public Vector3 MoveTo(float x, float z)
     {
         transform.position = Vector3.MoveTowards(
-            transform.position, new Vector3(x, transform.position.y, z), _moveSpeed);
+            transform.position, new Vector3(x, transform.position.y, z), moveSpeed);
 
         return transform.position;
     }
@@ -204,7 +198,7 @@ public class GameActor : MonoBehaviour
 
     public virtual void Die()
     {
-        ActorDiedEventHandler(this, new EventArgsType.ActorDieMessage(dynamic_id));
+        ActorDiedEventHandler(this, new EventArgsType.ActorDieMessage(dynamicID));
         GetComponentInChildren<MeshRenderer>().materials[0].color = Color.red;
     }
 

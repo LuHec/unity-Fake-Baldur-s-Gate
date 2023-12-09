@@ -2,23 +2,24 @@
 using CodeMonkey.Utils;
 using LuHec.Utils;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 public class BuildingSystem : Singleton<BuildingSystem>
 {
     [SerializeField] private List<PlacedObjectTypeSO> placedObjectTypeSos;
-    [SerializeField] private PlacedObjectTypeSO.Dir _dir = PlacedObjectTypeSO.Dir.Up;
+    [SerializeField] private PlacedObjectTypeSO.Dir dir = PlacedObjectTypeSO.Dir.Up;
 
-    private PlacedObjectTypeSO _placedObjectTypeSo;
-    private int _ptr = 0;
-    private GridXZ<GridObject> _grid;
-    private MapDataToJsonSystem _mapDataToJsonSystem;
+    private PlacedObjectTypeSO placedObjectTypeSo;
+    private int ptr = 0;
+    private GridXZ<GridObject> grid;
+    private MapDataToJsonSystem mapDataToJsonSystem;
 
     void Start()
     {
-        _grid = MapSystem.Instance.GetGrid();
-        _placedObjectTypeSo = placedObjectTypeSos[0];
+        grid = MapSystem.Instance.GetGrid();
+        placedObjectTypeSo = placedObjectTypeSos[0];
 
-        _mapDataToJsonSystem = new MapDataToJsonSystem();
+        mapDataToJsonSystem = new MapDataToJsonSystem();
     }
 
     public void Update()
@@ -32,15 +33,15 @@ public class BuildingSystem : Singleton<BuildingSystem>
 
             if (PlayerInput.Instance.IsRClick)
             {
-                _mapDataToJsonSystem.SaveMap();
+                mapDataToJsonSystem.SaveMap();
             }
         }
     }
 
     public void ChangeBuilding()
     {
-        _ptr = (_ptr + 1) % placedObjectTypeSos.Count;
-        _placedObjectTypeSo = placedObjectTypeSos[_ptr];
+        ptr = (ptr + 1) % placedObjectTypeSos.Count;
+        placedObjectTypeSo = placedObjectTypeSos[ptr];
     }
 
     /// <summary>
@@ -49,7 +50,7 @@ public class BuildingSystem : Singleton<BuildingSystem>
     private void DestoryBuilding()
     {
         GridObject gridObject =
-            _grid.GetGridObject(PlayerInput.Instance.GetMouse3DPosition(LayerMask.GetMask("Default")));
+            grid.GetGridObject(PlayerInput.Instance.GetMouse3DPosition(LayerMask.GetMask("Default")));
         PlacedObject placedObject = gridObject.GetPlaceObject();
         if (placedObject != null)
         {
@@ -58,7 +59,7 @@ public class BuildingSystem : Singleton<BuildingSystem>
 
             foreach (var gridPos in gridList)
             {
-                _grid.GetGridObject(gridPos.x, gridPos.y).ClearPlacedObject();
+                grid.GetGridObject(gridPos.x, gridPos.y).ClearPlacedObject();
             }
 
             placedObject.DestroySelf();
@@ -71,15 +72,15 @@ public class BuildingSystem : Singleton<BuildingSystem>
     void SetBuilding()
     {
         Vector3 mousePos = PlayerInput.Instance.GetMouse3DPosition(LayerMask.GetMask("Default"));
-        _grid.GetXZ(mousePos, out int x, out int z);
+        grid.GetXZ(mousePos, out int x, out int z);
         List<Vector2Int> gridList =
-            _placedObjectTypeSo.GetGridPositionList(new Vector2Int(x, z), _dir);
+            placedObjectTypeSo.GetGridPositionList(new Vector2Int(x, z), dir);
 
         // 遍历所有占领的格子，只有全部可以建造才能建造
         bool canBuild = true;
         foreach (var gridPos in gridList)
         {
-            if (!_grid.GetGridObject(gridPos.x, gridPos.y).CanBuild())
+            if (!grid.GetGridObject(gridPos.x, gridPos.y).CanBuild())
             {
                 canBuild = false;
                 break;
@@ -88,16 +89,17 @@ public class BuildingSystem : Singleton<BuildingSystem>
 
         if (canBuild)
         {
-            _mapDataToJsonSystem.RecordBuild(mousePos);
-            Vector2Int objRotationOffset = _placedObjectTypeSo.GetRotationOffset(_dir);
-            Vector3 worldPos = _grid.GetWorldPosition(x, z) +
-                               new Vector3(objRotationOffset.x, 0, objRotationOffset.y) * MapSystem.Instance.GetGrid().Cellsize;
+            mapDataToJsonSystem.RecordBuild(mousePos);
+            Vector2Int objRotationOffset = placedObjectTypeSo.GetRotationOffset(dir);
+            Vector3 worldPos = grid.GetWorldPosition(x, z) +
+                               new Vector3(objRotationOffset.x, 0, objRotationOffset.y) *
+                               MapSystem.Instance.GetGrid().Cellsize;
             PlacedObject placedObject =
-                PlacedObject.Create(worldPos, new Vector2Int(x, z), _dir, _placedObjectTypeSo);
+                PlacedObject.Create(worldPos, new Vector2Int(x, z), dir, placedObjectTypeSo);
 
             foreach (var gridPos in gridList)
             {
-                _grid.GetGridObject(gridPos.x, gridPos.y).SetPlacedObect(placedObject);
+                grid.GetGridObject(gridPos.x, gridPos.y).SetPlacedObect(placedObject);
             }
         }
         else

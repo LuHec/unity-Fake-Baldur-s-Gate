@@ -14,16 +14,7 @@ public class ActorsManagerCenter : Singleton<ActorsManagerCenter>
     private DynamicIDPool _dynamicIDPool;
     private MapSystem _mapSystem;
     private HashSet<uint> _controlledActorsSet;
-
-    // public ActorsManagerCenter()
-    // {
-    //     _dynamicIDPool = new DynamicIDPool();
-    //     _mapSystem = MapSystem.Instance;
-    //     _controlledActorsSet = new HashSet<uint>();
-    //
-    //     Init();
-    // }
-
+    
     public void Init()
     {
         _dynamicIDPool = new DynamicIDPool();
@@ -93,7 +84,7 @@ public class ActorsManagerCenter : Singleton<ActorsManagerCenter>
         weaponActor.InitWeaponAttribute(_scriptObjectDataManager.WeaponAttrSOData.weaponAttDict[weaponActor.id]);
         SignActor(weaponActor);
 
-        return weaponActor.Dynamic_Id;
+        return weaponActor.DynamicId;
     }
 
     public uint LoadActorTest(Vector3 position)
@@ -113,7 +104,7 @@ public class ActorsManagerCenter : Singleton<ActorsManagerCenter>
         _mapSystem.SetGridActor(position.x, position.z, charActor);
         charActor.transform.position = position;
 
-        return charActor.Dynamic_Id;
+        return charActor.DynamicId;
     }
 
     /// <summary>
@@ -123,10 +114,10 @@ public class ActorsManagerCenter : Singleton<ActorsManagerCenter>
     public List<uint> LoadPlayerActor()
     {
         var list = new List<uint>();
-        list.Add(LoadActorTest(Vector3.zero));
-        list.Add(LoadActorTest(Vector3.zero));
-        list.Add(LoadActorTest(Vector3.zero));
-        list.Add(LoadActorTest(Vector3.zero));
+        list.Add(LoadActorTest(MapSystem.Instance.GetGrid().GetWorldPosition(0, 0)));
+        list.Add(LoadActorTest(MapSystem.Instance.GetGrid().GetWorldPosition(0, 1)));
+        list.Add(LoadActorTest(MapSystem.Instance.GetGrid().GetWorldPosition(0, 2)));
+        list.Add(LoadActorTest(MapSystem.Instance.GetGrid().GetWorldPosition(0, 3)));
 
         GetActorByDynamicId(list[0]).SetCharacterStateTo(ActorEnumType.ActorStateTag.Player);
         GetActorByDynamicId(list[1]).SetCharacterStateTo(ActorEnumType.ActorStateTag.AI);
@@ -196,7 +187,7 @@ public class ActorsManagerCenter : Singleton<ActorsManagerCenter>
     {
         if (_dynamicIDPool.SignActor(actor) == false)
             return false;
-        if (actor.GetActorType() == ActorEnumType.ActorType.Character) _controlledActorsSet.Add(actor.Dynamic_Id);
+        if (actor.GetActorType() == ActorEnumType.ActorType.Character) _controlledActorsSet.Add(actor.DynamicId);
         return true;
     }
 
