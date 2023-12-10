@@ -3,36 +3,36 @@ using UnityEngine;
 
 public class AIComponent
 {
-    private Character _character;
-    private CommandInstance _commandCache;
-    public bool CanGenCommandCache => _commandCache == null;
+    private Character character;
+    private CommandInstance commandCache;
+    public bool CanGenCommandCache => commandCache == null;
 
     public AIComponent(Character character)
     {
-        _character = character;
+        this.character = character;
     }
 
     private void GenAICommand()
     {
-        if (_character.CurrentTurn == null)
+        if (character.CurrentTurn == null)
         {
-            _commandCache = GetNormalState();
+            commandCache = GetNormalState();
         }
         else
         {
-            _commandCache = GetTurnState();
+            commandCache = GetTurnState();
         }
     }
 
     public CommandInstance GetCommand()
     {
         if (CanGenCommandCache) GenAICommand();
-        return _commandCache;
+        return commandCache;
     }
 
     public void ClearCommandCache()
     {
-        _commandCache = null;
+        commandCache = null;
     }
 
     private MoveActorCommand GetMoveCommand()
@@ -42,13 +42,13 @@ public class AIComponent
         int trytimes = 100;
         while (trytimes-- > 0)
         {
-            float randX = Random.Range(-maxDistance, maxDistance) + _character.transform.position.x;
-            float randY = Random.Range(-maxDistance, maxDistance) + _character.transform.position.z;
+            float randX = Random.Range(-maxDistance, maxDistance) + character.transform.position.x;
+            float randY = Random.Range(-maxDistance, maxDistance) + character.transform.position.z;
             if (randX < 0 || randX >= MapSystem.Instance.GetGrid().Width || randY < 0 ||
                 randY >= MapSystem.Instance.GetGrid().Width) continue;
 
             // if (MapSystem.Instance.GetGridActor(randX, randY) == null)
-            return new MoveActorCommand(randX, randY, _character.transform.position);
+            return new MoveActorCommand(randX, randY, character.transform.position);
         }
 
         return null;
@@ -60,7 +60,7 @@ public class AIComponent
         GameActor player = ActorsManagerCenter.Instance.GetActorByDynamicId(TurnManager.Instance.GetCurrentPlayerId());
         var position = player.transform.position;
 
-        if (Vector3.Distance(player.transform.position, _character.transform.position) < 6) return null;
+        if (Vector3.Distance(player.transform.position, character.transform.position) < 6) return null;
 
         float maxDistance = Random.Range(2, 4);
 
@@ -75,7 +75,7 @@ public class AIComponent
             // if (MapSystem.Instance.GetGridActor(randX, randY) == null)
             // {
             // Debug.Log("Player : " + player.transform + " " + randX + " " + randY);
-            return new MoveActorCommand(randX, randY, _character.transform.position);
+            return new MoveActorCommand(randX, randY, character.transform.position);
             // }
         }
 
@@ -85,7 +85,7 @@ public class AIComponent
 
     private CommandInstance GetNormalState()
     {
-        var state = _character.GetCharacterType();
+        var state = character.GetCharacterType();
         if (state == ActorEnumType.AIMode.Follow)
         {
             return GetFollowMoveCommand();
@@ -100,10 +100,10 @@ public class AIComponent
 
     private CommandInstance GetTurnState()
     {
-        var state = _character.GetCharacterType();
+        var state = character.GetCharacterType();
         if (state == ActorEnumType.AIMode.Npc)
         {
-            TurnInstance turnInstance = _character.CurrentTurn;
+            TurnInstance turnInstance = character.CurrentTurn;
             foreach (var id in turnInstance.ConActorDynamicIDs)
             {
                 if (ActorsManagerCenter.Instance.GetActorByDynamicId(id).GetActorStateTag() ==

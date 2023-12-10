@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Serialization;
@@ -103,13 +104,14 @@ public class RunTimeDebugger : Singleton<RunTimeDebugger>
         logQueue.Clear();
     }
 
-    public void LogMessage(string message)
+    public async void LogMessage(string message)
     {
         if (logQueue.Count > queueTxtMaxSize)
             logQueue.Dequeue();
 
         var debugStringBuffer = new DebugStringBuffer(message);
         logQueue.Enqueue(debugStringBuffer);
+        await Task.Yield();
 
         logStringBuilder.Append('\n');
         logStringBuilder.Append(debugStringBuffer);
@@ -119,9 +121,10 @@ public class RunTimeDebugger : Singleton<RunTimeDebugger>
     {
     }
 
-    private void UpdateLog()
+    private async void UpdateLog()
     {
         logText.text = logStringBuilder.ToString();
+        await Task.Yield();
         logRect.verticalNormalizedPosition = 0f;
     }
 }
