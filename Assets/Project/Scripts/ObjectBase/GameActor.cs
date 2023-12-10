@@ -3,10 +3,12 @@ using System.Collections;
 using UnityEngine;
 using System.Collections.Generic;
 using Unity.VisualScripting;
+using UnityEngine.EventSystems;
+using UnityEngine.InputSystem;
 using UnityEngine.Serialization;
 
 [RequireComponent(typeof(ActorAudio))]
-public class GameActor : MonoBehaviour
+public class GameActor : MonoBehaviour, IInteractable
 {
     #region #Info
 
@@ -30,7 +32,8 @@ public class GameActor : MonoBehaviour
 
     public float speed;
 
-    [FormerlySerializedAs("_moveSpeed")] [SerializeField] private float moveSpeed = 2.0f;
+    [FormerlySerializedAs("_moveSpeed")] [SerializeField]
+    private float moveSpeed = 2.0f;
 
     public CharacterAttribute characterAttribute;
 
@@ -144,24 +147,7 @@ public class GameActor : MonoBehaviour
     /// </summary>
     /// <returns></returns>
     public CommandInstance GetCommand() => cmdQue.Back();
-
-    /// <summary>
-    /// 输入XZ，返回世界坐标
-    /// </summary>
-    /// <param name="x"></param>
-    /// <param name="z"></param>
-    /// <returns></returns>
-    public Vector3 CalculateMoveTo(float x, float z)
-    {
-        return Vector3.MoveTowards(
-            transform.position, new Vector3(x, transform.position.y, z), moveSpeed * Time.deltaTime);
-    }
-
-    public void DirectMoveTo(Vector3 position)
-    {
-        transform.position = position;
-    }
-
+    
     public Vector3 MoveTo(float x, float z)
     {
         transform.position = Vector3.MoveTowards(
@@ -174,18 +160,18 @@ public class GameActor : MonoBehaviour
     /// 获取攻击力
     /// </summary>
     /// <returns></returns>
-    public virtual float GetDamage()
+    public virtual float GetAttack()
     {
         return 0;
     }
 
     public virtual void Attack(GameActor actorAttacked, Action onAttackEnd = null)
     {
-        actorAttacked.Hurt(GetDamage());
+        actorAttacked.Damage(GetAttack());
         onAttackEnd?.Invoke();
     }
 
-    public virtual void Hurt(float damage)
+    public virtual void Damage(float damage)
     {
         characterAttribute.DecreaseHP(damage);
         actorAudio.PlayHitSFX();
@@ -219,5 +205,20 @@ public class GameActor : MonoBehaviour
         }
 
         onWaitEnd?.Invoke();
+    }
+
+    public void OnPointerEnter(PointerEventData eventData)
+    {
+        UIPanelManager.Instance.ShowPanel<MouseInfoPanel>().UpdateInfoPanel(transform.name, transform.position);
+    }
+
+    public void OnPointerExit(PointerEventData eventData)
+    {
+        UIPanelManager.Instance.HidePanel<MouseInfoPanel>();
+    }
+    
+    public void GetInteractInfo()
+    {
+        
     }
 }

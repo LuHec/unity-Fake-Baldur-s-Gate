@@ -61,14 +61,7 @@ public class MoveActorCommand : CommandInstance
             Debug.DrawLine(pathFinding.GetGrid().GetWorldPosition(path[i].X, path[i].Y),
                 pathFinding.GetGrid().GetWorldPosition(path[i + 1].X, path[i + 1].Y), Color.green, 20f);
         }
-        // if (path == null)
-        // {
-        //     Debug.LogWarning("path is null");
-        //     onExcuteFinished();
-        //     return false;
-        // }
-        // var end = mapSystem.GetGrid().GetOffsetWorldPosition(path[pathPtr].X, path[pathPtr].Y);
-        // mapSystem.MoveGameActor(end.x, end.y, actor);
+
 
         return Move(actor, onExcuteFinished);
     }
@@ -104,7 +97,6 @@ public class MoveActorCommand : CommandInstance
    
         if (Vector2.Distance(new Vector2(actualPos.x, actualPos.z), new Vector2(lastPos.x, lastPos.z)) < 0.1f)
         {
-            RunTimeDebugger.Instance.LogMessage("Finished");
             onMoveFinished();
         }
 
@@ -115,10 +107,8 @@ public class MoveActorCommand : CommandInstance
     {
         // 网格位置回放
         var gridObject = MapSystem.Instance.GetGridObject(actor.transform.position);
-        // gridObject.ClearActor();
 
         // 物理位置回放
         actor.transform.position = originWorldPos;
-        // MapSystem.Instance.GetGridObject(originWorldPos).SetActor(actor);
     }
 }

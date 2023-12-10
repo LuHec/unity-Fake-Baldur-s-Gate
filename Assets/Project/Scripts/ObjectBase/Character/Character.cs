@@ -89,11 +89,11 @@ public class Character : GameActor
         return false;
     }
 
-    public override float GetDamage()
+    public override float GetAttack()
     {
         if (weapon)
             return weapon.WeaponAttributes.damage;
-        else return base.GetDamage();
+        else return base.GetAttack();
     }
 
     public override void Attack(GameActor actorAttacked, Action onAttackEnd)

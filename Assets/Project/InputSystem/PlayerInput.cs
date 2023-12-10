@@ -8,6 +8,7 @@ using UnityEngine.InputSystem;
 public class PlayerInput : Singleton<PlayerInput>
 {
     private PlayerInputSystem playerInputSystem;
+    private Camera mainCamera;
 
     public Vector2 PlayerMovement => playerInputSystem.Player.Move.ReadValue<Vector2>();
     public bool IsMove => PlayerMovement.sqrMagnitude != 0;
@@ -29,6 +30,7 @@ public class PlayerInput : Singleton<PlayerInput>
     protected override void Awake()
     {
         base.Awake();
+        mainCamera = Camera.main;
         playerInputSystem = new PlayerInputSystem();
         EnableGamePlayInputs();
     }
@@ -41,13 +43,12 @@ public class PlayerInput : Singleton<PlayerInput>
 
     public Vector3 GetMouse3DPosition(int mouseLayerMask)
     {
-        Ray ray = Camera.main.ScreenPointToRay(MousePos);
+        Ray ray = mainCamera.ScreenPointToRay(MousePos);
         if (Physics.Raycast(ray, out RaycastHit raycastHit, 999f, mouseLayerMask))
         {
 #if UNITY_EDITOR
             // Debug.Log(raycastHit.point);
 #endif
-            var actor = ActorsManagerCenter.Instance.GetActorByDynamicId(TurnManager.Instance.GetCurrentPlayerId());
             return raycastHit.point;
         }
         else

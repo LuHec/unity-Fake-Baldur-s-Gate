@@ -30,19 +30,16 @@ public class TopSystem : MonoBehaviour
         
         // _turnManager.AddTurn(_actorsManagerCenter.GetAllConActorsDynamicId());
         turnManager.InitActorContainer(actorsManagerCenter.LoadPlayerActor());
+
+        UIPanelManager.Instance.ShowPanel<PlayerUIPanel>();
     }
 
 
     private void Update()
     {
         if (MessageCenter.Instance.globalState.EditMode == false)
-        {
+        { 
             turnManager.RunTurn();
-
-            if (PlayerInput.Instance.IsRClick)
-            {
-                TurnManager.Instance.AddFreeModeActorById(actorsManagerCenter.LoadActorTest(PlayerInput.Instance.GetMouse3DPosition(LayerMask.GetMask("Default"))));
-            }
         }
     }
 

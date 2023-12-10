@@ -15,31 +15,16 @@ public class RunTimeDebugger : Singleton<RunTimeDebugger>
     [SerializeField] private float logUpdateTime = 0.5f;
     [SerializeField] private int queueTxtMaxSize = 10;
     [SerializeField] private int screeTxtMaxSize = 50;
-    
-    [Space]
-    [SerializeField] private CanvasGroup debugCanvasGroup;
-    [SerializeField] private ScrollRect logRect;
-    [SerializeField] private TMP_Text logText;
-    [SerializeField] private TMP_InputField inputField;
-    [SerializeField] private Button rcvInput;
+
     private bool isShow;
 
     private string inputBuffer;
     private Queue<DebugStringBuffer> logQueue = new Queue<DebugStringBuffer>();
     private StringBuilder logStringBuilder = new StringBuilder(80 * 15);
     private int screenTxtCounter;
-    
+
     // 计时更新log
     private float timer;
-
-    private void Start()
-    {
-        rcvInput.onClick.AddListener(() =>
-        {
-            inputBuffer = inputField.text;
-            CommandInvoker.InvokeCommand(typeof(Script1), inputBuffer, null);
-        });
-    }
 
     private void Update()
     {
@@ -67,9 +52,7 @@ public class RunTimeDebugger : Singleton<RunTimeDebugger>
             Time.timeScale = 1;
             isShow = false;
 
-            debugCanvasGroup.alpha = 0;
-            debugCanvasGroup.interactable = false;
-            debugCanvasGroup.blocksRaycasts = false;
+            UIPanelManager.Instance.HidePanel<RuntimeDebugPanel>();
         }
 
         else
@@ -80,10 +63,8 @@ public class RunTimeDebugger : Singleton<RunTimeDebugger>
 
             isShow = true;
 
-            debugCanvasGroup.alpha = 1;
-            debugCanvasGroup.interactable = true;
-            debugCanvasGroup.blocksRaycasts = true;
-            
+            UIPanelManager.Instance.ShowPanel<RuntimeDebugPanel>();
+
             UpdateLog();
         }
     }
@@ -104,28 +85,22 @@ public class RunTimeDebugger : Singleton<RunTimeDebugger>
         logQueue.Clear();
     }
 
-    public async void LogMessage(string message)
+    public void LogMessage(string message)
     {
         if (logQueue.Count > queueTxtMaxSize)
             logQueue.Dequeue();
 
         var debugStringBuffer = new DebugStringBuffer(message);
         logQueue.Enqueue(debugStringBuffer);
-        await Task.Yield();
 
         logStringBuilder.Append('\n');
         logStringBuilder.Append(debugStringBuffer);
     }
 
-    public void SetColor()
-    {
-    }
 
-    private async void UpdateLog()
+    private void UpdateLog()
     {
-        logText.text = logStringBuilder.ToString();
-        await Task.Yield();
-        logRect.verticalNormalizedPosition = 0f;
+        UIPanelManager.Instance.GetPanel<RuntimeDebugPanel>().UpdateLog(logStringBuilder.ToString());
     }
 }
 
