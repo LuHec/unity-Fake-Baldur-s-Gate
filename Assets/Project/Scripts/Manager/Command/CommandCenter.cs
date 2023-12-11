@@ -34,15 +34,15 @@ public class CommandCenter : Singleton<CommandCenter>
         return cmd.Excute(_actorsManagerCenter.GetActorByDynamicId(dynamicId), onExcuteFinished);
     }
 
-    public void AddCommand(CommandInstance cmd, GameActor actor)
-    {
-        actor.AddCommand(cmd);   
-    }
-    
-    public void AddCommand(CommandInstance cmd, uint dynamicId)
-    {
-        _actorsManagerCenter.GetActorByDynamicId(dynamicId)?.AddCommand(cmd);   
-    }
+    // public void AddCommand(CommandInstance cmd, GameActor actor)
+    // {
+    //     actor.AddCommand(cmd);   
+    // }
+    //
+    // public void AddCommand(CommandInstance cmd, uint dynamicId)
+    // {
+    //     _actorsManagerCenter.GetActorByDynamicId(dynamicId)?.AddCommand(cmd);   
+    // }
 
     #region Generate Command
     

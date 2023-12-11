@@ -152,6 +152,10 @@ public class GameActor : MonoBehaviour, IInteractable
     /// </summary>
     /// <returns></returns>
     public CommandInstance GetCommand() => CmdQue.CommandCache;
+    public void ClearCommandCache()
+    {
+        CmdQue.CommandCache = null;
+    }
     
     public Vector3 MoveTo(float x, float z)
     {

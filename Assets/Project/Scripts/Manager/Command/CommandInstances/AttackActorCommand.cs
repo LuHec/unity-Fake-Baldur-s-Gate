@@ -39,6 +39,10 @@ public class AttackActorCommand : CommandInstance
     /// <param name="OnAttackFinished"></param>
     public void Attacking(GameActor attacker, GameActor actorAttacked, Action OnAttackFinished)
     {
-        attacker.Attack(actorAttacked, OnAttackFinished);
+        attacker.Attack(actorAttacked, () =>
+        {
+            OnAttackFinished?.Invoke();
+            IsRunning = false;
+        });
     }
 }

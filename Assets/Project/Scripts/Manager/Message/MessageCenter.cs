@@ -27,7 +27,7 @@ public class MessageCenter : Singleton<MessageCenter>
     public event EventHandler<EventArgsType.UpdateTurnManagerMessage> TurnUpdateHandler;
     public event EventHandler<EventArgsType.ActorDieMessage> ActorDieHandler;
     public event EventHandler<EventArgsType.PlayerBackTurnMessage> BackTurnHandler;
-    public event EventHandler<EventArgsType.PlayerSelectMessage> PlayerSelectHandler; 
+    public event EventHandler<EventArgsType.PlayerSelectMessage> PlayerSelectHandler;
 
     #endregion
 
@@ -62,17 +62,12 @@ public class MessageCenter : Singleton<MessageCenter>
     {
         handler += OnPlayerBackTurn;
     }
-    
+
     private void OnActorDied(object sender, EventArgsType.ActorDieMessage message)
     {
-        Debug.Log("Id " + "Died");
-        //     
+        Debug.Log("Id " + message.dead_dynamic_id + " Died");
+        //  消除角色
         ActorDieHandler?.Invoke(this, message);
-
-        // 从地图上清理掉
-        var gridObject = MapSystem.Instance.GetGridObject(ActorsManagerCenter.Instance
-            .GetActorByDynamicId(message.dead_dynamic_id).transform.position);
-        // gridObject.ClearActor();
     }
 
 
@@ -147,7 +142,8 @@ public class MessageCenter : Singleton<MessageCenter>
     public void OnPlayerBackTurn(object sender, EventArgsType.PlayerBackTurnMessage message)
     {
         // 找到当前操控角色所在回合，back ptr，undo并弹出所有状态
-        Character player = ActorsManagerCenter.Instance.GetActorByDynamicId(TurnManager.Instance.GetCurrentPlayerId()) as Character;
+        Character player =
+            ActorsManagerCenter.Instance.GetActorByDynamicId(TurnManager.Instance.GetCurrentPlayerId()) as Character;
 
         var turnInstance = player.CurrentTurn;
         if (turnInstance != null)
@@ -263,7 +259,7 @@ public class MessageCenter : Singleton<MessageCenter>
 
         // 不管怎样先把回合类型设置为非手动回合模式
         newTurn.SetGameTurnMode(false);
-        
+
         // 把攻击方加入到集合中
         idSet.Add(attackerId);
 

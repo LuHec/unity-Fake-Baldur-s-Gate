@@ -122,13 +122,9 @@ public class TurnManager : Singleton<TurnManager>
             if (turn.ConActorDynamicIDSet.Contains(id))
             {
                 turn.RemoveActorByDynamicId(id);
+                if (isDead) ActorsManagerCenter.Instance.RemoveConActorByDynamicId(id);
                 return true;
             }
-        }
-
-        if (!isDead)
-        {
-            globalFreeModeActorIdSet.Add(id);
         }
 
         return false;

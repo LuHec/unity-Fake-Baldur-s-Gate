@@ -26,7 +26,7 @@ public class InteractScript : MonoBehaviour
         if (CurrentControlActor.CurrentTurn == null) return true;
 
         // 当前控制的角色处在的回合轮到玩家输入，且当前命令为空，或者有命令时已经执行完毕
-        if (CurrentControlActor.CurrentTurn.CurrentActorId == CurrentControlActor.DynamicId &&
+        if (CurrentControlActor.CurrentTurn.CurrentTurnActorId == CurrentControlActor.DynamicId &&
             CurrentControlActor.GetCommand() == null)
             return true;
         
@@ -82,9 +82,10 @@ public class InteractScript : MonoBehaviour
 
         else if (PlayerInput.Instance.IsRClick)
         {
-            if (IsOnActor() && CanGenerateCommand())
+            GameActor actor = IsOnActor();
+            if (actor != null && CanGenerateCommand())
             {
-                UIPanelManager.Instance.ShowPanel<ActorInteractPanel>().UpdatePosition(PlayerInput.Instance.MousePos);
+                UIPanelManager.Instance.ShowPanel<ActorInteractPanel>().UpdatePanel(PlayerInput.Instance.MousePos, actor.DynamicId);
             }
         }
     }

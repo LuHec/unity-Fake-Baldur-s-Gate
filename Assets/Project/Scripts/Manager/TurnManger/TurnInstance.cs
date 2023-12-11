@@ -16,7 +16,7 @@ public class TurnInstance
 
     // 实时参数
     public int TurnActorPtr => turnActorPtr;
-    public uint CurrentActorId => conActorDynamicIDs[TurnActorPtr];
+    public uint CurrentTurnActorId => conActorDynamicIDs[TurnActorPtr];
     public HashSet<uint> ConActorDynamicIDSet => conActorDynamicIDSet;
     public List<uint> ConActorDynamicIDs => conActorDynamicIDs;
 
@@ -96,7 +96,7 @@ public class TurnInstance
     }
 
     /// <summary>
-    /// 回合加入新actor，同时为actor设置回合
+    /// 回合加入新actor，同时为actor设置回合,并清除正在执行的命令
     /// </summary>
     /// <param name="id"></param>
     /// <returns></returns>
@@ -105,7 +105,9 @@ public class TurnInstance
         if (conActorDynamicIDSet.Add(id) == false) return false;
 
         conActorDynamicIDs.Add(id);
-        actorsManagerCenter.GetActorByDynamicId(id).InitTurnIntance(this);
+        var actor = actorsManagerCenter.GetActorByDynamicId(id);
+        actor.InitTurnIntance(this);
+        actor.ClearCommandCache();
 
         // 如果在自由模式中需要退出来
         TurnManager.Instance.RemoveFreeModeActorById(id);
@@ -142,6 +144,7 @@ public class TurnInstance
 
     public void RunTurn()
     {
+        Debug.Log(CurrentTurnActorId);
         CheckTurn();
         Character character = actorsManagerCenter.GetActorByDynamicId(conActorDynamicIDs[TurnActorPtr]) as Character;
         character.ActorUpdate();

@@ -382,6 +382,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   offset: {x: 100, y: 10}
   verticalLayoutGroup: {fileID: 8041246681436636612}
+  attackBtn: {fileID: 8041246681126300970}
 --- !u!1 &8041246682046529740
 GameObject:
   m_ObjectHideFlags: 0

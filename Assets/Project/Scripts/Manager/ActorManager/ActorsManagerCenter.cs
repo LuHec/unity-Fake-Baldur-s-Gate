@@ -148,9 +148,14 @@ public class ActorsManagerCenter : Singleton<ActorsManagerCenter>
     /// <returns></returns>
     public bool RemoveConActorByDynamicId(uint id)
     {
+        GetActorByDynamicId(id).InitDynamicId(0);
         if (_controlledActorsSet.Remove(id) == false) return false;
-        // _mapSystem.GetGridObject(GetActorByDynamicId(id).transform.position).ClearActor();
-        return _dynamicIDPool.RemoveActorById(id);
+        if (_dynamicIDPool.RemoveActorById(id))
+        {
+            
+            return true;
+        }
+        return false;
     }
 
     #endregion

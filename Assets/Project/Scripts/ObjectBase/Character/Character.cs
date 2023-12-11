@@ -140,26 +140,4 @@ public class Character : GameActor
     //
     //     return cmd;
     // }
-
-    private CommandInstance GenAICommand()
-    {
-        CommandInstance cmd = aiComponent.GetCommand();
-        AddCommand(cmd);
-
-        return cmd;
-    }
-
-    public void ClearCommandCache()
-    {
-        RunTimeDebugger.Instance.LogMessage("Finished");
-        CmdQue.CommandCache = null;
-        // if (GetActorStateTag() == ActorEnumType.ActorStateTag.Player)
-        // {
-        //     inputCommandsGenerator.ClearCommandCache();
-        // }
-        // else if (GetActorStateTag() == ActorEnumType.ActorStateTag.AI)
-        // {
-        //     aiComponent.ClearCommandCache();
-        // }
-    }
 }
