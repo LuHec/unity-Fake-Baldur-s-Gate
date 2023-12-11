@@ -7,6 +7,7 @@ using UnityEngine;
 
 public abstract class CommandInstance
 {
+    public bool IsRunning = true;
     
     /// <summary>
     /// 选择对象执行命令 

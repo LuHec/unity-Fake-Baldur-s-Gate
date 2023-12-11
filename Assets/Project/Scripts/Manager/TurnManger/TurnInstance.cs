@@ -14,7 +14,9 @@ public class TurnInstance
     private ActorsManagerCenter actorsManagerCenter;
     private int turnActorPtr = 0;
 
+    // 实时参数
     public int TurnActorPtr => turnActorPtr;
+    public uint CurrentActorId => conActorDynamicIDs[TurnActorPtr];
     public HashSet<uint> ConActorDynamicIDSet => conActorDynamicIDSet;
     public List<uint> ConActorDynamicIDs => conActorDynamicIDs;
 
@@ -138,16 +140,11 @@ public class TurnInstance
         }
     }
 
-    void OnExcuteFinished()
-    {
-        NextTurn();
-    }
-
-
     public void RunTurn()
     {
         CheckTurn();
         Character character = actorsManagerCenter.GetActorByDynamicId(conActorDynamicIDs[TurnActorPtr]) as Character;
+        character.ActorUpdate();
         RunActorCommand(character);
     }
 
@@ -184,15 +181,21 @@ public class TurnInstance
         if (needRemove) TurnNeedRemoveHandler(this, new EventArgsType.TurnNeedRemoveMessage(this));
     }
 
-    // 需要修改，不用命令中心了，直接让Actor自己生成
     private void RunActorCommand(Character character)
     {
-        // commandCenter.AddCommand(character.GetCommandInstance(), character);
-        commandCenter.Excute(character.GetCommandInstance(), character, () =>
+        // AI和玩家分开处理，玩家需要等待命令
+        var command = character.GetCommand();
+        if (command == null) return;
+        
+        if (command.IsRunning)
         {
-            OnExcuteFinished();
+            commandCenter.Excute(command, character, null);
+        }
+        else
+        {
             character.ClearCommandCache();
-        });
+            NextTurn();
+        }
     }
 
     /// <summary>
@@ -212,5 +215,10 @@ public class TurnInstance
         if (pos < turnActorPtr) BackPtr();
 
         return true;
+    }
+
+    void OnExcuteFinished()
+    {
+        NextTurn();
     }
 }

@@ -5,6 +5,7 @@ using UnityEngine;
 
 public class CommandQueue
 {
+    public CommandInstance CommandCache = null;
     private List<CommandInstance> cmdQueue;
     private int maxSize = 5;
     private GameActor actor;
@@ -23,6 +24,7 @@ public class CommandQueue
 
     public bool Add(CommandInstance cmdInstance)
     {
+        CommandCache = cmdInstance;
         cmdQueue.Add(cmdInstance);
         if (Size() > MaxSize)
         {

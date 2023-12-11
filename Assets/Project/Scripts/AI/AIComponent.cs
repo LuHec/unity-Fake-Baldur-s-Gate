@@ -4,36 +4,29 @@ using UnityEngine;
 public class AIComponent
 {
     private Character character;
-    private CommandInstance commandCache;
-    public bool CanGenCommandCache => commandCache == null;
 
     public AIComponent(Character character)
     {
         this.character = character;
     }
 
-    private void GenAICommand()
+    private CommandInstance GenAICommand()
     {
         if (character.CurrentTurn == null)
         {
-            commandCache = GetNormalState();
+            return GetNormalState();
         }
         else
         {
-            commandCache = GetTurnState();
+            return GetTurnState();
         }
     }
 
     public CommandInstance GetCommand()
     {
-        if (CanGenCommandCache) GenAICommand();
-        return commandCache;
+        return GenAICommand();
     }
-
-    public void ClearCommandCache()
-    {
-        commandCache = null;
-    }
+    
 
     private MoveActorCommand GetMoveCommand()
     {

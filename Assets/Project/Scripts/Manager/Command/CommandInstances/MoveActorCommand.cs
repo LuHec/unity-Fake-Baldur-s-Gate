@@ -51,7 +51,7 @@ public class MoveActorCommand : CommandInstance
             pathPtr = 1;
             if (path == null)
             {
-                onExcuteFinished();
+                onExcuteFinished?.Invoke();
                 return false;
             }
         }
@@ -97,7 +97,8 @@ public class MoveActorCommand : CommandInstance
    
         if (Vector2.Distance(new Vector2(actualPos.x, actualPos.z), new Vector2(lastPos.x, lastPos.z)) < 0.1f)
         {
-            onMoveFinished();
+            onMoveFinished?.Invoke();
+            IsRunning = false;
         }
 
         return true;

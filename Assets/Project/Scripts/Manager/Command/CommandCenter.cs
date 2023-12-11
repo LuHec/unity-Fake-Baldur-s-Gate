@@ -11,17 +11,7 @@ public class CommandCenter : Singleton<CommandCenter>
     private InputCommandsGenerator _inputCommandsGenerator;
     private MapSystem _mapSystem;
     private ActorsManagerCenter _actorsManagerCenter;
-
-    // public CommandCenter(ActorsManagerCenter actorsManagerCenter)
-    // {
-    //     _actorsManagerCenter = actorsManagerCenter;
-    //     _inputCommandsGenerator = new InputCommandsGenerator();
-    // }
-
-    public void Init()
-    {
-    }
-
+    
     /// <summary>
     /// 执行命令，如果是空指令不会执行，直接返回错误
     /// </summary>
@@ -53,5 +43,19 @@ public class CommandCenter : Singleton<CommandCenter>
     {
         _actorsManagerCenter.GetActorByDynamicId(dynamicId)?.AddCommand(cmd);   
     }
+
+    #region Generate Command
+    
+    public CommandInstance GetMoveActorCommand(GameActor actor, Vector3 position)
+    {
+        return new MoveActorCommand(position.x, position.z, actor.transform.position);
+    }
+
+    public CommandInstance GetAttackActorCommand(GameActor gridActor)
+    {
+        return new AttackActorCommand(gridActor);
+    }
+
+    #endregion
     
 }

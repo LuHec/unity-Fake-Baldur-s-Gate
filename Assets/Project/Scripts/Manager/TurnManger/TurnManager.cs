@@ -161,9 +161,10 @@ public class TurnManager : Singleton<TurnManager>
         foreach (var id in globalFreeModeActorIdSet)
         {
             var character = ActorsManagerCenter.Instance.GetActorByDynamicId(id) as Character;
+            character.ActorUpdate();
 
             // 结束后要清除指令
-            commandCenter.Excute(character.GetCommandInstance(), character, () => { character.ClearCommandCache(); });
+            commandCenter.Excute(character.GetCommand(), character, () => { character.ClearCommandCache(); });
 
             // 可能会被合并回合打断
             if (runTurn == false)

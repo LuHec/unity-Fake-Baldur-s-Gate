@@ -34,8 +34,9 @@ public class Character : GameActor
     #region #Command Component
 
     private bool runningCommand = false;
+
     private AIComponent aiComponent;
-    private InputCommandsGenerator inputCommandsGenerator;
+    // private InputCommandsGenerator inputCommandsGenerator;
 
     #endregion
 
@@ -56,6 +57,17 @@ public class Character : GameActor
 
     #endregion
 
+    public override void ActorUpdate()
+    {
+        if (GetActorStateTag() == ActorEnumType.ActorStateTag.AI)
+        {
+            if (CmdQue.CommandCache == null)
+            {
+                AddCommand(aiComponent.GetCommand());
+            }
+        }
+    }
+
     protected override void InitExtend()
     {
         actorEnumType = ActorEnumType.ActorType.Character;
@@ -63,8 +75,8 @@ public class Character : GameActor
         if (aiComponent == null)
             aiComponent = new AIComponent(this);
 
-        if (inputCommandsGenerator == null)
-            inputCommandsGenerator = new InputCommandsGenerator(this);
+        // if (inputCommandsGenerator == null)
+        //     inputCommandsGenerator = new InputCommandsGenerator(this);
     }
 
     /// <summary>
@@ -113,19 +125,21 @@ public class Character : GameActor
 
     public bool IsCommandCacheEmpty()
     {
-        if (GetActorStateTag() == ActorEnumType.ActorStateTag.AI)
-            return aiComponent.CanGenCommandCache;
-        else
-            return inputCommandsGenerator.CanGenCommandCache;
+        if (CmdQue.Size() == 0) return true;
+        return CmdQue.Back().IsRunning == false;
+        // if (GetActorStateTag() == ActorEnumType.ActorStateTag.AI)
+        //     return aiComponent.CanGenCommandCache;
+        // else
+        //     return inputCommandsGenerator.CanGenCommandCache;
     }
 
-    private CommandInstance GenInputCommand()
-    {
-        CommandInstance cmd = inputCommandsGenerator.GetCommand();
-        AddCommand(cmd);
-
-        return cmd;
-    }
+    // private CommandInstance GenInputCommand()
+    // {
+    //     CommandInstance cmd = inputCommandsGenerator.GetCommand();
+    //     AddCommand(cmd);
+    //
+    //     return cmd;
+    // }
 
     private CommandInstance GenAICommand()
     {
@@ -135,30 +149,17 @@ public class Character : GameActor
         return cmd;
     }
 
-    public CommandInstance GetCommandInstance()
-    {
-        if (GetActorStateTag() == ActorEnumType.ActorStateTag.Player)
-        {
-            return GenInputCommand();
-        }
-
-        if (GetActorStateTag() == ActorEnumType.ActorStateTag.AI)
-        {
-            return GenAICommand();
-        }
-
-        return null;
-    }
-
     public void ClearCommandCache()
     {
-        if (GetActorStateTag() == ActorEnumType.ActorStateTag.Player)
-        {
-            inputCommandsGenerator.ClearCommandCache();
-        }
-        else if (GetActorStateTag() == ActorEnumType.ActorStateTag.AI)
-        {
-            aiComponent.ClearCommandCache();
-        }
+        RunTimeDebugger.Instance.LogMessage("Finished");
+        CmdQue.CommandCache = null;
+        // if (GetActorStateTag() == ActorEnumType.ActorStateTag.Player)
+        // {
+        //     inputCommandsGenerator.ClearCommandCache();
+        // }
+        // else if (GetActorStateTag() == ActorEnumType.ActorStateTag.AI)
+        // {
+        //     aiComponent.ClearCommandCache();
+        // }
     }
 }

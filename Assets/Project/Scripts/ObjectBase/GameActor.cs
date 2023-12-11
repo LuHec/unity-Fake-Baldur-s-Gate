@@ -130,6 +130,11 @@ public class GameActor : MonoBehaviour, IInteractable
 
     #endregion
 
+    public virtual void ActorUpdate()
+    {
+        
+    }
+    
     /// <summary>
     /// 添加命令
     /// </summary>
@@ -137,7 +142,7 @@ public class GameActor : MonoBehaviour, IInteractable
     /// <returns></returns>
     public bool AddCommand(CommandInstance cmdInstance)
     {
-        if (cmdInstance == null || cmdQue.Back() == cmdInstance) return false;
+        if (cmdInstance == null || cmdQue.CommandCache == cmdInstance) return false;
         cmdQue.Add(cmdInstance);
         return true;
     }
@@ -146,7 +151,7 @@ public class GameActor : MonoBehaviour, IInteractable
     /// 获取命令队列的队尾
     /// </summary>
     /// <returns></returns>
-    public CommandInstance GetCommand() => cmdQue.Back();
+    public CommandInstance GetCommand() => CmdQue.CommandCache;
     
     public Vector3 MoveTo(float x, float z)
     {
