@@ -193,7 +193,7 @@ public class MessageCenter : Singleton<MessageCenter>
         HashSet<TurnInstance> removeSet)
     {
         // 把旧回合的所有id都取出来放到新回合
-        List<uint> oldIdList = oldTurn.ConActorDynamicIDs;
+        List<uint> oldIdList = oldTurn.ActorQueue.ToList();
         foreach (uint id in oldIdList)
         {
             if (idSet.Add(id))

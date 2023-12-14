@@ -97,7 +97,7 @@ public class AIComponent
         if (state == ActorEnumType.AIMode.Npc)
         {
             TurnInstance turnInstance = character.CurrentTurn;
-            foreach (var id in turnInstance.ConActorDynamicIDs)
+            foreach (var id in turnInstance.ActorQueue)
             {
                 if (ActorsManagerCenter.Instance.GetActorByDynamicId(id).GetActorStateTag() ==
                     ActorEnumType.ActorStateTag.Player)

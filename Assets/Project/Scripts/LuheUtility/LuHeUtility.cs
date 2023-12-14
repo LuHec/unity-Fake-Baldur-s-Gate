@@ -14,4 +14,6 @@ namespace Project.Scripts.LuHeUtility
             return strNowTime;
         }
     }
+    
+    
 }

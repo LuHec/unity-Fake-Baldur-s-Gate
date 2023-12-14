@@ -27,7 +27,7 @@ public class ActorInteractPanel : UIPanelBase
         if (CurrentControlActor.CurrentTurn == null) return true;
 
         // 当前控制的角色处在的回合轮到玩家输入，且当前命令为空，或者有命令时已经执行完毕
-        if (CurrentControlActor.CurrentTurn.CurrentTurnActorId == CurrentControlActor.DynamicId &&
+        if (CurrentControlActor.CurrentTurn.currentActorId == CurrentControlActor.DynamicId &&
             CurrentControlActor.GetCommand() == null)
             return true;
 

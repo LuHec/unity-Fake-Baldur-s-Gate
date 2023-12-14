@@ -31,12 +31,10 @@ public class Character : GameActor
 
     #endregion
 
-    #region #Command Component
+    #region #Component
 
-    private bool runningCommand = false;
-
+    public BuffSystem buffSystem;
     private AIComponent aiComponent;
-    // private InputCommandsGenerator inputCommandsGenerator;
 
     #endregion
 
@@ -75,6 +73,11 @@ public class Character : GameActor
         if (aiComponent == null)
             aiComponent = new AIComponent(this);
 
+        if (buffSystem == null)
+        {
+            buffSystem = new BuffSystem();
+        }
+        
         // if (inputCommandsGenerator == null)
         //     inputCommandsGenerator = new InputCommandsGenerator(this);
     }

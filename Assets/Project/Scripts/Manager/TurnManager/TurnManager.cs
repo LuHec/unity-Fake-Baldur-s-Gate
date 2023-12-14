@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -11,6 +12,8 @@ using Object = System.Object;
 /// </summary>
 public class TurnManager : Singleton<TurnManager>
 {
+    [Tooltip("参数")] public float WaitTime = 0.5f;
+    
     private HashSet<uint> globalFreeModeActorIdSet;
 
     private HashSet<TurnInstance> turnInstancesSet;
@@ -29,6 +32,11 @@ public class TurnManager : Singleton<TurnManager>
     public EventHandler<int> onConCharaChanged;
     public int TurnCount => turnInstancesSet.Count;
 
+    public void StartCoroutines(IEnumerator coroutine)
+    {
+        StartCoroutine(coroutine);
+    }
+    
     public void Init()
     {
         actorsManagerCenter = ActorsManagerCenter.Instance;
@@ -95,18 +103,20 @@ public class TurnManager : Singleton<TurnManager>
     public bool AddTurn(TurnInstance turnInstance)
     {
         if (turnInstance == null) return false;
-        foreach (var id in turnInstance.ConActorDynamicIDs)
+        // foreach (var id in turnInstance.ConActorDynamicIDs)
+        foreach (var id in turnInstance.ActorQueue)
         {
             globalFreeModeActorIdSet.Remove(id);
             ActorsManagerCenter.Instance.GetActorByDynamicId(id).InitTurnIntance(turnInstance);
         }
-
+        Debug.Log(turnInstance.ActorQueue.Count);
         return turnInstancesSet.Add(turnInstance);
     }
 
     public bool RemoveTurn(TurnInstance turnInstance)
     {
-        foreach (uint id in turnInstance.ConActorDynamicIDSet)
+        // foreach (uint id in turnInstance.ConActorDynamicIDSet)
+        foreach (var id in turnInstance.ActorQueue)
         {
             actorsManagerCenter.GetActorByDynamicId(id).InitTurnIntance(null);
             globalFreeModeActorIdSet.Add(id);
@@ -119,7 +129,8 @@ public class TurnManager : Singleton<TurnManager>
     {
         foreach (var turn in turnInstancesSet)
         {
-            if (turn.ConActorDynamicIDSet.Contains(id))
+            // if (turn.ConActorDynamicIDSet.Contains(id))
+            if (turn.Contain(id))
             {
                 turn.RemoveActorByDynamicId(id);
                 if (isDead) ActorsManagerCenter.Instance.RemoveConActorByDynamicId(id);
