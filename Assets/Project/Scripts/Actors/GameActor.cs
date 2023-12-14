@@ -218,7 +218,7 @@ public class GameActor : MonoBehaviour, IInteractable
 
     public void OnPointerEnter(PointerEventData eventData)
     {
-        UIPanelManager.Instance.ShowPanel<MouseInfoPanel>().UpdateInfoPanel(transform.name, transform.position);
+        UIPanelManager.Instance.ShowPanel<MouseInfoPanel>().UpdateInfoPanel(dynamicID.ToString(), transform.position);
     }
 
     public void OnPointerExit(PointerEventData eventData)

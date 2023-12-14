@@ -11,14 +11,17 @@ public class TurnInstance
     private CommandCenter commandCenter;
     private HashSet<uint> conActorDynamicIDSet;
     private List<uint> conActorDynamicIDs;
+    private Queue<uint> actorQueue;
     private ActorsManagerCenter actorsManagerCenter;
     private int turnActorPtr = 0;
 
     // 实时参数
+    public int turnCount = 0;
     public int TurnActorPtr => turnActorPtr;
     public uint CurrentTurnActorId => conActorDynamicIDs[TurnActorPtr];
     public HashSet<uint> ConActorDynamicIDSet => conActorDynamicIDSet;
     public List<uint> ConActorDynamicIDs => conActorDynamicIDs;
+    public Queue<Action> actionsQueue;
 
     #region #Tag
 
@@ -93,6 +96,11 @@ public class TurnInstance
                 ? 1
                 : -1;
         });
+    }
+
+    public void RebuildActorQueue()
+    {
+        
     }
 
     /// <summary>
@@ -183,7 +191,8 @@ public class TurnInstance
 
         if (needRemove) TurnNeedRemoveHandler(this, new EventArgsType.TurnNeedRemoveMessage(this));
     }
-
+    
+    
     private void RunActorCommand(Character character)
     {
         // AI和玩家分开处理，玩家需要等待命令
