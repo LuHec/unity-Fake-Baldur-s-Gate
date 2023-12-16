@@ -9,13 +9,17 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: cbab0885e2340d349b73aec5c3f175ce, type: 3}
-  m_Name: New Skill Data
+  m_Script: {fileID: 11500000, guid: bfb0db6249d3475aab35ebfc8b1dd9b8, type: 3}
+  m_Name: Mo_Decrease_Hp
   m_EditorClassIdentifier: 
-  skillTurnType: 0
-  attackType: 0
-  skillAreaType: 0
-  damage: 0
-  cost: 0
-  distance: 5
-  description: 
+  name: Mo_Decrease_Hp
+  maxTurn: 0
+  duration: 0
+  onCreate:
+  - operation: 1
+    value: 10
+  onTurnStart: []
+  onTurnEnd: []
+  onOwnerDamaged: []
+  onTargetKilled: []
+  onLifeTimeEnd: []

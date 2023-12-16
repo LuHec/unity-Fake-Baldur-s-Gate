@@ -15,6 +15,7 @@ public class PlayerInput : Singleton<PlayerInput>
     public bool IsLPress => playerInputSystem.Player.Click.IsPressed();
     public bool IsLClick => playerInputSystem.Player.Click.WasPressedThisFrame();
     public bool IsRClick => playerInputSystem.Player.RightClick.WasPressedThisFrame();
+    public bool IsSpace => playerInputSystem.Player.Space.WasPressedThisFrame();
     public Vector2 Axis => playerInputSystem.Player.Look.ReadValue<Vector2>().normalized;
     public bool IsEscape => playerInputSystem.Player.Exit.WasPressedThisFrame();
     public Vector2 MouseScroll => playerInputSystem.Player.MouseScroll.ReadValue<Vector2>();

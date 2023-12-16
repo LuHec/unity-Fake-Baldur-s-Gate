@@ -14,15 +14,19 @@ public class TurnInstance
 {
     public delegate Task TaskAction();
 
-    enum TurnState
+    public enum TurnState
     {
         TURN_BEGIN,
         TURN_BEGIN_ACTION,
+        TURN_BEGIN_ACTION_RUNNING,
+        TURN_WAIT_COMMAND,
         TURN_RUNNING,
         TURN_END_ACTION,
+        TURN_END_ACTION_RUNNING,
         TURN_END,
     }
 
+    public TurnState CurrentTurnState => turnState;
     private TurnState turnState = TurnState.TURN_BEGIN;
     private CommandCenter commandCenter;
 
@@ -30,14 +34,12 @@ public class TurnInstance
     // private List<uint> conActorDynamicIDs;
     private TListQueue<uint> actorQueue;
     private ActorsManagerCenter actorsManagerCenter;
-    private int turnActorPtr = 0;
 
     // 实时参数
     public uint currentActorId;
     public int turnCount = 0;
     public TListQueue<uint> ActorQueue => actorQueue;
     private Queue<IEnumerator> taskActionQueue = new Queue<IEnumerator>();
-    private bool hasStartedTask;
     private float turnIntervalCounter = 0;
 
     #region #Tag
@@ -49,8 +51,8 @@ public class TurnInstance
 
     #region #delegate
 
-    private EventHandler<EventArgsType.TurnNeedRemoveMessage> TurnNeedRemoveHandler;
-    
+    private EventHandler<EventArgsType.TurnNeedRemoveMessage> turnNeedRemoveHandler;
+
     // 可以注册角色的buff，进入回合时注册，离开回合时取消
     private Action onEnterTurn;
     private Action onExitTurn;
@@ -59,7 +61,7 @@ public class TurnInstance
     {
         commandCenter = CommandCenter.Instance;
         actorsManagerCenter = ActorsManagerCenter.Instance;
-        MessageCenter.Instance.ListenOnTurnNeedRemove(ref TurnNeedRemoveHandler);
+        MessageCenter.Instance.ListenOnTurnNeedRemove(ref turnNeedRemoveHandler);
     }
 
     #endregion
@@ -102,9 +104,9 @@ public class TurnInstance
         }
     }
 
-    public void SetGameTurnMode(bool isGameModeTurn)
+    public void SetGameTurnMode(bool pIsGameModeTurn)
     {
-        this.isGameModeTurn = isGameModeTurn;
+        this.isGameModeTurn = pIsGameModeTurn;
     }
 
     /// <summary>
@@ -154,59 +156,49 @@ public class TurnInstance
         return true;
     }
 
-    public void NextTurn()
-    {
-        // PushPtr();
-        actorQueue.Enqueue(currentActorId);
-        // CheckTurn();
-    }
-
     public void BackTurn()
     {
-        // BackPtr();
-        //
-        // foreach (var uid in conActorDynamicIDs)
-        // {
-        //     Character character = ActorsManagerCenter.Instance.GetActorByDynamicId(uid) as Character;
-        //     character.CmdQue.Undo();
-        // }
     }
 
     public void RunTurn()
     {
         Character character;
+        CommandInstance command;
         switch (turnState)
         {
             case TurnState.TURN_BEGIN:
+                turnCount++;
                 currentActorId = actorQueue.Dequeue();
                 turnState = TurnState.TURN_BEGIN_ACTION;
                 character = actorsManagerCenter.GetActorByDynamicId(currentActorId) as Character;
-                onEnterTurn += character.buffSystem.OnTurnEnter;
-                onExitTurn += character.buffSystem.OnTurnExit;
 
-                onEnterTurn();
+                // 相关监听注册
+                onEnterTurn += character.abilitySystem.onTurnStart;
+                onExitTurn += character.abilitySystem.onTurnEnd;
+
+                onEnterTurn?.Invoke();
                 break;
             case TurnState.TURN_BEGIN_ACTION:
-                if (!hasStartedTask)
+                turnState = TurnState.TURN_BEGIN_ACTION_RUNNING;
+                TurnManager.Instance.StartCoroutines(ExecuteTasks(true));
+                break;
+            case TurnState.TURN_BEGIN_ACTION_RUNNING:
+                break;
+            case TurnState.TURN_WAIT_COMMAND:
+                character = actorsManagerCenter.GetActorByDynamicId(currentActorId) as Character;
+                // AI和玩家分开处理，玩家需要等待命令
+                character.ActorUpdate();
+                if (character.GetCommand() != null)
                 {
-                    hasStartedTask = true;
-                    TurnManager.Instance.StartCoroutines(ExecuteTasks());
+                    character.GetCommand().Excute(character, null);
+                    turnState = TurnState.TURN_RUNNING;
                 }
 
                 break;
             case TurnState.TURN_RUNNING:
                 character = actorsManagerCenter.GetActorByDynamicId(currentActorId) as Character;
-                character.ActorUpdate();
 
-                // AI和玩家分开处理，玩家需要等待命令
-                var command = character.GetCommand();
-                if (command == null) return;
-
-                if (command.IsRunning)
-                {
-                    commandCenter.Excute(command, character, null);
-                }
-                else
+                if (character.GetCommand().isRunning == false)
                 {
                     character.ClearCommandCache();
                     turnState = TurnState.TURN_END_ACTION;
@@ -214,21 +206,24 @@ public class TurnInstance
 
                 break;
             case TurnState.TURN_END_ACTION:
-                turnState = TurnState.TURN_END;
+                turnState = TurnState.TURN_END_ACTION_RUNNING;
+                TurnManager.Instance.StartCoroutines(ExecuteTasks(false));
+                break;
+            case TurnState.TURN_END_ACTION_RUNNING:
                 break;
             case TurnState.TURN_END:
-                onExitTurn();
+                onExitTurn?.Invoke();
+
+                // 取消相关监听
                 character = actorsManagerCenter.GetActorByDynamicId(currentActorId) as Character;
-                onEnterTurn -= character.buffSystem.OnTurnEnter;
-                onExitTurn -= character.buffSystem.OnTurnExit;
-                
+                onEnterTurn -= character.abilitySystem.onTurnStart;
+                onExitTurn -= character.abilitySystem.onTurnEnd;
+
+                ResetActorState(currentActorId);
                 actorQueue.Enqueue(currentActorId);
                 CheckTurn();
                 AddTask(TurnInterval());
-                hasStartedTask = false;
                 turnState = TurnState.TURN_BEGIN;
-                
-                
                 break;
         }
     }
@@ -238,6 +233,12 @@ public class TurnInstance
         taskActionQueue.Enqueue(taskAction);
     }
 
+    /// <summary>
+    /// 回合结束后重置角色的资源点
+    /// </summary>
+    public void ResetActorState(uint id)
+    {
+    }
 
     private IEnumerator TurnInterval()
     {
@@ -250,7 +251,7 @@ public class TurnInstance
         turnIntervalCounter = 0;
     }
 
-    private IEnumerator ExecuteTasks()
+    private IEnumerator ExecuteTasks(bool begin)
     {
         while (taskActionQueue.Count > 0)
         {
@@ -260,7 +261,7 @@ public class TurnInstance
             }
         }
 
-        turnState = TurnState.TURN_RUNNING;
+        turnState = begin ? TurnState.TURN_WAIT_COMMAND : TurnState.TURN_END;
     }
 
     /// <summary>
@@ -275,7 +276,7 @@ public class TurnInstance
         // if (ConActorDynamicIDSet.Count == 1)
         if (actorQueue.Count <= 1)
         {
-            TurnNeedRemoveHandler(this, new EventArgsType.TurnNeedRemoveMessage(this));
+            turnNeedRemoveHandler(this, new EventArgsType.TurnNeedRemoveMessage(this));
             return;
         }
 
@@ -296,7 +297,7 @@ public class TurnInstance
             }
         }
 
-        if (needRemove) TurnNeedRemoveHandler(this, new EventArgsType.TurnNeedRemoveMessage(this));
+        if (needRemove) turnNeedRemoveHandler(this, new EventArgsType.TurnNeedRemoveMessage(this));
     }
 
     public bool FindActorByDynamicId(uint id)

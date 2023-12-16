@@ -7,8 +7,9 @@ using UnityEngine;
 
 public abstract class CommandInstance
 {
-    public bool IsRunning = true;
-    
+    public bool isRunning = true;
+    public bool hasExecuted = false;
+
     /// <summary>
     /// 选择对象执行命令 
     /// </summary>
@@ -20,4 +21,5 @@ public abstract class CommandInstance
     /// </summary>
     /// <param name="actor">要控制的对象</param>
     public abstract void Undo(GameActor actor);
+
 }

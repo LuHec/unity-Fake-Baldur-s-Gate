@@ -32,8 +32,8 @@ public class Character : GameActor
     #endregion
 
     #region #Component
-
-    public BuffSystem buffSystem;
+    
+    public AbilitySystem abilitySystem;
     private AIComponent aiComponent;
 
     #endregion
@@ -70,16 +70,12 @@ public class Character : GameActor
     {
         actorEnumType = ActorEnumType.ActorType.Character;
 
-        if (aiComponent == null)
-            aiComponent = new AIComponent(this);
-
-        if (buffSystem == null)
-        {
-            buffSystem = new BuffSystem();
-        }
+        abilitySystem ??= new AbilitySystem(this);
         
-        // if (inputCommandsGenerator == null)
-        //     inputCommandsGenerator = new InputCommandsGenerator(this);
+        aiComponent ??= new AIComponent(this);
+
+        // 获取治疗能力
+        abilitySystem.TryApplyAbility(new Ga_Heal(this));
     }
 
     /// <summary>
@@ -129,7 +125,7 @@ public class Character : GameActor
     public bool IsCommandCacheEmpty()
     {
         if (CmdQue.Size() == 0) return true;
-        return CmdQue.Back().IsRunning == false;
+        return CmdQue.Back().isRunning == false;
         // if (GetActorStateTag() == ActorEnumType.ActorStateTag.AI)
         //     return aiComponent.CanGenCommandCache;
         // else

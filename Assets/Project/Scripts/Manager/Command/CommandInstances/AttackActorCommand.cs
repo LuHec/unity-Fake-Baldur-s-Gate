@@ -4,10 +4,9 @@ using UnityEngine;
 
 public class AttackActorCommand : CommandInstance
 {
-    private bool hasAttacked = false;
-
     // 攻击者
     private GameActor actorAttacker;
+
     // 被攻击者
     private GameActor actorAttacked;
 
@@ -18,13 +17,11 @@ public class AttackActorCommand : CommandInstance
 
     public override bool Excute(GameActor attacker, Action onExcuteFinsihed)
     {
+        hasExecuted = true;
+        
         if (attacker == actorAttacked) return false;
 
-        if (!hasAttacked)
-        {
-            hasAttacked = true;
-            Attacking(attacker, actorAttacked, onExcuteFinsihed);
-        }
+        Attacking(attacker, actorAttacked, onExcuteFinsihed);
 
         return true;
     }
@@ -32,6 +29,7 @@ public class AttackActorCommand : CommandInstance
     public override void Undo(GameActor actor)
     {
     }
+    
 
     /// <summary>
     /// 攻击函数，时间内不可操作
@@ -42,7 +40,7 @@ public class AttackActorCommand : CommandInstance
         attacker.Attack(actorAttacked, () =>
         {
             OnAttackFinished?.Invoke();
-            IsRunning = false;
+            isRunning = false;
         });
     }
 }

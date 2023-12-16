@@ -23,13 +23,20 @@ public class InteractScript : MonoBehaviour
     {
         if (CurrentControlActor == null) return false;
 
-        if (CurrentControlActor.CurrentTurn == null) return true;
+        // 暂时禁用了自由模式打断，有bug
+        if (CurrentControlActor.CurrentTurn == null)
+        {
+            if (CurrentControlActor.GetCommand() == null)
+                return true;
+            return false;
+        }
+
 
         // 当前控制的角色处在的回合轮到玩家输入，且当前命令为空，或者有命令时已经执行完毕
         if (CurrentControlActor.CurrentTurn.currentActorId == CurrentControlActor.DynamicId &&
-            CurrentControlActor.GetCommand() == null)
+            CurrentControlActor.CurrentTurn.CurrentTurnState == TurnInstance.TurnState.TURN_WAIT_COMMAND)
             return true;
-        
+
         return false;
     }
 
@@ -80,12 +87,22 @@ public class InteractScript : MonoBehaviour
             }
         }
 
-        else if (PlayerInput.Instance.IsRClick)
+        if (PlayerInput.Instance.IsRClick)
         {
             GameActor actor = IsOnActor();
             if (actor != null && CanGenerateCommand())
             {
-                UIPanelManager.Instance.ShowPanel<ActorInteractPanel>().UpdatePanel(PlayerInput.Instance.MousePos, actor.DynamicId);
+                UIPanelManager.Instance.ShowPanel<ActorInteractPanel>()
+                    .UpdatePanel(PlayerInput.Instance.MousePos, actor.DynamicId);
+            }
+        }
+
+        if (PlayerInput.Instance.IsSpace)
+        {
+            Character character = CurrentControlActor as Character;
+            if (CanGenerateCommand() && character.abilitySystem.CanActiveAbility("Ga_Heal"))
+            {
+                CurrentControlActor.AddCommand(new AbilityCommand(CurrentControlActor, "Ga_Heal"));
             }
         }
     }

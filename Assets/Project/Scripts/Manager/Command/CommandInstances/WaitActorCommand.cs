@@ -9,6 +9,8 @@ public class WaitActorCommand : CommandInstance
     private bool hasWaited = false;
     public override bool Excute(GameActor actor, Action onExcuteFinsihed)
     {
+        hasExecuted = true;
+        
         if (!hasWaited)
         {
             hasWaited = true;
