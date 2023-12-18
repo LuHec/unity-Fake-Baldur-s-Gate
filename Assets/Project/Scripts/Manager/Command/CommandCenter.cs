@@ -56,6 +56,8 @@ public class CommandCenter : Singleton<CommandCenter>
         return new AttackActorCommand(gridActor);
     }
 
+    public CommandInstance GetAbilityCommand(GameActor actor, string name) => new AbilityCommand(actor,name);
+
     #endregion
-    
+
 }

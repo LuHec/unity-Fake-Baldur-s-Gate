@@ -176,7 +176,7 @@ public class GameActor : MonoBehaviour, IInteractable
 
     public virtual void Attack(GameActor actorAttacked, Action onAttackEnd = null)
     {
-        actorAttacked.Damage(GetAttack());
+        // actorAttacked.Damage(GetAttack());
         onAttackEnd?.Invoke();
     }
 

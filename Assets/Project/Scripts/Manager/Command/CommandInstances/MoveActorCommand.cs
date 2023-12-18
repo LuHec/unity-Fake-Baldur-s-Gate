@@ -62,7 +62,7 @@ public class MoveActorCommand : CommandInstance
                 pathFinding.GetGrid().GetWorldPosition(path[i + 1].X, path[i + 1].Y), Color.green, 20f);
         }
 
-        CommandCenter.Instance.StartCoroutine(MoveCoroutine(actor, onExcuteFinished));
+        coroutine = CommandCenter.Instance.StartCoroutine(MoveCoroutine(actor, onExcuteFinished));
 
         return true;
     }

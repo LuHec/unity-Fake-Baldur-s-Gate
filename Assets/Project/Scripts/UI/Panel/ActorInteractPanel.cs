@@ -44,7 +44,8 @@ public class ActorInteractPanel : UIPanelBase
         {
             if (interactActor != null && CanGenerateCommand())
             {
-                CurrentControlActor.AddCommand(CommandCenter.Instance.GetAttackActorCommand(interactActor));
+                // CurrentControlActor.AddCommand(CommandCenter.Instance.GetAttackActorCommand(interactActor));
+                CurrentControlActor.AddCommand(CommandCenter.Instance.GetAbilityCommand(CurrentControlActor, nameof(Ga_Attack)));
             }
             
             UIPanelManager.Instance.HidePanel<ActorInteractPanel>();

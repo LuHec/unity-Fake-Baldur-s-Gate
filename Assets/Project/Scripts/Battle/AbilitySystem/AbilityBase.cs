@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using UnityEngine;
 
 /// <summary>
 /// 命名方式：Ga_XXX 
@@ -11,7 +12,10 @@ public abstract class AbilityBase
     public GameActor owner;
     public AbilitySystem abilitySystem;
 
-    public Action onCreate;
+    // 技能激活时要做的
+    public Action onActive;
+
+    // 技能结束时要做的
     public Action onFinished;
     public bool isRunning = true;
 
@@ -22,21 +26,17 @@ public abstract class AbilityBase
         var character = (Character)owner;
         abilitySystem = character.abilitySystem;
 
-        onCreate += OnCreate;
+        onActive += OnActive;
         onFinished += OnFinished;
         onFinished += () => { isRunning = false; };
     }
 
-    public abstract void OnCreate();
+    public abstract void OnActive();
     public abstract void OnFinished();
 
-    public void ActiveAbility()
-    {
-        onCreate?.Invoke();
-    }
-
-    public void CommitTask(IEnumerator task)
-    {
-        TurnManager.Instance.StartCoroutine(task);
-    }
+    /// <summary>
+    /// 激活能力，通过回调函数同步。所有的任务都写在这里面
+    /// </summary>
+    /// <param name="onAbilityEnd">能力完成后的回调函数</param>
+    public abstract void ActiveAbility(Action onAbilityEnd = null);
 }

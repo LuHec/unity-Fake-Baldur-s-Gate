@@ -233,7 +233,7 @@ public class MessageCenter : Singleton<MessageCenter>
     {
         GameActor attacker = actorsManagerCenter.GetActorByDynamicId(attackerId);
 
-        // 非玩家角色不进行播报
+        // 不足以进入战斗状态则不会播报
         if (actorsManagerCenter.GetActorByDynamicId(attackerId).GetActorStateTag() !=
             ActorEnumType.ActorStateTag.Player) return;
 

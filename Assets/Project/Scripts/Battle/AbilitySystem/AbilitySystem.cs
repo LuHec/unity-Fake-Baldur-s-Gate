@@ -41,6 +41,10 @@ public class AbilitySystem
         modifier.onCreate?.Invoke();
     }
 
+    /// <summary>
+    /// 会交给Modifer自己清除
+    /// </summary>
+    /// <param name="modifier"></param>
     public void TryRemoveModifier(Modifier modifier)
     {
         Debug.Log("TryRemoveModifier!");
@@ -48,6 +52,7 @@ public class AbilitySystem
         {
             onTurnStart -= modifier.onTurnStart;
             onTurnEnd -= modifier.onTurnEnd;
+            onLifeTimeEnd -= modifier.onLifeTimeEnd;
         }
     }
 
@@ -57,13 +62,13 @@ public class AbilitySystem
             abilityDictionary.Add(ability.name, ability);
     }
 
-    public bool TryActiveAbility(string abilityName)
+    public bool TryActiveAbility(string abilityName, Action onAbilityEnd = null)
     {
         Debug.Log("Try Active Ability!");
         if (!abilityDictionary.ContainsKey(abilityName))
             return false;
 
-        abilityDictionary[abilityName].ActiveAbility();
+        abilityDictionary[abilityName].ActiveAbility(onAbilityEnd);
         return true;
     }
 }

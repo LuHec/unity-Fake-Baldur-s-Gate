@@ -35,7 +35,7 @@ public class Weapon : PickableItem
 
     public override void Attack(GameActor actorAttacked, Action onAttackEnd)
     {
-        actorAttacked.Damage(GetAttack());
+        // actorAttacked.Damage(GetAttack());
 
         StartCoroutine(ShotCoroutine(actorAttacked, onAttackEnd));
     }

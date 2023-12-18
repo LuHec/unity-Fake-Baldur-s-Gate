@@ -76,6 +76,9 @@ public class Character : GameActor
 
         // 获取治疗能力
         abilitySystem.TryApplyAbility(new Ga_Heal(this));
+        
+        // 获取攻击能力
+        abilitySystem.TryApplyAbility(new Ga_Attack(this));
     }
 
     /// <summary>
@@ -118,8 +121,8 @@ public class Character : GameActor
             base.Attack(actorAttacked, onAttackEnd);
         }
 
-        CharacterAttackingHandler?.Invoke(this,
-            new EventArgsType.ActorAttackingMessage(DynamicId, actorAttacked.DynamicId));
+        // CharacterAttackingHandler?.Invoke(this,
+        //     new EventArgsType.ActorAttackingMessage(DynamicId, actorAttacked.DynamicId));
     }
 
     public bool IsCommandCacheEmpty()

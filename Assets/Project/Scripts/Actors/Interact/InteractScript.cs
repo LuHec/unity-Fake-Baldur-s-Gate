@@ -24,12 +24,12 @@ public class InteractScript : MonoBehaviour
         if (CurrentControlActor == null) return false;
 
         // 暂时禁用了自由模式打断，有bug
-        if (CurrentControlActor.CurrentTurn == null)
-        {
-            if (CurrentControlActor.GetCommand() == null)
-                return true;
-            return false;
-        }
+        if (CurrentControlActor.CurrentTurn == null) return true;
+        // {
+        //     if (CurrentControlActor.GetCommand() == null)
+        //         return true;
+        //     return false;
+        // }
 
 
         // 当前控制的角色处在的回合轮到玩家输入，且当前命令为空，或者有命令时已经执行完毕
@@ -74,6 +74,13 @@ public class InteractScript : MonoBehaviour
             // 执行左键命令
             if (CanGenerateCommand())
             {
+                if (CurrentControlActor.GetCommand() is MoveActorCommand)
+                {
+                    var cmd = (MoveActorCommand)CurrentControlActor.GetCommand();
+                    cmd.Interrupt();
+                    CurrentControlActor.ClearCommandCache();
+                }
+
                 GameActor actor = IsOnActor();
                 if (actor != null && actor != CurrentControlActor)
                 {
