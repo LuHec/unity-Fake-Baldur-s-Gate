@@ -7,60 +7,71 @@ public class CharacterAttributeSet : GameAttribute
 {
     #region Base Attribute
 
-    private float maxHp;
-    private float currentHp;
-
-    private int maxSkillPoint;
-    private int currentSillPoint;
-
-    private int maxActionPoint;
-    private int currentActionPoint;
+    // ------------------------------------------------------------------------------
+    // properties with delegates
+    private float maxHp = 100;
+    private float currentHp = 100;
     
-    public float MaxHp
+    public void ModifyMaxHp(float hp)
     {
-        get => maxHp;
-        set 
-        { maxHp = value;
-            onMaxHpChange();
+        // 限制血量大小
+        maxHp = Mathf.Clamp(maxHp + hp, 0, maxHp + hp);
+        currentHp = Mathf.Clamp(currentHp, 0, maxHp);
+
+        if (hp > 0)
+        {
+            onMaxHpIncrease?.Invoke();
+        }
+        else if (hp < 0)
+        {
+            onMaxHpDecrease?.Invoke();
         }
     }
 
-    public void ModifierCurrentHp(float value)
+    public void ModifyCurrentHp(float hp)
     {
-        currentHp = Mathf.Clamp(currentHp + value, 0, maxHp);
-        onCurrentHpChange?.Invoke();
+        currentHp = Mathf.Clamp(currentHp + hp, 0, maxHp);
+
+        if (hp > 0)
+        {
+            onCurrentHpIncrease?.Invoke();
+        }
+        else if (hp < 0)
+        {
+            onCurrentHpDecrease?.Invoke();
+        }
     }
 
-    public int MaxSkillPoint
+
+    // ------------------------------------------------------------------------------
+    // properties without delegates
+    private int maxActionPoint = 10;
+    private int currentActionPoint = 10;
+
+    private int maxSkillPoint = 3;
+    private int currentSillPoint = 3;
+    
+    private float maxSpeed = 5;
+    private float currentSpeed = 5;
+
+    public void ModifyCurrentSpeed(float speed)
     {
-        get => maxSkillPoint;
-        set => maxSkillPoint = value;
+        currentSpeed = Mathf.Clamp(currentSpeed + speed, 0, maxSpeed);
     }
 
-    public int CurrentSillPoint
+    public void ModifyMaxSpeed(float speed)
     {
-        get => currentSillPoint;
-        set => currentSillPoint = value;
-    }
-
-    public int MaxActionPoint
-    {
-        get => maxActionPoint;
-        set => maxActionPoint = value;
-    }
-
-    public int CurrentActionPoint
-    {
-        get => currentActionPoint;
-        set => currentActionPoint = value;
+        maxSpeed = Mathf.Clamp(maxSpeed + speed, 0, maxSpeed + speed);
     }
 
     #endregion
 
     #region Delegate
 
-    public Action onCurrentHpChange;
-    public Action onMaxHpChange;
+    public Action onCurrentHpIncrease;
+    public Action onCurrentHpDecrease;
+    public Action onMaxHpIncrease;
+    public Action onMaxHpDecrease;
 
     #endregion
 }

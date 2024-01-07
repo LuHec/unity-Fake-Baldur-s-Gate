@@ -37,14 +37,14 @@ public class Modifier
     {
         Debug.Log("DecreaseHp!");
         Character character = (Character)actor;
-        character.abilitySystem.characterAttributeSet.ModifierCurrentHp(-hp);
+        character.abilitySystem.characterAttributeSet.ModifyCurrentHp(-hp);
     }
 
     public static void IncreaseHp(GameActor actor, float hp)
     {
         Debug.Log("IncreaseHp!");
         Character character = (Character)actor;
-        character.abilitySystem.characterAttributeSet.ModifierCurrentHp(hp);
+        character.abilitySystem.characterAttributeSet.ModifyCurrentHp(hp);
     }
 
     #endregion

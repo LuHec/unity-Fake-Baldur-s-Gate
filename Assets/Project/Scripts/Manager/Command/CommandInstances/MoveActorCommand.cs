@@ -45,13 +45,14 @@ public class MoveActorCommand : CommandInstance
         mapSystem.GetGrid().GetXZ(targetX, targetZ, out int xEnd, out int zEnd);
 
         // 寻路后还原
-        path = pathFinding.FindPath(xStart, zStart, xEnd, zEnd);
+        // path = pathFinding.FindPath(xStart, zStart, xEnd, zEnd);
         pathFinding.Clear();
 
         pathPtr = 1;
         if (path == null)
         {
             onExcuteFinished?.Invoke();
+            isRunning = false;
             return false;
         }
 

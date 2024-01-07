@@ -28,10 +28,7 @@ public class TurnInstance
 
     public TurnState CurrentTurnState => turnState;
     private TurnState turnState = TurnState.TURN_BEGIN;
-    private CommandCenter commandCenter;
-
-    // private HashSet<uint> conActorDynamicIDSet;
-    // private List<uint> conActorDynamicIDs;
+    
     private TListQueue<uint> actorQueue;
     private ActorsManagerCenter actorsManagerCenter;
 
@@ -59,7 +56,6 @@ public class TurnInstance
 
     private void InitListen()
     {
-        commandCenter = CommandCenter.Instance;
         actorsManagerCenter = ActorsManagerCenter.Instance;
         MessageCenter.Instance.ListenOnTurnNeedRemove(ref turnNeedRemoveHandler);
     }
@@ -77,8 +73,6 @@ public class TurnInstance
         InitListen();
 
         actorQueue = new TListQueue<uint>();
-        // conActorDynamicIDs = new List<uint>();
-        // conActorDynamicIDSet = new HashSet<uint>();
     }
 
     /// <summary>
@@ -93,8 +87,6 @@ public class TurnInstance
         InitListen();
 
         actorQueue = new TListQueue<uint>();
-        // this.conActorDynamicIDs = new List<uint>();
-        // conActorDynamicIDSet = new HashSet<uint>();
 
         // 添加id，需要从自由列表中移除
         foreach (uint id in conActorDynamicIDs)
@@ -160,10 +152,13 @@ public class TurnInstance
     {
     }
 
+    private void OnCurrentCharacterAbilityActive() =>turnState = TurnState.TURN_RUNNING; 
+    private void OnCurrentCharacterAbilityEnd() => turnState = TurnState.TURN_END_ACTION;
+    
+    
     public void RunTurn()
     {
         Character character;
-        CommandInstance command;
         switch (turnState)
         {
             case TurnState.TURN_BEGIN:
@@ -180,7 +175,7 @@ public class TurnInstance
                 break;
             case TurnState.TURN_BEGIN_ACTION:
                 turnState = TurnState.TURN_BEGIN_ACTION_RUNNING;
-                TurnManager.Instance.StartCoroutines(ExecuteTasks(true));
+                TurnManager.Instance.StartCoroutines(ExecuteTasks(TurnState.TURN_WAIT_COMMAND));
                 break;
             case TurnState.TURN_BEGIN_ACTION_RUNNING:
                 break;
@@ -188,26 +183,36 @@ public class TurnInstance
                 character = actorsManagerCenter.GetActorByDynamicId(currentActorId) as Character;
                 // AI和玩家分开处理，玩家需要等待命令
                 character.ActorUpdate();
-                if (character.GetCommand() != null)
-                {
-                    character.GetCommand().Excute(character, null);
-                    turnState = TurnState.TURN_RUNNING;
-                }
+                // if (character.GetCommand() != null)
+                // {
+                //     character.GetCommand().Excute(character, null);
+                //     turnState = TurnState.TURN_RUNNING;
+                // }
+                
+                // 监听启动任务
+                character.abilitySystem.onAbilityActive += OnCurrentCharacterAbilityActive;
+                character.abilitySystem.onAbilityEnd += OnCurrentCharacterAbilityEnd;
 
                 break;
             case TurnState.TURN_RUNNING:
-                character = actorsManagerCenter.GetActorByDynamicId(currentActorId) as Character;
+                // character = actorsManagerCenter.GetActorByDynamicId(currentActorId) as Character;
 
-                if (character.GetCommand().isRunning == false)
-                {
-                    character.ClearCommandCache();
-                    turnState = TurnState.TURN_END_ACTION;
-                }
+                // if (character.GetCommand().isRunning == false)
+                // {
+                //     character.ClearCommandCache();
+                //     turnState = TurnState.TURN_END_ACTION;
+                // }
 
                 break;
             case TurnState.TURN_END_ACTION:
+                // 清除回调函数
+                character = actorsManagerCenter.GetActorByDynamicId(currentActorId) as Character;
+                character.abilitySystem.onAbilityActive -= OnCurrentCharacterAbilityActive;
+                character.abilitySystem.onAbilityEnd -= OnCurrentCharacterAbilityEnd;
                 turnState = TurnState.TURN_END_ACTION_RUNNING;
-                TurnManager.Instance.StartCoroutines(ExecuteTasks(false));
+                
+                // 
+                TurnManager.Instance.StartCoroutines(ExecuteTasks(TurnState.TURN_END));
                 break;
             case TurnState.TURN_END_ACTION_RUNNING:
                 break;
@@ -250,8 +255,9 @@ public class TurnInstance
 
         turnIntervalCounter = 0;
     }
-
-    private IEnumerator ExecuteTasks(bool begin)
+    
+    
+    private IEnumerator ExecuteTasks(TurnState newState)
     {
         while (taskActionQueue.Count > 0)
         {
@@ -261,7 +267,7 @@ public class TurnInstance
             }
         }
 
-        turnState = begin ? TurnState.TURN_WAIT_COMMAND : TurnState.TURN_END;
+        turnState = newState;
     }
 
     /// <summary>

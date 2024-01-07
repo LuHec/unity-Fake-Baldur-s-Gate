@@ -38,5 +38,5 @@ public abstract class AbilityBase
     /// 激活能力，通过回调函数同步。所有的任务都写在这里面
     /// </summary>
     /// <param name="onAbilityEnd">能力完成后的回调函数</param>
-    public abstract void ActiveAbility(Action onAbilityEnd = null);
+    public abstract void ActiveAbility(Action onAbilityActive, Action onAbilityEnd);
 }

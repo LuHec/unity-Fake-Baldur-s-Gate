@@ -19,9 +19,10 @@ public class Ga_Heal : AbilityBase
         
     }
 
-    public override void ActiveAbility(Action onAbilityEnd = null)
+    public override void ActiveAbility(Action onAbilityActive, Action onAbilityEnd)
     {
         onActive?.Invoke();
+        onAbilityActive?.Invoke();;
         onFinished?.Invoke();
         onAbilityEnd?.Invoke();
     }

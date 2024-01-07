@@ -49,7 +49,95 @@ public class PathFinding : Singleton<PathFinding>
         closeList.Clear();
     }
 
-    public List<GridObject> FindPath(int startX, int startY, int endX, int endY)
+    /// <summary>
+    /// 返回的是网格坐标
+    /// </summary>
+    /// <param name="start"></param>
+    /// <param name="end"></param>
+    /// <returns></returns>
+    public List<Vector2Int> FindPath(Vector3 start, Vector3 end)
+    {
+        MapSystem.Instance.GetGrid().GetXZ(start.x, start.z, out int xStart,
+            out int zStart);
+        MapSystem.Instance.GetGrid().GetXZ(end.x, end.z, out int xEnd, out int zEnd);
+
+        return FindPath(xStart, zStart, xEnd, zEnd);
+    }
+
+    // public List<GridObject> FindPath(int startX, int startY, int endX, int endY)
+    // {
+    //     if (startX == endX && startY == endY) return null;
+    //
+    //     GridObject startNode = grid.GetGridObject(startX, startY);
+    //     GridObject endNode = grid.GetGridObject(endX, endY);
+    //
+    //     // _openList.Add(startNode);
+    //     openList = new List<GridObject> { startNode };
+    //     closeList = new List<GridObject>();
+    //
+    //     // // // 初始化,原点在左下角
+    //     // for (int x = 0; x < _grid.Width; x++)
+    //     // {
+    //     //     for (int y = 0; y < _grid.Height; y++)
+    //     //     {
+    //     //         GridObject pathNode = _grid.GetGridObject(x, y);
+    //     //         pathNode.gCost = int.MaxValue;
+    //     //         pathNode.CalculateFCost();
+    //     //         // 这里不初始化hcost是因为有些点是不会经过的，没有必要去算所有的hcost，只在遍历到的时候计算hcost
+    //     //         pathNode.cameFromNode = null;
+    //     //     }
+    //     // }
+    //
+    //     startNode.gCost = 0;
+    //     startNode.hCost = CalculateDistanceCost(startNode, endNode);
+    //     startNode.CalculateFCost();
+    //
+    //     while (openList.Count > 0)
+    //     {
+    //         // c# 没有优先队列，因此需要手动找到最近的点
+    //         GridObject currentNode = GetLowestFCostNode(openList);
+    //         // 如果当前最近点是终点，直接返回路径
+    //         if (currentNode == endNode)
+    //         {
+    //             return CalculatePath(endNode);
+    //         }
+    //
+    //         // 如果还未到达终点，则删除当前点，并加入到已经遍历过的列表中
+    //         // 该点已经是最近的走法了，不需要再更新
+    //         openList.Remove(currentNode);
+    //         closeList.Add(currentNode);
+    //
+    //         // 和迪杰斯特拉一样，更新周围的点。如果当前点到目标点的消耗小于它的起始点数，则更新为当前的消耗
+    //         List<GridObject> neighbourNodes = GetNeighbourList(currentNode);
+    //         foreach (var neighbourNode in neighbourNodes)
+    //         {
+    //             if (closeList.Contains(neighbourNode)) continue;
+    //
+    //             if (!neighbourNode.Reachable)
+    //             {
+    //                 closeList.Add(neighbourNode);
+    //                 continue;
+    //             }
+    //
+    //             int currentCost = currentNode.gCost + CalculateDistanceCost(currentNode, neighbourNode);
+    //             if (currentCost < neighbourNode.gCost)
+    //             {
+    //                 neighbourNode.cameFromNode = currentNode;
+    //                 neighbourNode.gCost = currentCost;
+    //                 neighbourNode.hCost = CalculateDistanceCost(neighbourNode, endNode);
+    //             }
+    //
+    //             if (!openList.Contains(neighbourNode))
+    //             {
+    //                 openList.Add(neighbourNode);
+    //             }
+    //         }
+    //     }
+    //
+    //     return null;
+    // }
+
+       public List<Vector2Int> FindPath(int startX, int startY, int endX, int endY)
     {
         if (startX == endX && startY == endY) return null;
 
@@ -59,19 +147,6 @@ public class PathFinding : Singleton<PathFinding>
         // _openList.Add(startNode);
         openList = new List<GridObject> { startNode };
         closeList = new List<GridObject>();
-
-        // // // 初始化,原点在左下角
-        // for (int x = 0; x < _grid.Width; x++)
-        // {
-        //     for (int y = 0; y < _grid.Height; y++)
-        //     {
-        //         GridObject pathNode = _grid.GetGridObject(x, y);
-        //         pathNode.gCost = int.MaxValue;
-        //         pathNode.CalculateFCost();
-        //         // 这里不初始化hcost是因为有些点是不会经过的，没有必要去算所有的hcost，只在遍历到的时候计算hcost
-        //         pathNode.cameFromNode = null;
-        //     }
-        // }
 
         startNode.gCost = 0;
         startNode.hCost = CalculateDistanceCost(startNode, endNode);
@@ -121,19 +196,32 @@ public class PathFinding : Singleton<PathFinding>
 
         return null;
     }
-
-    private List<GridObject> CalculatePath(GridObject endNode)
+    
+    private List<Vector2Int> CalculatePath(GridObject endNode)
     {
-        List<GridObject> resPath = new List<GridObject> { endNode };
-
-        while (resPath[^1].cameFromNode != null)
+        List<Vector2Int> resPath = new List<Vector2Int>();
+        while (endNode != null)
         {
-            resPath.Add(resPath[^1].cameFromNode);
+            resPath.Add(new Vector2Int(endNode.X, endNode.Y));
+            endNode = endNode.cameFromNode;
         }
 
         resPath.Reverse();
         return resPath;
     }
+
+    // private List<GridObject> CalculatePath(GridObject endNode)
+    // {
+    //     List<GridObject> resPath = new List<GridObject> { endNode };
+    //     
+    //     while (resPath[^1].cameFromNode != null)
+    //     {
+    //         resPath.Add(resPath[^1].cameFromNode);
+    //     }
+    //
+    //     resPath.Reverse();
+    //     return resPath;
+    // }
 
     /// <summary>
     /// 计算从A走到B需要的最小点数

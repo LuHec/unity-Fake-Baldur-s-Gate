@@ -17,11 +17,11 @@ public class AbilityCommand : CommandInstance
     {
         hasExecuted = true;
 
-        abilitySystem.TryActiveAbility(abilityName, () =>
-        {
-            isRunning = false;
-            onExcuteFinsihed?.Invoke();
-        });
+        // abilitySystem.TryActiveAbility(abilityName, () =>
+        // {
+        //     isRunning = false;
+        //     onExcuteFinsihed?.Invoke();
+        // });
         return true;
     }
 

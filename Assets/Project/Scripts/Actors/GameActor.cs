@@ -46,6 +46,7 @@ public class GameActor : MonoBehaviour, IInteractable
     #region #Component
 
     public ActorAudio actorAudio;
+    public MoveComponent moveComponent;
 
     #endregion
 
@@ -56,6 +57,7 @@ public class GameActor : MonoBehaviour, IInteractable
         if (actorAudio == null) actorAudio = GetComponent<ActorAudio>();
 
         if (cmdQue == null) cmdQue = new CommandQueue(this);
+        if (moveComponent == null) moveComponent = new MoveComponent(this);
         else cmdQue.Clear();
     }
 
@@ -132,9 +134,8 @@ public class GameActor : MonoBehaviour, IInteractable
 
     public virtual void ActorUpdate()
     {
-        
     }
-    
+
     /// <summary>
     /// 添加命令
     /// </summary>
@@ -152,11 +153,12 @@ public class GameActor : MonoBehaviour, IInteractable
     /// </summary>
     /// <returns></returns>
     public CommandInstance GetCommand() => CmdQue.CommandCache;
+
     public void ClearCommandCache()
     {
         CmdQue.CommandCache = null;
     }
-    
+
     public Vector3 MoveTo(float x, float z)
     {
         transform.position = Vector3.MoveTowards(
@@ -225,9 +227,8 @@ public class GameActor : MonoBehaviour, IInteractable
     {
         UIPanelManager.Instance.HidePanel<MouseInfoPanel>();
     }
-    
+
     public void GetInteractInfo()
     {
-        
     }
 }

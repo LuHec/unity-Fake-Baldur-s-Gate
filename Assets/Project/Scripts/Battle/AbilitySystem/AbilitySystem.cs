@@ -9,9 +9,24 @@ public class AbilitySystem
     public CharacterAttributeSet characterAttributeSet = new CharacterAttributeSet();
 
     // 回合相关
+    public struct AbilityDelegate
+    {
+        public Action onTurnStart;
+        public Action onActEnd;
+        public Action onTurnEnd;
+        public Action onTurn;
+        public Action onAbilityEnd;
+    }
+
+    public AbilityDelegate abilityDelegate = new AbilityDelegate();
+    
+    
     public Action onTurnStart;
     public Action onTurnEnd;
     public Action onLifeTimeEnd;
+    public Action onAbilityActive;
+    public Action onAbilityEnd;
+    
 
     private Character owner;
 
@@ -62,13 +77,14 @@ public class AbilitySystem
             abilityDictionary.Add(ability.name, ability);
     }
 
-    public bool TryActiveAbility(string abilityName, Action onAbilityEnd = null)
+    public bool TryActiveAbility(string abilityName)
     {
         Debug.Log("Try Active Ability!");
         if (!abilityDictionary.ContainsKey(abilityName))
             return false;
 
-        abilityDictionary[abilityName].ActiveAbility(onAbilityEnd);
+        abilityDictionary[abilityName].ActiveAbility(onAbilityActive, onAbilityEnd);
+        onAbilityActive?.Invoke();
         return true;
     }
 }

@@ -21,9 +21,10 @@ public class Ga_Attack : AbilityBase
         
     }
 
-    public override void ActiveAbility(Action onAbilityEnd = null)
+    public override void ActiveAbility(Action onAbilityActive, Action onAbilityEnd)
     {
         onActive?.Invoke();
+        onAbilityActive?.Invoke();
         owner.StartCoroutine(AttackCoroutine(onAbilityEnd));
     }
     

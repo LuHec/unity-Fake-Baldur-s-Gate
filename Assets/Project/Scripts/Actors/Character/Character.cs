@@ -32,9 +32,9 @@ public class Character : GameActor
     #endregion
 
     #region #Component
-    
+
     public AbilitySystem abilitySystem;
-    private AIComponent aiComponent;
+    private AiComponentGen2 aiComponentGen2;
 
     #endregion
 
@@ -59,10 +59,7 @@ public class Character : GameActor
     {
         if (GetActorStateTag() == ActorEnumType.ActorStateTag.AI)
         {
-            if (CmdQue.CommandCache == null)
-            {
-                AddCommand(aiComponent.GetCommand());
-            }
+            aiComponentGen2.Loop();
         }
     }
 
@@ -71,12 +68,12 @@ public class Character : GameActor
         actorEnumType = ActorEnumType.ActorType.Character;
 
         abilitySystem ??= new AbilitySystem(this);
-        
-        aiComponent ??= new AIComponent(this);
+
+        aiComponentGen2 ??= new AiComponentGen2(this);
 
         // 获取治疗能力
         abilitySystem.TryApplyAbility(new Ga_Heal(this));
-        
+
         // 获取攻击能力
         abilitySystem.TryApplyAbility(new Ga_Attack(this));
     }

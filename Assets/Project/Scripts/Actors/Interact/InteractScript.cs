@@ -70,28 +70,30 @@ public class InteractScript : MonoBehaviour
         {
             // 左键时，需要关闭交互窗口
             UIPanelManager.Instance.HidePanel<ActorInteractPanel>();
-
-            // 执行左键命令
-            if (CanGenerateCommand())
-            {
-                if (CurrentControlActor.GetCommand() is MoveActorCommand)
-                {
-                    var cmd = (MoveActorCommand)CurrentControlActor.GetCommand();
-                    cmd.Interrupt();
-                    CurrentControlActor.ClearCommandCache();
-                }
-
-                GameActor actor = IsOnActor();
-                if (actor != null && actor != CurrentControlActor)
-                {
-                    AddCommand(CommandCenter.Instance.GetAttackActorCommand(actor));
-                }
-                else
-                {
-                    Vector3 position = playerInput.GetMouse3DPosition(LayerMask.GetMask("Default"));
-                    AddCommand(CommandCenter.Instance.GetMoveActorCommand(CurrentControlActor, position));
-                }
-            }
+            
+            Vector3 position = playerInput.GetMouse3DPosition(LayerMask.GetMask("Default"));
+            CurrentControlActor.moveComponent.Move(position);
+            // // 执行左键命令
+            // if (CanGenerateCommand())
+            // {
+            //     if (CurrentControlActor.GetCommand() is MoveActorCommand)
+            //     {
+            //         var cmd = (MoveActorCommand)CurrentControlActor.GetCommand();
+            //         cmd.Interrupt();
+            //         CurrentControlActor.ClearCommandCache();
+            //     }
+            //
+            //     GameActor actor = IsOnActor();
+            //     if (actor != null && actor != CurrentControlActor)
+            //     {
+            //         AddCommand(CommandCenter.Instance.GetAttackActorCommand(actor));
+            //     }
+            //     else
+            //     {
+            //         Vector3 position = playerInput.GetMouse3DPosition(LayerMask.GetMask("Default"));
+            //         AddCommand(CommandCenter.Instance.GetMoveActorCommand(CurrentControlActor, position));
+            //     }
+            // }
         }
 
         if (PlayerInput.Instance.IsRClick)

@@ -170,10 +170,10 @@ public class TurnManager : Singleton<TurnManager>
             var character = ActorsManagerCenter.Instance.GetActorByDynamicId(id) as Character;
             character.ActorUpdate();
 
-            // 只执行一次
-            // 结束后要清除指令
-            if(character.GetCommand() != null && character.GetCommand().hasExecuted == false)
-                commandCenter.Excute(character.GetCommand(), character, () => { character.ClearCommandCache(); });
+            // // 只执行一次
+            // // 结束后要清除指令
+            // if(character.GetCommand() != null && character.GetCommand().hasExecuted == false)
+            //     commandCenter.Excute(character.GetCommand(), character, () => { character.ClearCommandCache(); });
 
             // 可能会被合并回合打断
             if (runTurn == false)
