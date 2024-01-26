@@ -114,10 +114,10 @@ public class ActorsManagerCenter : Singleton<ActorsManagerCenter>
     public List<uint> LoadPlayerActor()
     {
         var list = new List<uint>();
-        list.Add(LoadActorTest(MapSystem.Instance.GetGrid().GetWorldPosition(0, 0)));
-        list.Add(LoadActorTest(MapSystem.Instance.GetGrid().GetWorldPosition(0, 1)));
-        list.Add(LoadActorTest(MapSystem.Instance.GetGrid().GetWorldPosition(0, 2)));
-        list.Add(LoadActorTest(MapSystem.Instance.GetGrid().GetWorldPosition(0, 3)));
+        list.Add(LoadActorTest(MapSystem.Instance.GetGrid().GetWorldPosition(5, 5)));
+        list.Add(LoadActorTest(MapSystem.Instance.GetGrid().GetWorldPosition(5, 6)));
+        list.Add(LoadActorTest(MapSystem.Instance.GetGrid().GetWorldPosition(5, 7)));
+        list.Add(LoadActorTest(MapSystem.Instance.GetGrid().GetWorldPosition(5, 8)));
 
         GetActorByDynamicId(list[0]).SetCharacterStateTo(ActorEnumType.ActorStateTag.Player);
         GetActorByDynamicId(list[1]).SetCharacterStateTo(ActorEnumType.ActorStateTag.AI);

@@ -14,7 +14,7 @@ public class WaitActorCommand : CommandInstance
         if (!hasWaited)
         {
             hasWaited = true;
-            actor.Wait(onExcuteFinsihed);
+            // actor.Wait(onExcuteFinsihed);
         }
         
         return true;

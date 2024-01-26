@@ -15,9 +15,7 @@ MonoBehaviour:
   name: Mo_Constantly_Decrease_Hp
   maxTurn: 0
   duration: 2
-  onCreate:
-  - operation: 2
-    value: 1
+  onCreate: []
   onTurnStart:
   - operation: 2
     value: 1

@@ -1,42 +1,38 @@
 ﻿using System;
 using System.Collections;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 
 /// <summary>
 /// 命名方式：Ga_XXX 
 /// </summary>
-public abstract class AbilityBase
+public class AbilityBase
 {
     public float timer;
     public string name;
-    public GameActor owner;
+    public Character owner;
     public AbilitySystem abilitySystem;
 
     // 技能激活时要做的
     public Action onActive;
-
     // 技能结束时要做的
     public Action onFinished;
-    public bool isRunning = true;
 
-    protected AbilityBase(GameActor owner)
+    public AbilityBase(AbilitySystem abilitySystem)
     {
-        this.owner = owner;
-
-        var character = (Character)owner;
-        abilitySystem = character.abilitySystem;
-
-        onActive += OnActive;
-        onFinished += OnFinished;
-        onFinished += () => { isRunning = false; };
+        this.abilitySystem = abilitySystem;
+        this.owner = abilitySystem.Owner;
     }
 
-    public abstract void OnActive();
-    public abstract void OnFinished();
+    public async void ActiveAbility()
+    {
+        onActive?.Invoke();
+        await AbilityTask();
+        onFinished?.Invoke();
+    }
 
-    /// <summary>
-    /// 激活能力，通过回调函数同步。所有的任务都写在这里面
-    /// </summary>
-    /// <param name="onAbilityEnd">能力完成后的回调函数</param>
-    public abstract void ActiveAbility(Action onAbilityActive, Action onAbilityEnd);
+    protected virtual async UniTask AbilityTask()
+    {
+        await UniTask.Yield();
+    }
 }

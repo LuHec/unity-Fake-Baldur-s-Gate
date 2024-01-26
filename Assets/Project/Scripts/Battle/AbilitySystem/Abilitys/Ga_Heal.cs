@@ -1,29 +1,23 @@
 ﻿using System;
 using System.Collections;
+using Cysharp.Threading.Tasks;
 
 public class Ga_Heal : AbilityBase
 {
-    public Ga_Heal(GameActor owner) : base(owner)
+    public Ga_Heal(AbilitySystem abilitySystem) : base(abilitySystem)
     {
         name = "Ga_Heal";
     }
+    
+    
+    protected override async UniTask AbilityTask()
+    {
+        await Heal();
+    }
 
-
-    public override void OnActive()
+    private async UniTask Heal()
     {
         abilitySystem.TryApplyModifier(ModifierPool.Instance.CreateModifier("Mo_Increase_Hp", owner, owner));
-    }
-
-    public override void OnFinished()
-    {
-        
-    }
-
-    public override void ActiveAbility(Action onAbilityActive, Action onAbilityEnd)
-    {
-        onActive?.Invoke();
-        onAbilityActive?.Invoke();;
-        onFinished?.Invoke();
-        onAbilityEnd?.Invoke();
+        await UniTask.Yield();
     }
 }

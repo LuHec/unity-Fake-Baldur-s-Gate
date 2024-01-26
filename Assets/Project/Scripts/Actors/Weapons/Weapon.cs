@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 
 public class Weapon : PickableItem
@@ -8,7 +9,7 @@ public class Weapon : PickableItem
 
     public WeaponAttribute WeaponAttributes => _weaponAttribute;
     private WeaponAttribute _weaponAttribute;
-    private WaitForSeconds shotWaitTime = new WaitForSeconds(0.1f);
+    private float shotWaitTime =0.1f;
     
 
     protected override void InitExtend()
@@ -35,12 +36,10 @@ public class Weapon : PickableItem
 
     public override void Attack(GameActor actorAttacked, Action onAttackEnd)
     {
-        // actorAttacked.Damage(GetAttack());
-
-        StartCoroutine(ShotCoroutine(actorAttacked, onAttackEnd));
+        Shot(actorAttacked, onAttackEnd);
     }
 
-    IEnumerator ShotCoroutine(GameActor actorAttacked, Action onAttackEnd)
+    private async void Shot(GameActor actorAttacked, Action onAttackEnd)
     {
         int i = 0;
         while (i++ < 2)
@@ -50,15 +49,13 @@ public class Weapon : PickableItem
             
             actorAudio.PlayAttackSFX();
 
-            yield return shotWaitTime;
+            await UniTask.WaitForSeconds(shotWaitTime);
         }
 
         // 最后一次生成完成回调
         Instantiate(_projectile, transform.position, Quaternion.identity)
             .StartMove(actorAttacked.transform.position, onAttackEnd);
         actorAudio.PlayAttackSFX();
-
-        yield return null;
     }
 }
 

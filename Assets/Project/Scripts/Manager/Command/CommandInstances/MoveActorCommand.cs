@@ -79,25 +79,25 @@ public class MoveActorCommand : CommandInstance
         {
             Vector3 nextWorldPos = mapSystem.GetGrid().GetOffsetWorldPosition(path[pathPtr].X, path[pathPtr].Y);
             // Vector3 actualPos = actor.CalculateMoveTo(nextWorldPos.x, nextWorldPos.z);
-            Vector3 actualPos = actor.MoveTo(nextWorldPos.x, nextWorldPos.z);
+            // Vector3 actualPos = actor.MoveTo(nextWorldPos.x, nextWorldPos.z);
 
 
-            // 判定是否进入下个格子范围了
-            var currentGrid = mapSystem.GetXZ(actualPos.x, actualPos.z);
-            if (pathPtr < path.Count - 1 && (currentGrid.x != path[pathPtr].X || currentGrid.y != path[pathPtr].Y))
-            {
-                pathPtr++;
-            }
+            // // 判定是否进入下个格子范围了
+            // var currentGrid = mapSystem.GetXZ(actualPos.x, actualPos.z);
+            // if (pathPtr < path.Count - 1 && (currentGrid.x != path[pathPtr].X || currentGrid.y != path[pathPtr].Y))
+            // {
+            //     pathPtr++;
+            // }
 
 
-            // 修正高度
-            Vector3 lastPos = mapSystem.GetGrid().GetOffsetWorldPosition(path[^1].X, path[^1].Y);
-
-            if (Vector2.Distance(new Vector2(actualPos.x, actualPos.z), new Vector2(lastPos.x, lastPos.z)) < 0.1f)
-            {
-                onMoveFinished?.Invoke();
-                isRunning = false;
-            }
+            // // 修正高度
+            // Vector3 lastPos = mapSystem.GetGrid().GetOffsetWorldPosition(path[^1].X, path[^1].Y);
+            //
+            // if (Vector2.Distance(new Vector2(actualPos.x, actualPos.z), new Vector2(lastPos.x, lastPos.z)) < 0.1f)
+            // {
+            //     onMoveFinished?.Invoke();
+            //     isRunning = false;
+            // }
 
             yield return null;
         }

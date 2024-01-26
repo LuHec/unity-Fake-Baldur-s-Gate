@@ -6,12 +6,42 @@ using UnityEngine.Serialization;
 public class CharacterAttributeSet : GameAttribute
 {
     #region Base Attribute
-
     // ------------------------------------------------------------------------------
     // properties with delegates
     private float maxHp = 100;
     private float currentHp = 100;
     
+    private float maxSpeed = 5;
+    private float currentSpeed = 5;
+
+    // ------------------------------------------------------------------------------
+    // properties without delegates
+    private bool bDeath = false;
+    
+    private int speedATB = 1;
+
+    private int maxActionPoint = 10;
+    private int currentActionPoint = 10;
+
+    private int maxSkillPoint = 3;
+    private int currentSillPoint = 3;
+    
+    // ------------------------------------------------------------------------------
+    // properties getter
+    public float MaxHp => maxHp;
+    public float CurrentHp => currentHp;
+    public bool BDeath => bDeath;
+    public int MaxActionPoint => maxActionPoint;
+    public int CurrentActionPoint => currentActionPoint;
+    public int MaxSkillPoint => maxSkillPoint;
+    public int CurrentSillPoint => currentSillPoint;
+    public float MaxSpeed => maxSpeed;
+    public float CurrentSpeed => currentSpeed;
+    public int SpeedAtb => speedATB;
+   
+
+    // ------------------------------------------------------------------------------
+    // properties modify
     public void ModifyMaxHp(float hp)
     {
         // 限制血量大小
@@ -42,17 +72,10 @@ public class CharacterAttributeSet : GameAttribute
         }
     }
 
-
-    // ------------------------------------------------------------------------------
-    // properties without delegates
-    private int maxActionPoint = 10;
-    private int currentActionPoint = 10;
-
-    private int maxSkillPoint = 3;
-    private int currentSillPoint = 3;
-    
-    private float maxSpeed = 5;
-    private float currentSpeed = 5;
+    public void ModifierDeathState(bool death)
+    {
+        bDeath = death;
+    }
 
     public void ModifyCurrentSpeed(float speed)
     {
@@ -63,6 +86,7 @@ public class CharacterAttributeSet : GameAttribute
     {
         maxSpeed = Mathf.Clamp(maxSpeed + speed, 0, maxSpeed + speed);
     }
+
 
     #endregion
 

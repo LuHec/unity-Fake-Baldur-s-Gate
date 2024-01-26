@@ -53,7 +53,7 @@ public class AiComponentGen2
                 randY >= MapSystem.Instance.GetGrid().Width) continue;
 
             // if (MapSystem.Instance.GetGridActor(randX, randY) == null)
-            moveComponent.Move(new Vector3(randX, character.transform.position.y, randY));
+            moveComponent.SetTarget(new Vector3(randX, character.transform.position.y, randY));
             break;
         }
     }
@@ -82,7 +82,7 @@ public class AiComponentGen2
             if (randX < 0 || randX >= MapSystem.Instance.GetGrid().Width || randY < 0 ||
                 randY >= MapSystem.Instance.GetGrid().Width) continue;
 
-            moveComponent.Move(new Vector3(randX, character.transform.position.y, randY));
+            moveComponent.SetTarget(new Vector3(randX, character.transform.position.y, randY));
         }
     }
 

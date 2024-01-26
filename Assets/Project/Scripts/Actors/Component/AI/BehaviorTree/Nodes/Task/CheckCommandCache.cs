@@ -13,7 +13,7 @@ public class CheckCommandCache : BehaviorNode
 
     public override NodeState Evaluate()
     {
-        if (_character.IsCommandCacheEmpty())
+        // if (_character.IsCommandCacheEmpty())
             return NodeState.SUCCESS;
         
         return NodeState.FAILURE;

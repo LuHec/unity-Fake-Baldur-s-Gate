@@ -1,68 +1,78 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class MoveComponent
 {
     public Action onMoveFinished;
+    public bool BIsMoving => pathQueue.Count > 0;
 
     private PathFinding pathFinding;
     private GameActor actor;
-    private List<Vector2Int> path;
-    private int pathPtr = 0;
-    private Coroutine moveCoroutine;
-
+    private List<Vector2Int> pathList = new List<Vector2Int>();
+    private Queue<Vector3> pathQueue = new Queue<Vector3>();
     private float speed = 8f;
-
+    
     public MoveComponent(GameActor actor)
     {
         pathFinding = PathFinding.Instance;
         this.actor = actor;
     }
 
+    public void UpdateMove()
+    {
+        // 当可以移动，且有路径点时才可以行动
+        if(BIsMoving)
+        {
+            var current = actor.transform.position;
+            if(Vector3.Distance(current, pathQueue.Peek()) < 0.1f)
+            {
+                pathQueue.Dequeue();
+
+                if (pathQueue.Count == 0)
+                {
+                    Debug.Log("pathQueue.Count");
+                    // 寻路完毕
+                    onMoveFinished?.Invoke();
+                }
+            }
+            else
+            {
+                actor.transform.position = Vector3.MoveTowards(
+                current, pathQueue.Peek(), speed * Time.deltaTime);
+            }
+        }
+    }
+
     /// <summary>
-    /// 每次都要重置
+    /// 世界坐标
     /// </summary>
     /// <param name="target"></param>
-    public void Move(Vector3 target)
+    public void SetTarget(Vector3 target)
     {
         if (MapSystem.Instance.GetXZ(actor.transform.position.x, actor.transform.position.z) ==
             MapSystem.Instance.GetXZ(target.x, target.z)) return;
         
-        if (moveCoroutine != null) actor.StopCoroutine(moveCoroutine);
-        
-        path = pathFinding.FindPath(actor.transform.position, target);
-        pathFinding.Clear();
-        pathPtr = 0;
+        ClearTarget();
 
-        moveCoroutine = actor.StartCoroutine(MoveCoroutine());
+        pathList = pathFinding.FindPath(actor.transform.position, target);
+        pathFinding.Clear();
+        
+        // 转换为路径队列
+        foreach(var node in pathList)
+        {
+            Vector3 nodeV3 = MapSystem.Instance.GetGrid().GetOffsetWorldPosition(node.x, node.y);
+            nodeV3.y = actor.transform.position.y;
+            pathQueue.Enqueue(nodeV3);
+        }
     }
 
-    private IEnumerator MoveCoroutine()
+    public void ClearTarget()
     {
-        Vector3 end = MapSystem.Instance.GetGrid().GetOffsetWorldPosition(path[^1].x, path[^1].y);
-        Vector3 next = MapSystem.Instance.GetGrid().GetOffsetWorldPosition(path[0].x, path[0].y);
-        Vector3 current = actor.transform.position;
-        end.y = next.y = current.y;
-
-        while (actor.transform.position != end)
-        {
-            current = actor.transform.position;
-            next.y = current.y;
-            end.y = current.y;
-
-            actor.transform.position = Vector3.MoveTowards(
-                current, new Vector3(next.x, current.y, next.z), speed * Time.deltaTime);
-            // 检测是否到达下一个目标
-            if (pathPtr < path.Count - 1 && Vector3.Distance(current, next) < 0.1f)
-            {
-                pathPtr++;
-                next = MapSystem.Instance.GetGrid().GetOffsetWorldPosition(path[pathPtr].x, path[pathPtr].y);
-            }
-
-            yield return null;
-        }
+        pathList.Clear();
+        pathQueue.Clear();
         
         onMoveFinished?.Invoke();
     }

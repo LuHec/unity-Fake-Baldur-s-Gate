@@ -19,21 +19,7 @@ public class ActorInteractPanel : UIPanelBase
         ActorsManagerCenter.Instance.GetActorByDynamicId(TurnManager.Instance.GetCurrentPlayerId());
 
     private GameActor interactActor;
-
-    public bool CanGenerateCommand()
-    {
-        if (CurrentControlActor == null) return false;
-
-        if (CurrentControlActor.CurrentTurn == null) return true;
-
-        // 当前控制的角色处在的回合轮到玩家输入，且当前命令为空，或者有命令时已经执行完毕
-        if (CurrentControlActor.CurrentTurn.currentActorId == CurrentControlActor.DynamicId &&
-            CurrentControlActor.GetCommand() == null)
-            return true;
-
-        return false;
-    }
-
+    
     protected override void Init()
     {
         rectTransform = GetComponent<RectTransform>();
@@ -42,13 +28,17 @@ public class ActorInteractPanel : UIPanelBase
         
         attackBtn.onClick.AddListener(() =>
         {
-            if (interactActor != null && CanGenerateCommand())
-            {
-                // CurrentControlActor.AddCommand(CommandCenter.Instance.GetAttackActorCommand(interactActor));
-                CurrentControlActor.AddCommand(CommandCenter.Instance.GetAbilityCommand(CurrentControlActor, nameof(Ga_Attack)));
-            }
-            
+            Debug.Log("BTN");
             UIPanelManager.Instance.HidePanel<ActorInteractPanel>();
+            Character character = CurrentControlActor as Character;
+            if (character.abilitySystem.TryActiveAbility("Ga_Attack"))
+            {
+                Debug.Log("Active Ability");
+            }
+            else
+            {
+                Debug.Log("Active Failed");
+            }
         });
     }
 
@@ -60,7 +50,6 @@ public class ActorInteractPanel : UIPanelBase
     public void UpdatePanel(Vector2 position, uint actorId)
     {
         interactActor = ActorsManagerCenter.Instance.GetActorByDynamicId(actorId);
-        Debug.Log(interactActor == null);
 
         RectTransformUtility.ScreenPointToLocalPointInRectangle(UIPanelManager.Instance.CanvasRectTransform, position,
             mainCamera, out Vector2 recPos);

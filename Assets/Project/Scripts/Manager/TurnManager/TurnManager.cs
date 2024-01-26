@@ -13,37 +13,27 @@ using Object = System.Object;
 public class TurnManager : Singleton<TurnManager>
 {
     [Tooltip("参数")] public float WaitTime = 0.5f;
-    
-    private HashSet<uint> globalFreeModeActorIdSet;
 
-    private HashSet<TurnInstance> turnInstancesSet;
-    private CommandCenter commandCenter;
+    // ------------------------------------------------------------------------------
+    // Containers
+    private HashSet<uint> globalFreeModeActorIdSet = new HashSet<uint>();
+    private HashSet<TurnInstance> turnInstancesSet = new HashSet<TurnInstance>();
+
     private ActorsManagerCenter actorsManagerCenter;
-    private bool runTurn = true;
     private PlayerActorContainer playerActorContainer;
 
-    /// <summary>
-    /// 每一帧执行完后再删除或添加
-    /// </summary>
-    private List<TurnInstance> turnsNeedRemove;
+    // ------------------------------------------------------------------------------
+    // Update Info
+    private List<TurnInstance> turnsNeedRemove = new List<TurnInstance>();
 
-    private TurnInstance turnNeedAdd;
+    private List<TurnInstance> turnsNeedAdd = new List<TurnInstance>();
 
     public EventHandler<int> onConCharaChanged;
     public int TurnCount => turnInstancesSet.Count;
 
-    public void StartCoroutines(IEnumerator coroutine)
-    {
-        StartCoroutine(coroutine);
-    }
-    
     public void Init()
     {
         actorsManagerCenter = ActorsManagerCenter.Instance;
-        commandCenter = CommandCenter.Instance;
-        turnInstancesSet = new HashSet<TurnInstance>();
-        globalFreeModeActorIdSet = new HashSet<uint>();
-        turnsNeedRemove = new List<TurnInstance>();
 
         MessageCenter.Instance.SubmitUpdateTurn(OnMessageCenterUpdateTurn);
         MessageCenter.Instance.SubmitActorDie(OnActorDie);
@@ -58,39 +48,17 @@ public class TurnManager : Singleton<TurnManager>
         }
     }
 
-
     public void SelectPlayer(int playerIdx)
     {
         playerActorContainer.ChangePlayerByIdx(playerIdx);
     }
-
-    // /// <summary>
-    // /// 加入新的回合。可能会有被重组的id，因此会进行去重
-    // /// </summary>
-    // /// <param name="conActorDynamic_id"></param>
-    // public void AddTurn(List<uint> conActorDynamic_id)
-    // {
-    //     if (conActorDynamic_id.Count == 0) return;
-    //
-    //     foreach (uint id in conActorDynamic_id)
-    //     {
-    //         globalFreeModeActorIdSet.Remove(id);
-    //     }
-    //
-    //     _turnInstancesSet.Add(new TurnInstance(conActorDynamic_id));
-    // }
-    //
-    // public bool QueryFreeModeByActorId(uint id)
-    // {
-    //     return globalFreeModeActorIdSet.Contains(id);
-    // }
 
     public uint GetCurrentPlayerId()
     {
         return playerActorContainer.GetCurrentPlayer;
     }
 
-    public List<uint> GetAllPlayerIdList()
+    public List<uint> GetAllPlayersIdList()
     {
         return playerActorContainer.PlayerActorsIdList;
     }
@@ -100,36 +68,39 @@ public class TurnManager : Singleton<TurnManager>
     /// </summary>
     /// <param name="turnInstance"></param>
     /// <returns></returns>
-    public bool AddTurn(TurnInstance turnInstance)
+    public void AddTurn(TurnInstance turnInstance)
     {
-        if (turnInstance == null) return false;
-        // foreach (var id in turnInstance.ConActorDynamicIDs)
-        foreach (var id in turnInstance.ActorQueue)
+        foreach (var turnItem in turnInstance.turnItemsLists)
         {
-            globalFreeModeActorIdSet.Remove(id);
-            ActorsManagerCenter.Instance.GetActorByDynamicId(id).InitTurnIntance(turnInstance);
+            if (turnItem.BIsCharacter)
+            {
+                globalFreeModeActorIdSet.Remove(turnItem.character.DynamicId);
+                ActorsManagerCenter.Instance.GetActorByDynamicId(turnItem.character.DynamicId)
+                    .SetTurnIntance(turnInstance);
+            }
         }
-        Debug.Log(turnInstance.ActorQueue.Count);
-        return turnInstancesSet.Add(turnInstance);
+
+        turnInstancesSet.Add(turnInstance);
     }
 
-    public bool RemoveTurn(TurnInstance turnInstance)
+    public void RemoveTurn(TurnInstance turnInstance)
     {
-        // foreach (uint id in turnInstance.ConActorDynamicIDSet)
-        foreach (var id in turnInstance.ActorQueue)
+        foreach (var turnItem in turnInstance.turnItemsLists)
         {
-            actorsManagerCenter.GetActorByDynamicId(id).InitTurnIntance(null);
-            globalFreeModeActorIdSet.Add(id);
+            if (turnItem.BIsCharacter)
+            {
+                actorsManagerCenter.GetActorByDynamicId(turnItem.character.DynamicId).SetTurnIntance(null);
+                globalFreeModeActorIdSet.Add(turnItem.character.DynamicId);
+            }
         }
 
-        return turnInstancesSet.Remove(turnInstance);
+        turnInstancesSet.Remove(turnInstance);
     }
 
     public bool RemoveActorByDynamicID(uint id, bool isDead = false)
     {
         foreach (var turn in turnInstancesSet)
         {
-            // if (turn.ConActorDynamicIDSet.Contains(id))
             if (turn.Contain(id))
             {
                 turn.RemoveActorByDynamicId(id);
@@ -143,13 +114,10 @@ public class TurnManager : Singleton<TurnManager>
 
     public void RunTurn()
     {
-        // 运行自由模式的actor
         RunFreeMode();
-
-        // 运行回合制模式actor
         RunTurnMode();
 
-        HandlerTurnRemove();
+        HandlerTurnsInTheEnd();
     }
 
     public bool AddFreeModeActorById(uint id)
@@ -164,23 +132,10 @@ public class TurnManager : Singleton<TurnManager>
 
     private void RunFreeMode()
     {
-        // Debug.Log(globalFreeModeActorIdSet.Count);
         foreach (var id in globalFreeModeActorIdSet)
         {
-            var character = ActorsManagerCenter.Instance.GetActorByDynamicId(id) as Character;
-            character.ActorUpdate();
-
-            // // 只执行一次
-            // // 结束后要清除指令
-            // if(character.GetCommand() != null && character.GetCommand().hasExecuted == false)
-            //     commandCenter.Excute(character.GetCommand(), character, () => { character.ClearCommandCache(); });
-
-            // 可能会被合并回合打断
-            if (runTurn == false)
-            {
-                runTurn = true;
-                break;
-            }
+            var actor = ActorsManagerCenter.Instance.GetActorByDynamicId(id);
+            actor.ActorUpdate();
         }
     }
 
@@ -188,24 +143,24 @@ public class TurnManager : Singleton<TurnManager>
     {
         foreach (TurnInstance turnInstance in turnInstancesSet)
         {
-            turnInstance.RunTurn();
+            turnInstance.UpdateTurn();
         }
     }
 
-    private void HandlerTurnRemove()
+    private void HandlerTurnsInTheEnd()
     {
         foreach (var turn in turnsNeedRemove)
         {
             RemoveTurn(turn);
         }
 
-        turnsNeedRemove.Clear();
-
-        if (turnNeedAdd != null)
+        foreach (var turn in turnsNeedAdd)
         {
-            AddTurn(turnNeedAdd);
-            turnNeedAdd = null;
+            AddTurn(turn);
         }
+
+        turnsNeedRemove.Clear();
+        turnsNeedAdd.Clear();
     }
 
     #region #Listener
@@ -218,8 +173,6 @@ public class TurnManager : Singleton<TurnManager>
     /// <param name="message"></param>
     public void OnMessageCenterUpdateTurn(Object sender, EventArgsType.UpdateTurnManagerMessage message)
     {
-        runTurn = false;
-        // 如果有回合要移除，就要中断回合
         if (message.turnRemoveSet != null && message.turnRemoveSet.Count != 0)
         {
             Debug.Log("Remove Turn");
@@ -228,25 +181,9 @@ public class TurnManager : Singleton<TurnManager>
             {
                 turnsNeedRemove.Add(turnNeedRemove);
             }
-
-            // foreach (var instance in message.turnRemoveSet)
-            // {
-            //     RemoveTurn(instance);
-            // }
-
-            // 如果移除后还有残余的，需要中断回合，防止迭代器出错
-            // if(_turnInstancesSet.Count != 0) ForceQuitTurn();
         }
 
-        // 如果回合不是原来就有的，就需要中断回合
-        // if (AddTurn(message.newTurn))
-        //     ForceQuitTurn();
-        turnNeedAdd = message.newTurn;
-    }
-
-    private void ForceQuitTurn()
-    {
-        runTurn = false;
+        turnsNeedAdd.Add(message.newTurn);
     }
 
     private void OnActorDie(Object sender, EventArgsType.ActorDieMessage message)

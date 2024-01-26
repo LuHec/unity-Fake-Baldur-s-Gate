@@ -1,45 +1,35 @@
 ﻿using System;
 using System.Collections;
 using System.Threading.Tasks;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 
 public class Ga_Attack : AbilityBase
 {
     private bool attackEnd;
-    public Ga_Attack(GameActor owner) : base(owner)
+
+    public Ga_Attack(AbilitySystem abilitySystem) : base(abilitySystem)
     {
         name = "Ga_Attack";
     }
 
-    public override void OnActive()
+    protected override async UniTask AbilityTask()
     {
-        
+        await Attack();
     }
 
-    public override void OnFinished()
+    private async UniTask Attack()
     {
-        
-    }
+        bool endAttack = false;
+        Debug.Log("StartAttack");
+        owner.Attack(owner, () => { endAttack = true; });
+        while (!endAttack)
+        {
+            await UniTask.Yield();
+        }
+        Debug.Log("EndAtk");
 
-    public override void ActiveAbility(Action onAbilityActive, Action onAbilityEnd)
-    {
-        onActive?.Invoke();
-        onAbilityActive?.Invoke();
-        owner.StartCoroutine(AttackCoroutine(onAbilityEnd));
-    }
-    
-    private IEnumerator AttackCoroutine(Action onAbilityEnd = null)
-    {
-        // Attack Start
-        owner.Attack(owner, () => { attackEnd = true;});
-        
-        // wait Attack Finished
-        while(attackEnd == false)
-            yield return null;
-        
-        // Create Mo
-        ((Character)owner).abilitySystem.TryApplyModifier(ModifierPool.Instance.CreateModifier("Mo_Decrease_Hp", owner, owner));
-        
-        onAbilityEnd?.Invoke();
+        owner.abilitySystem.TryApplyModifier(ModifierPool.Instance.CreateModifier("Mo_Decrease_Hp", owner, owner));
+        await UniTask.Yield();
     }
 }

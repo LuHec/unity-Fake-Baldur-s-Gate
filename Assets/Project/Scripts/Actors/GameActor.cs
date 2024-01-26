@@ -92,7 +92,7 @@ public class GameActor : MonoBehaviour, IInteractable
     {
     }
 
-    public void InitTurnIntance(TurnInstance turnInstance)
+    public void SetTurnIntance(TurnInstance turnInstance)
     {
         currentTurn = turnInstance;
     }
@@ -132,41 +132,16 @@ public class GameActor : MonoBehaviour, IInteractable
 
     #endregion
 
+    private void Update() 
+    {
+        moveComponent.UpdateMove();    
+    }
+
     public virtual void ActorUpdate()
     {
     }
-
-    /// <summary>
-    /// 添加命令
-    /// </summary>
-    /// <param name="cmdInstance"></param>
-    /// <returns></returns>
-    public bool AddCommand(CommandInstance cmdInstance)
-    {
-        if (cmdInstance == null || cmdQue.CommandCache == cmdInstance) return false;
-        cmdQue.Add(cmdInstance);
-        return true;
-    }
-
-    /// <summary>
-    /// 获取命令队列的队尾
-    /// </summary>
-    /// <returns></returns>
-    public CommandInstance GetCommand() => CmdQue.CommandCache;
-
-    public void ClearCommandCache()
-    {
-        CmdQue.CommandCache = null;
-    }
-
-    public Vector3 MoveTo(float x, float z)
-    {
-        transform.position = Vector3.MoveTowards(
-            transform.position, new Vector3(x, transform.position.y, z), moveSpeed * Time.deltaTime);
-
-        return transform.position;
-    }
-
+    
+    
     /// <summary>
     /// 获取攻击力
     /// </summary>
@@ -176,9 +151,8 @@ public class GameActor : MonoBehaviour, IInteractable
         return 0;
     }
 
-    public virtual void Attack(GameActor actorAttacked, Action onAttackEnd = null)
+    public virtual void Attack(GameActor target, Action onAttackEnd = null)
     {
-        // actorAttacked.Damage(GetAttack());
         onAttackEnd?.Invoke();
     }
 
@@ -198,12 +172,7 @@ public class GameActor : MonoBehaviour, IInteractable
         ActorDiedEventHandler(this, new EventArgsType.ActorDieMessage(dynamicID));
         GetComponentInChildren<MeshRenderer>().materials[0].color = Color.red;
     }
-
-    public virtual void Wait(Action onWaitEnd = null)
-    {
-        StartCoroutine(WaitCoroutine(onWaitEnd));
-    }
-
+    
     public IEnumerator WaitCoroutine(Action onWaitEnd)
     {
         float t = 1.5f;

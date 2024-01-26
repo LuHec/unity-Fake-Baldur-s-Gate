@@ -111,10 +111,15 @@ public class MessageCenter : Singleton<MessageCenter>
             }
 
             // 获取玩家列表
-            var playerActorList = TurnManager.Instance.GetAllPlayerIdList();
+            var playerActorIdList = TurnManager.Instance.GetAllPlayersIdList();
 
             // 通过就进行添加到回合内
-            currentPlayerTurn = new TurnInstance(playerActorList, true);
+            currentPlayerTurn = new TurnInstance();
+            foreach (var playerId in playerActorIdList)
+            {
+                currentPlayerTurn.AddActorByDynamicId(playerId);
+            }
+
             UpdateTurn(new EventArgsType.UpdateTurnManagerMessage(currentPlayerTurn, null));
 
 
@@ -146,13 +151,13 @@ public class MessageCenter : Singleton<MessageCenter>
             ActorsManagerCenter.Instance.GetActorByDynamicId(TurnManager.Instance.GetCurrentPlayerId()) as Character;
 
         var turnInstance = player.CurrentTurn;
-        if (turnInstance != null)
-        {
-            for (int i = 0; i < message.backCount; i++)
-            {
-                turnInstance.BackTurn();
-            }
-        }
+        // if (turnInstance != null)
+        // {
+        //     for (int i = 0; i < message.backCount; i++)
+        //     {
+        //         turnInstance.BackTurn();
+        //     }
+        // }
     }
 
     #endregion
@@ -193,7 +198,13 @@ public class MessageCenter : Singleton<MessageCenter>
         HashSet<TurnInstance> removeSet)
     {
         // 把旧回合的所有id都取出来放到新回合
-        List<uint> oldIdList = oldTurn.ActorQueue.ToList();
+        List<uint> oldIdList = new List<uint>();
+        foreach (var turnItem in oldTurn.turnItemsLists)
+        {
+            if (turnItem.BIsCharacter)
+                oldIdList.Add(turnItem.character.DynamicId);
+        }
+        
         foreach (uint id in oldIdList)
         {
             if (idSet.Add(id))
@@ -257,8 +268,6 @@ public class MessageCenter : Singleton<MessageCenter>
             newTurn.AddActorByDynamicId(attackerId);
         }
 
-        // 不管怎样先把回合类型设置为非手动回合模式
-        newTurn.SetGameTurnMode(false);
 
         // 把攻击方加入到集合中
         idSet.Add(attackerId);

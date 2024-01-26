@@ -7,6 +7,8 @@ using UnityEngine.InputSystem;
 
 public class PlayerInput : Singleton<PlayerInput>
 {
+    public PlayerInputSystem.PlayerActions PlayInputAction => playerInputSystem.Player;
+    public Camera MainCamera => mainCamera;
     private PlayerInputSystem playerInputSystem;
     private Camera mainCamera;
 

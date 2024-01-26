@@ -10,15 +10,15 @@
     public override NodeState Evaluate()
     {
         TurnInstance turnInstance = _character.CurrentTurn;
-        foreach (var id in turnInstance.ActorQueue)
-        {
-            if (ActorsManagerCenter.Instance.GetActorByDynamicId(id).GetActorStateTag() ==
-                ActorEnumType.ActorStateTag.Player)
-            {
-                var attackActorCommand = new AttackActorCommand(ActorsManagerCenter.Instance.GetActorByDynamicId(id));
-                break;
-            }
-        }
+        // foreach (var id in turnInstance.ActorQueue)
+        // {
+        //     if (ActorsManagerCenter.Instance.GetActorByDynamicId(id).GetActorStateTag() ==
+        //         ActorEnumType.ActorStateTag.Player)
+        //     {
+        //         var attackActorCommand = new AttackActorCommand(ActorsManagerCenter.Instance.GetActorByDynamicId(id));
+        //         break;
+        //     }
+        // }
 
         return NodeState.SUCCESS;
     }

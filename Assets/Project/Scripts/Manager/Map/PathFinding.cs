@@ -137,7 +137,7 @@ public class PathFinding : Singleton<PathFinding>
     //     return null;
     // }
 
-       public List<Vector2Int> FindPath(int startX, int startY, int endX, int endY)
+    public List<Vector2Int> FindPath(int startX, int startY, int endX, int endY)
     {
         if (startX == endX && startY == endY) return null;
 
@@ -196,7 +196,7 @@ public class PathFinding : Singleton<PathFinding>
 
         return null;
     }
-    
+
     private List<Vector2Int> CalculatePath(GridObject endNode)
     {
         List<Vector2Int> resPath = new List<Vector2Int>();

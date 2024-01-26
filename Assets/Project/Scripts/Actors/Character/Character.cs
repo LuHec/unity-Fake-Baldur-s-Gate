@@ -34,12 +34,15 @@ public class Character : GameActor
     #region #Component
 
     public AbilitySystem abilitySystem;
-    private AiComponentGen2 aiComponentGen2;
+    public AiComponentGen3 aiComponentGen3;
+    public InputComponent inputComponent; 
 
     #endregion
 
     #region #delegate
 
+    public Action onEndAction;
+    
     public event EventHandler<EventArgsType.ActorAttackingMessage> CharacterAttackingHandler;
 
     public override void AddListener()
@@ -55,11 +58,21 @@ public class Character : GameActor
 
     #endregion
 
+    public void EndAction()
+    {
+        onEndAction?.Invoke();
+    }
+
     public override void ActorUpdate()
     {
         if (GetActorStateTag() == ActorEnumType.ActorStateTag.AI)
         {
-            aiComponentGen2.Loop();
+            aiComponentGen3.UpdateAi();
+        }
+        
+        if (GetActorStateTag() == ActorEnumType.ActorStateTag.Player)
+        {
+            inputComponent.UpdateInput();
         }
     }
 
@@ -67,15 +80,13 @@ public class Character : GameActor
     {
         actorEnumType = ActorEnumType.ActorType.Character;
 
-        abilitySystem ??= new AbilitySystem(this);
+        abilitySystem = new AbilitySystem(this);
+        aiComponentGen3 = new AiComponentGen3(this);
+        inputComponent = new InputComponent();
 
-        aiComponentGen2 ??= new AiComponentGen2(this);
-
-        // 获取治疗能力
-        abilitySystem.TryApplyAbility(new Ga_Heal(this));
-
-        // 获取攻击能力
-        abilitySystem.TryApplyAbility(new Ga_Attack(this));
+        // 获取能力
+        abilitySystem.TryApplyAbility(new Ga_Heal(abilitySystem));
+        abilitySystem.TryApplyAbility(new Ga_Attack(abilitySystem));
     }
 
     /// <summary>
@@ -87,7 +98,7 @@ public class Character : GameActor
     {
         if (actor.GetActorType() == ActorEnumType.ActorType.Pickableitem)
         {
-            var pickableItem = actor as PickableItem;
+            PickableItem pickableItem = actor as PickableItem;
             if (pickableItem.GetPickableItemType() == ActorEnumType.PickableItemType.Weapon)
             {
                 weapon = pickableItem as Weapon;
@@ -107,36 +118,17 @@ public class Character : GameActor
         else return base.GetAttack();
     }
 
-    public override void Attack(GameActor actorAttacked, Action onAttackEnd)
+    public override void Attack(GameActor target, Action onAttackEnd)
     {
         if (!ReferenceEquals(weapon, null))
         {
-            weapon.Attack(actorAttacked, onAttackEnd);
+            // 带武器攻击
+            weapon.Attack(target, onAttackEnd);
         }
         else
         {
-            base.Attack(actorAttacked, onAttackEnd);
+            // 空手攻击
+            base.Attack(target, onAttackEnd);
         }
-
-        // CharacterAttackingHandler?.Invoke(this,
-        //     new EventArgsType.ActorAttackingMessage(DynamicId, actorAttacked.DynamicId));
     }
-
-    public bool IsCommandCacheEmpty()
-    {
-        if (CmdQue.Size() == 0) return true;
-        return CmdQue.Back().isRunning == false;
-        // if (GetActorStateTag() == ActorEnumType.ActorStateTag.AI)
-        //     return aiComponent.CanGenCommandCache;
-        // else
-        //     return inputCommandsGenerator.CanGenCommandCache;
-    }
-
-    // private CommandInstance GenInputCommand()
-    // {
-    //     CommandInstance cmd = inputCommandsGenerator.GetCommand();
-    //     AddCommand(cmd);
-    //
-    //     return cmd;
-    // }
 }
