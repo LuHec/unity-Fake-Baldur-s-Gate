@@ -13,13 +13,20 @@ namespace EActorTargetConfirmation
         CUSTOM
     }
 }
+public class TargetData
 
-public class ActorTargetData
 {
+    public bool bConfirm;
     public List<GameActor> targets;
 
-    public ActorTargetData(List<GameActor> targets)
+    /// <summary>
+    /// 不要用其他list的引用
+    /// </summary>
+    /// <param name="bConfirm"></param>
+    /// <param name="targets"></param>
+    public TargetData(bool bConfirm, List<GameActor> targets)
     {
+        this.bConfirm = bConfirm;
         this.targets = targets;
     }
 }

@@ -5,8 +5,14 @@ using System.IO;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 
-public class PathFinding : Singleton<PathFinding>
+public class PathFinding
 {
+    public static PathFinding Instance = new PathFinding();
+
+    private PathFinding()
+    {
+    }
+
     // 横向走消耗1，斜着走消耗1.4（即sqrt(2)），乘以10方便计算
     private const int MOVE_STRAIGHT_COST = 10;
     private const int MOVE_DIAGONAL_COST = 14;

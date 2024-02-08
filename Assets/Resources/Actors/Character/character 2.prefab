@@ -9,7 +9,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4550683832639960110}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: WeaponTransform
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -43,7 +43,7 @@ GameObject:
   - component: {fileID: 8714252552006834501}
   - component: {fileID: 6241281784570992230}
   - component: {fileID: 5518561544236380816}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: character 2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -81,15 +81,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 402f97e296502d84fb988cae94b8ab46, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _actorStateTag: 0
+  actorStateTag: 0
   id: 10002
   speed: 0
-  _moveSpeed: 8
+  moveSpeed: 8
   startPos: {x: 2, y: 1, z: 2}
+  actorAudio: {fileID: 0}
   weaponTransform: {fileID: 4550683832639960110}
-  _characterType: 0
-  _characterBattleState: 0
-  _actorHateState: 0
+  aiMode: 0
+  characterBattleState: 0
+  actorHateState: 0
 --- !u!82 &6241281784570992230
 AudioSource:
   m_ObjectHideFlags: 0
@@ -214,7 +215,7 @@ GameObject:
   - component: {fileID: 6411856358163593297}
   - component: {fileID: 6411856358163593296}
   - component: {fileID: 6411856358163593299}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: Capsule
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -312,7 +313,7 @@ GameObject:
   - component: {fileID: 2453615004260046192}
   - component: {fileID: 1879902000877591224}
   - component: {fileID: 5898259543227229747}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: Cube
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -408,6 +409,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: UI Health Bar On Head Player 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6424057456953857509, guid: d781c6049647d5b4a81bd7f9cede668b,
+        type: 3}
+      propertyPath: m_Layer
+      value: 10
       objectReference: {fileID: 0}
     - target: {fileID: 6424057456953857510, guid: d781c6049647d5b4a81bd7f9cede668b,
         type: 3}
@@ -518,6 +524,21 @@ PrefabInstance:
         type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6424057457744324197, guid: d781c6049647d5b4a81bd7f9cede668b,
+        type: 3}
+      propertyPath: m_Layer
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 6424057458498759914, guid: d781c6049647d5b4a81bd7f9cede668b,
+        type: 3}
+      propertyPath: m_Layer
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 6424057458744050411, guid: d781c6049647d5b4a81bd7f9cede668b,
+        type: 3}
+      propertyPath: m_Layer
+      value: 10
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: d781c6049647d5b4a81bd7f9cede668b, type: 3}

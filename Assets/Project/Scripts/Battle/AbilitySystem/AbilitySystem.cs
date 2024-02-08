@@ -7,6 +7,7 @@ public class AbilitySystem
     public Dictionary<string, Modifier> modifierDictionary = new Dictionary<string, Modifier>();
     public Dictionary<string, AbilityBase> abilityDictionary = new Dictionary<string, AbilityBase>();
     public CharacterAttributeSet characterAttributeSet = new CharacterAttributeSet();
+    public AbilityTasksProcessor abilityTasksProcessor = new AbilityTasksProcessor();
     public Character Owner => owner;
     private Character owner;
 
@@ -72,21 +73,21 @@ public class AbilitySystem
 
     public void TryApplyAbility(AbilityBase ability)
     {
-        if(abilityDictionary.ContainsKey(ability.name)) return;
-        
+        if (abilityDictionary.ContainsKey(ability.abilityName)) return;
+
         // 监听技能的开始和结束
-        abilityDictionary.Add(ability.name, ability);
-        ability.onActive += onAbilityActive;
-        ability.onActive += onAbilityEnd;
+        abilityDictionary.Add(ability.abilityName, ability);
+        ability.onAbilityActive += onAbilityActive;
+        ability.onAbilityFinished += onAbilityEnd;
     }
 
     public void TryRemoveAbility(String name)
     {
-        if(!abilityDictionary.ContainsKey(name)) return;
+        if (!abilityDictionary.ContainsKey(name)) return;
 
         var ability = abilityDictionary[name];
-        ability.onActive += onAbilityActive;
-        ability.onActive += onAbilityEnd;
+        ability.onAbilityActive += onAbilityActive;
+        ability.onAbilityFinished += onAbilityEnd;
         abilityDictionary.Remove(name);
     }
 
@@ -95,13 +96,38 @@ public class AbilitySystem
     /// </summary>
     /// <param name="abilityName"></param>
     /// <returns></returns>
+    [Obsolete("替换为绑定输入版本")]
     public bool TryActiveAbility(string abilityName)
     {
         if (!abilityDictionary.ContainsKey(abilityName))
             return false;
-        
+
         abilityDictionary[abilityName].ActiveAbility();
         onAbilityActive?.Invoke();
+        return true;
+    }
+
+
+    /// <summary>
+    /// 单次绑定技能输入，结束后会自动解除绑定
+    /// </summary>
+    /// <param name="abilityName">激活技能的名字</param>
+    /// <param name="confirmHandler">确认</param>
+    /// <param name="cancelHandler">取消</param>
+    /// <param name="positionHandler">移动</param>
+    /// <returns></returns>
+    public bool TryActiveAbility(string abilityName,
+        ref EventHandler<EventArgsType.PlayerConfirmMessage> confirmHandler,
+        ref EventHandler<EventArgsType.PlayerCancelMessage> cancelHandler, ref EventHandler<Vector3> positionHandler)
+    {
+        // 检测前置条件
+        if (!abilityDictionary.ContainsKey(abilityName))
+            return false;
+
+        var ability = abilityDictionary[abilityName];
+        ability.AbilityBindInput(ref confirmHandler, ref cancelHandler, ref positionHandler);
+        ability.ActiveAbility();
+
         return true;
     }
 
@@ -114,7 +140,12 @@ public class AbilitySystem
     {
         if (!abilityDictionary.ContainsKey(abilityName))
             return null;
-        
+
         return abilityDictionary[abilityName];
+    }
+
+    public void CommitAbilityTask(AbilityBase ability, string taskName)
+    {
+        abilityTasksProcessor.CommitTask(ability, taskName);
     }
 }

@@ -6,11 +6,11 @@ public class Ga_Heal : AbilityBase
 {
     public Ga_Heal(AbilitySystem abilitySystem) : base(abilitySystem)
     {
-        name = "Ga_Heal";
+        abilityName = "Ga_Heal";
     }
     
     
-    protected override async UniTask AbilityTask()
+    protected override async UniTask AbilityTask(TargetData targetData)
     {
         await Heal();
     }

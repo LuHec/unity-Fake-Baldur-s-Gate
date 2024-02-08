@@ -8,7 +8,7 @@ using UnityEngine.InputSystem;
 using UnityEngine.Serialization;
 
 [RequireComponent(typeof(ActorAudio))]
-public class GameActor : MonoBehaviour, IInteractable
+public class GameActor : MonoBehaviour
 {
     #region #Info
 
@@ -171,20 +171,6 @@ public class GameActor : MonoBehaviour, IInteractable
     {
         ActorDiedEventHandler(this, new EventArgsType.ActorDieMessage(dynamicID));
         GetComponentInChildren<MeshRenderer>().materials[0].color = Color.red;
-    }
-    
-    public IEnumerator WaitCoroutine(Action onWaitEnd)
-    {
-        float t = 1.5f;
-        float timmer = 0;
-        while (timmer < t)
-        {
-            timmer += Time.fixedDeltaTime;
-            Debug.Log("wait");
-            yield return null;
-        }
-
-        onWaitEnd?.Invoke();
     }
 
     public void OnPointerEnter(PointerEventData eventData)

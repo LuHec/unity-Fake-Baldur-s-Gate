@@ -84,4 +84,26 @@ public class EventArgsType
     {
         public int backCount = 5;
     }
+    
+    // ------------------------------------------------------------------------------
+    // AbilitySystem
+    public class PlayerConfirmMessage : EventArgs
+    {
+        public bool bOnUI;
+
+        public PlayerConfirmMessage(bool bOnUI)
+        {
+            this.bOnUI = bOnUI;
+        }
+    }
+
+    public class PlayerCancelMessage : EventArgs
+    {
+        public bool bOnUI;
+
+        public PlayerCancelMessage(bool bOnUI)
+        {
+            this.bOnUI = bOnUI;
+        }
+    }
 }

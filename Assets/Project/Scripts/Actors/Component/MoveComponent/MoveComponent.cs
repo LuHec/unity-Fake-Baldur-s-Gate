@@ -14,7 +14,8 @@ public class MoveComponent
     private List<Vector2Int> pathList = new List<Vector2Int>();
     private Queue<Vector3> pathQueue = new Queue<Vector3>();
     private float speed = 8f;
-    
+    private bool bAllowMove = true;
+
     public MoveComponent(GameActor actor)
     {
         pathFinding = PathFinding.Instance;
@@ -24,25 +25,24 @@ public class MoveComponent
     public void UpdateMove()
     {
         // 当可以移动，且有路径点时才可以行动
-        if(BIsMoving)
-        {
-            var current = actor.transform.position;
-            if(Vector3.Distance(current, pathQueue.Peek()) < 0.1f)
-            {
-                pathQueue.Dequeue();
+        if (!bAllowMove || !BIsMoving) return;
 
-                if (pathQueue.Count == 0)
-                {
-                    Debug.Log("pathQueue.Count");
-                    // 寻路完毕
-                    onMoveFinished?.Invoke();
-                }
-            }
-            else
+        var current = actor.transform.position;
+        if (Vector3.Distance(current, pathQueue.Peek()) < 0.1f)
+        {
+            pathQueue.Dequeue();
+
+            if (pathQueue.Count == 0)
             {
-                actor.transform.position = Vector3.MoveTowards(
-                current, pathQueue.Peek(), speed * Time.deltaTime);
+                Debug.Log("pathQueue.Count");
+                // 寻路完毕
+                onMoveFinished?.Invoke();
             }
+        }
+        else
+        {
+            actor.transform.position = Vector3.MoveTowards(
+                current, pathQueue.Peek(), speed * Time.deltaTime);
         }
     }
 
@@ -52,16 +52,18 @@ public class MoveComponent
     /// <param name="target"></param>
     public void SetTarget(Vector3 target)
     {
+        if (!bAllowMove) return;
+
         if (MapSystem.Instance.GetXZ(actor.transform.position.x, actor.transform.position.z) ==
             MapSystem.Instance.GetXZ(target.x, target.z)) return;
-        
+
         ClearTarget();
 
         pathList = pathFinding.FindPath(actor.transform.position, target);
         pathFinding.Clear();
-        
+
         // 转换为路径队列
-        foreach(var node in pathList)
+        foreach (var node in pathList)
         {
             Vector3 nodeV3 = MapSystem.Instance.GetGrid().GetOffsetWorldPosition(node.x, node.y);
             nodeV3.y = actor.transform.position.y;
@@ -73,7 +75,18 @@ public class MoveComponent
     {
         pathList.Clear();
         pathQueue.Clear();
-        
+
         onMoveFinished?.Invoke();
+    }
+
+    public void DisableMove()
+    {
+        ClearTarget();
+        bAllowMove = false;
+    }
+
+    public void EnableMove()
+    {
+        bAllowMove = true;
     }
 }

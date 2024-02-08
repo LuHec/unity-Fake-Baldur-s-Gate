@@ -7,7 +7,7 @@ public class Ga_WaitForSeconds : AbilityBase
         
     }
 
-    protected override async UniTask AbilityTask()
+    protected override async UniTask AbilityTask(TargetData targetData)
     {
         await UniTask.WaitForSeconds(1);
     }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
@@ -10,26 +11,34 @@ public class Ga_Attack : AbilityBase
 
     public Ga_Attack(AbilitySystem abilitySystem) : base(abilitySystem)
     {
-        name = "Ga_Attack";
+        abilityName = "Ga_Attack";
+        indicator = new CircularIndicator(this);
     }
 
-    protected override async UniTask AbilityTask()
+    protected override async UniTask AbilityTask(TargetData targetData)
     {
-        await Attack();
+        await Attack(targetData);
     }
 
-    private async UniTask Attack()
+    private async UniTask Attack(TargetData targetData)
     {
-        bool endAttack = false;
-        Debug.Log("StartAttack");
-        owner.Attack(owner, () => { endAttack = true; });
-        while (!endAttack)
+        var targets = targetData.targets;
+        // var targets = new List<GameActor>(targetData.targets);
+        foreach (var target in targets)
         {
-            await UniTask.Yield();
-        }
-        Debug.Log("EndAtk");
+            var endAttackSource = new UniTaskCompletionSource();
+            owner.Attack(target, () =>
+            {
+                endAttackSource.TrySetResult();
+            });
+ 
+            await endAttackSource.Task;
 
-        owner.abilitySystem.TryApplyModifier(ModifierPool.Instance.CreateModifier("Mo_Decrease_Hp", owner, owner));
-        await UniTask.Yield();
+            owner.abilitySystem.TryApplyModifier(
+                ModifierPool.Instance.CreateModifier(
+                    "Mo_Decrease_Hp",
+                    owner,
+                    target));
+        }
     }
 }

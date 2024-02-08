@@ -5,8 +5,17 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 
-public class PlayerInput : Singleton<PlayerInput>
+public class PlayerInput
 {
+    public static PlayerInput Instance = new PlayerInput();
+
+    private PlayerInput()
+    {
+        mainCamera = Camera.main;
+        playerInputSystem = new PlayerInputSystem();
+        EnableGamePlayInputs();
+    }
+
     public PlayerInputSystem.PlayerActions PlayInputAction => playerInputSystem.Player;
     public Camera MainCamera => mainCamera;
     private PlayerInputSystem playerInputSystem;
@@ -30,13 +39,7 @@ public class PlayerInput : Singleton<PlayerInput>
 
     public bool DebugPress => playerInputSystem.Player.Debug.WasPressedThisFrame();
 
-    protected override void Awake()
-    {
-        base.Awake();
-        mainCamera = Camera.main;
-        playerInputSystem = new PlayerInputSystem();
-        EnableGamePlayInputs();
-    }
+    private Vector3 cachedMousePosition = Vector3.zero;
 
     public void EnableGamePlayInputs()
     {
@@ -44,23 +47,30 @@ public class PlayerInput : Singleton<PlayerInput>
         Cursor.lockState = CursorLockMode.Confined;
     }
 
+    public void DisableGamePlayInputs()
+    {
+        playerInputSystem.Player.Disable();
+        Cursor.lockState = CursorLockMode.Locked;
+    }
+
     public Vector3 GetMouse3DPosition(int mouseLayerMask)
     {
         Ray ray = mainCamera.ScreenPointToRay(MousePos);
-        if (Physics.Raycast(ray, out RaycastHit raycastHit, 999f, mouseLayerMask))
+
+        if (Physics.Raycast(ray, out RaycastHit rayCastHit, 999f, mouseLayerMask))
         {
+            cachedMousePosition = rayCastHit.point;
 #if UNITY_EDITOR
-            // Debug.Log(raycastHit.point);
+            // Debug.Log("MousePos: " + MousePos + " World Pos: " + cachedMousePosition);
 #endif
-            return raycastHit.point;
+            return cachedMousePosition;
         }
         else
         {
 #if UNITY_EDITOR
             // Debug.Log("null, mouse pos return vector3.zero");
 #endif
-            return Vector3.zero;
+            return cachedMousePosition;
         }
-        
     }
 }
